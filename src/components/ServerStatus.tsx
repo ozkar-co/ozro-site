@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import '../styles/ServerStatus.css';
-import { collection, query, onSnapshot } from 'firebase/firestore';
-import { db } from '../firebase.js';
+import { apiClient } from '../api/client';
 
 interface StatusItemProps {
   title: string;
@@ -64,27 +63,30 @@ const ServerStatus = () => {
   }, []);
 
   useEffect(() => {
-    try {
-      const serverStatusRef = collection(db, 'server-status');
-      const q = query(serverStatusRef);
+    const fetchServerStatus = async () => {
+      try {
+        const [playersData, healthData] = await Promise.all([
+          apiClient.players(),
+          apiClient.health()
+        ]);
 
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        if (!snapshot.empty) {
-          const doc = snapshot.docs[0];
-          const data = doc.data();
-          setStatusData(prev => ({
-            ...prev,
-            players: data.players || 0,
-            'event-name': data['event-name'] || 'Por definir',
-            'event-date': data['event-date'] || 'Por definir'
-          }));
-        }
-      });
+        setStatusData(prev => ({
+          ...prev,
+          players: playersData.online,
+          server: healthData.status === 'OK' ? 'Online' : 'Offline'
+        }));
+      } catch (error) {
+        console.error('Error al conectar con la API:', error);
+        setStatusData(prev => ({
+          ...prev,
+          server: 'Offline'
+        }));
+      }
+    };
 
-      return () => unsubscribe();
-    } catch (error) {
-      console.error('Error al conectar con Firestore:', error);
-    }
+    fetchServerStatus();
+    const interval = setInterval(fetchServerStatus, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, query, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore';
-import { db } from '../firebase';
+import { apiClient } from '../api/client';
 import '../styles/Stats.css';
 
 interface ServerData {
@@ -23,14 +22,14 @@ interface ServerData {
   guilds: {
     total: number;
   };
-  timestamp: Timestamp;
+  timestamp: string;
 }
 
 const Stats = () => {
   const [serverData, setServerData] = useState<ServerData | null>(null);
 
-  const formatTimestamp = (timestamp: Timestamp) => {
-    const date = timestamp.toDate();
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
     return date.toLocaleString('es-ES', {
       year: 'numeric',
       month: 'long',
@@ -44,17 +43,8 @@ const Stats = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const serverDataRef = collection(db, 'server-data');
-        const q = query(serverDataRef, orderBy('timestamp', 'desc'), limit(1));
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-          if (!snapshot.empty) {
-            const data = snapshot.docs[0].data() as ServerData;
-            setServerData(data);
-          }
-        });
-
-        return () => unsubscribe();
+        const data = await apiClient.stats();
+        setServerData(data as ServerData);
       } catch (error) {
         console.error('Error al obtener estadísticas:', error);
       }

@@ -2,18 +2,17 @@ import { useState, useEffect } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import '../styles/Rankings.css';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
-import { db } from '../firebase';
+import { apiClient } from '../api/client';
 
 // Tipos de datos
 interface Account {
   account_id: number;
   logincount: number;
-  total_cards: number;
-  total_cards_distinct: number;
-  total_diamonds: number;
-  total_mvp_cards: number;
-  total_boss_cards: number;
+  total_cards: string;
+  total_cards_distinct: string;
+  total_diamonds: string;
+  total_mvp_cards: string;
+  total_boss_cards: string;
   total_zeny: string;
   userid: string;
 
@@ -25,7 +24,7 @@ interface Character {
   base_level: number;
   class?: number;
   fame: number;
-  job_exp: number;
+  job_exp: string;
   name: string;
   userid: string;
 }
@@ -197,14 +196,15 @@ const Rankings = () => {
   useEffect(() => {
     const fetchRankings = async () => {
       try {
-        const rankingsRef = collection(db, 'rankings');
-        const q = query(rankingsRef, orderBy('timestamp', 'desc'), limit(1));
-        const querySnapshot = await getDocs(q);
+        const [accountsRes, charactersRes] = await Promise.all([
+          apiClient.rankingsAccounts(),
+          apiClient.rankingsCharacters()
+        ]);
         
-        if (!querySnapshot.empty) {
-          const data = querySnapshot.docs[0].data() as RankingData;
-          setRankingData(data);
-        }
+        setRankingData({
+          accounts: accountsRes.rankings,
+          characters: charactersRes.rankings
+        });
       } catch (error) {
         console.error('Error fetching rankings:', error);
       } finally {
@@ -216,7 +216,7 @@ const Rankings = () => {
   }, []);
 
   const calculateTotalZeny = (account: Account) => {
-    return parseInt(account.total_zeny) + (account.total_diamonds * 500000000);
+    return parseInt(account.total_zeny) + (parseInt(account.total_diamonds) * 500000000);
   };
 
   const toPlural = (str: string, count: number) => {
@@ -267,9 +267,9 @@ const Rankings = () => {
     if (!rankingData?.accounts) return null;
     const sortedAccounts = [...rankingData.accounts]
       .filter(account => !['admin', 'gamemaster'].includes(account.userid.toLowerCase()))
-      .sort((a, b) => b.total_cards_distinct - a.total_cards_distinct)
+      .sort((a, b) => parseInt(b.total_cards_distinct) - parseInt(a.total_cards_distinct))
       .slice(0, 10)
-      .filter(account => account.total_cards_distinct > 0);
+      .filter(account => parseInt(account.total_cards_distinct) > 0);
 
     return (
       <div className="ranking-list">
@@ -278,8 +278,8 @@ const Rankings = () => {
           <div key={account.account_id} className="ranking-item">
             <span className="rank">{index + 1}</span>
             <span className="name">{toTitleCase(account.userid)}</span>
-            <span className="class">{account.total_cards_distinct} {toPlural('Carta', account.total_cards_distinct)} {toPlural('Distinta', account.total_cards_distinct)}</span>
-            <span className="class">{account.total_cards} {toPlural('Carta', account.total_cards)} en Total</span>
+            <span className="class">{account.total_cards_distinct} {toPlural('Carta', parseInt(account.total_cards_distinct))} {toPlural('Distinta', parseInt(account.total_cards_distinct))}</span>
+            <span className="class">{account.total_cards} {toPlural('Carta', parseInt(account.total_cards))} en Total</span>
           </div>
         ))}
       </div>
@@ -290,7 +290,7 @@ const Rankings = () => {
     if (!rankingData?.accounts) return null;
     const sortedAccounts = [...rankingData.accounts]
       .filter(account => !['admin', 'gamemaster'].includes(account.userid.toLowerCase()))
-      .sort((a, b) => (b.total_boss_cards - a.total_boss_cards) + (b.total_mvp_cards - a.total_mvp_cards)   )
+      .sort((a, b) => (parseInt(b.total_boss_cards) - parseInt(a.total_boss_cards)) + (parseInt(b.total_mvp_cards) - parseInt(a.total_mvp_cards)))
       .slice(0, 10);
 
     return (
@@ -300,8 +300,8 @@ const Rankings = () => {
           <div key={account.account_id} className="ranking-item">
             <span className="rank">{index + 1}</span>
             <span className="name">{toTitleCase(account.userid)}</span>
-            <span className="class">{account.total_boss_cards} {toPlural('Carta', account.total_boss_cards)} Boss</span>
-            <span className="class">{account.total_mvp_cards} {toPlural('Carta', account.total_mvp_cards)} MVP</span>
+            <span className="class">{account.total_boss_cards} {toPlural('Carta', parseInt(account.total_boss_cards))} Boss</span>
+            <span className="class">{account.total_mvp_cards} {toPlural('Carta', parseInt(account.total_mvp_cards))} MVP</span>
           </div>
 
 

@@ -12,9 +12,7 @@ export default defineConfig({
           vendor: [
             'react',
             'react-dom',
-            'react-router-dom',
-            'firebase/firestore',
-            'firebase/app'
+            'react-router-dom'
           ],
           components: [
             './src/components/Main.tsx',
