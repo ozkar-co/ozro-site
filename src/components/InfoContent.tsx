@@ -316,6 +316,8 @@ const contentMap: Record<string, ReactNode> = {
           <li><strong>Thrasher</strong> - Recolecta objetos aleatorios por un alto precio.</li>
           <li><strong>Old Blacksmith</strong> - Permite intercambiar el Special Gold obtenido en Bounty Missions por piedras y bendiciones de Blacksmith.</li>
           <li><strong>Monke</strong> - Un simpático Yoyo que intercambia bananas por frutas aleatorias.</li>
+          <li><strong>Ox Hunter (Ushi)</strong> - Un minotauro viajero que escucha las historias de MVPs cazados y otorga Ox Coins como recompensa.</li>
+          <li><strong>Ox Merchant (Kuma)</strong> - Un minotauro mercader que ofrece objetos únicos de tierras lejanas a cambio de Ox Coins.</li>
         </ul>
       </div>
     </div>
@@ -329,7 +331,8 @@ const contentMap: Record<string, ReactNode> = {
           <li><strong>Healer</strong> - Cura completamente al personaje y otorga Buffs temporales.</li>
           <li><strong>Endower</strong> - Un sabio viajero que encanta armas con poder elemental por un costo.</li>
           <li><strong>Soul Linker</strong> - Otorga Buffs exclusivos de Soul Linker a cambio de Zeny.</li>
-          <li><strong>Reset Girl</strong> - Permite reiniciar estadísticas y habilidades del personaje, solo se puede usar una vez por personaje.</li>
+          <li><strong>Dungeon Warper</strong> - Permite el teletransporte rápido a mazmorras, disponible solo para personajes avanzados.</li>
+          <li><strong>Reset Girl</strong> - Permite reiniciar estadísticas y habilidades del personaje. Solo se puede usar una vez por personaje regular, pero los personajes avanzados tienen resets ilimitados.</li>
         </ul>
       </div>
     </div>
@@ -341,6 +344,8 @@ const contentMap: Record<string, ReactNode> = {
       <div className="content-section">
         <ul>
           <li><strong>Cronista</strong> - Lleva un conteo de los aventureros que recorren el mundo.</li>
+          <li><strong>Card Collector</strong> - Lleva un registro de todas las cartas coleccionadas por el jugador, permitiendo hacer seguimiento del progreso.</li>
+          <li><strong>MVP Tracker</strong> - Registra las muertes de MVPs y realiza anuncios globales cuando un MVP es derrotado, además de llevar un ranking de asesinatos y asistencias.</li>
         </ul>
       </div>
     </div>

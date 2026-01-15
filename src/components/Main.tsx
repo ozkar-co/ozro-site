@@ -137,6 +137,14 @@ const Main = () => {
       <div className="server-info-section">
         <News>
 
+          <p> <strong>15 Enero de 2026</strong><br />
+            Llegan dos nuevos NPCs viajeros al mundo: <strong>Ox Hunter (Ushi)</strong> y <strong>Ox Merchant (Kuma)</strong>,
+            dos minotauros que han recorrido tierras lejanas. Ushi, el cazador, está fascinado por las historias de los
+            MVPs cazados y recompensa a los aventureros con <strong>Ox Coins</strong> a cambio de escuchar sus hazañas.
+            Por su parte, Kuma, el mercader, ofrece objetos únicos de tierras lejanas que pueden ser adquiridos
+            intercambiando las Ox Coins obtenidas. Una nueva forma de obtener objetos exclusivos a través de la caza de Boss.
+          </p>
+
           <p> <strong>13 Enero de 2026</strong><br />
             Se realizaron mejoras profundas al sistema de cartas, destacando la evolución del Card Collector con seguimiento de progreso,
             visualización de cartas obtenidas y faltantes, optimización del rendimiento y diálogos completamente traducidos al español.
