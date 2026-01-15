@@ -8,6 +8,23 @@ interface PlayersResponse {
   online: number;
 }
 
+interface UptimeResponse {
+  uptime: {
+    seconds: number;
+    milliseconds: number;
+    formatted: string;
+  };
+}
+
+interface StatusResponse {
+  timestamp: string;
+  services: {
+    login: { status: string };
+    char: { status: string };
+    map: { status: string };
+  };
+}
+
 interface StatsResponse {
   timestamp: string;
   accounts: {
@@ -90,6 +107,18 @@ export const apiClient = {
   async rankingsCharacters(): Promise<RankingsCharacterResponse> {
     const response = await fetch(`${API_BASE_URL}/rankings/characters`);
     if (!response.ok) throw new Error('Failed to fetch character rankings');
+    return response.json();
+  },
+
+  async uptime(): Promise<UptimeResponse> {
+    const response = await fetch(`${API_BASE_URL}/uptime`);
+    if (!response.ok) throw new Error('Failed to fetch uptime');
+    return response.json();
+  },
+
+  async status(): Promise<StatusResponse> {
+    const response = await fetch(`${API_BASE_URL}/status`);
+    if (!response.ok) throw new Error('Failed to fetch status');
     return response.json();
   }
 };

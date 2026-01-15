@@ -136,6 +136,25 @@ const Main = () => {
       <ServerStatus />
       <div className="server-info-section">
         <News>
+
+          <p> <strong>13 Enero de 2026</strong><br />
+            Se realizaron mejoras profundas al sistema de cartas, destacando la evolución del Card Collector con seguimiento de progreso,
+            visualización de cartas obtenidas y faltantes, optimización del rendimiento y diálogos completamente traducidos al español.
+            También se refactorizó el Card Trader para mejorar el intercambio de cartas, corrigiendo errores de cantidad, cartas faltantes,
+            limpiando lógica interna y mejorando la claridad de los diálogos.
+            Además, se eliminaron NPCs y elementos obsoletos, como los Little Porings en los campos de Prontera y el Cool Event vs Kafra Corp
+            Voting system.
+            Se añaden Resets ilimitados para los personajes 3rd Class.
+            </p>
+
+          <p> <strong>5 Enero de 2026</strong><br />
+            Se añadieron nuevos NPCs al servidor, incluyendo el Healer mejorado con curación y buffs por separado,
+            el Crimson Weapons Enchanter con encantamientos aleatorios para las armas Crimson,
+            el Gravekeeper Ludovico que registra las muertes del jugador,
+            y el sistema de MVP Tracking con soporte de party y rankings de asesinatos y asistencias.
+            También se corrigieron errores críticos en el Card Collector.
+            Se añade NPC de Dungeon Warp para los personajes avanzados.
+          </p>
           
           <p> <strong>25 Enero de 2025</strong><br />
             Se realizaron múltiples mejoras en la quest de armas Crimson, incluyendo ajustes en los costos, 

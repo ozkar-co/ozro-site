@@ -10,7 +10,7 @@ interface StatusItemProps {
 }
 
 interface ServerStatusData {
-  vpn: string;
+  uptime: string;
   server: string;
   'event-name': string;
   'event-date': string;
@@ -36,8 +36,8 @@ const ServerStatus = () => {
   const [isVisible, setIsVisible] = useState(false);
   const statusRef = useRef<HTMLDivElement>(null);
   const [statusData, setStatusData] = useState<ServerStatusData>({
-    vpn: 'Offline',
-    server: 'Online',
+    uptime: '---',
+    server: 'Offline',
     'event-name': 'Por definir',
     'event-date': 'Por definir',
     players: 0,
@@ -45,19 +45,31 @@ const ServerStatus = () => {
   });
 
   useEffect(() => {
-    const checkVpnStatus = async () => {
-      // mocked data while solving the vpn issue
-      // vpn is online if the ping is between 100 and 400
-      setStatusData(prev => ({ 
-        ...prev, 
-        vpn: 'Online',
-        ping: Math.floor(Math.random() * 300) + 100
-      }));
+    const fetchUptimeStatus = async () => {
+      try {
+        const uptimeData = await apiClient.uptime();
+        const formatted = uptimeData.uptime.formatted;
+        // Tomar solo valores que no sean cero, máximo 2
+        const parts = formatted.split(' ');
+        const nonZero = parts.filter(part => !part.startsWith('0')).slice(0, 2);
+        const uptimeFormatted = nonZero.length > 0 ? nonZero.join(' ') : formatted;
+        
+        setStatusData(prev => ({ 
+          ...prev, 
+          uptime: uptimeFormatted
+        }));
+      } catch (error) {
+        console.error('Error al obtener uptime:', error);
+        setStatusData(prev => ({
+          ...prev,
+          uptime: '---'
+        }));
+      }
     };
 
-    checkVpnStatus();
+    fetchUptimeStatus();
 
-    const interval = setInterval(checkVpnStatus, 30000);
+    const interval = setInterval(fetchUptimeStatus, 30000);
 
     return () => clearInterval(interval);
   }, []);
@@ -65,21 +77,38 @@ const ServerStatus = () => {
   useEffect(() => {
     const fetchServerStatus = async () => {
       try {
-        const [playersData, healthData] = await Promise.all([
+        const startTime = performance.now();
+        const [playersData, statusData] = await Promise.all([
           apiClient.players(),
-          apiClient.health()
+          apiClient.status()
         ]);
+        const endTime = performance.now();
+        const ping = Math.round(endTime - startTime);
+
+        // Determinar estado general del servidor
+        const allServices = Object.values(statusData.services);
+        const onlineServices = allServices.filter(s => s.status === 'online').length;
+        const totalServices = allServices.length;
+
+        let serverStatus = 'Offline';
+        if (onlineServices === totalServices) {
+          serverStatus = 'Online';
+        } else if (onlineServices > 0) {
+          serverStatus = 'Partial';
+        }
 
         setStatusData(prev => ({
           ...prev,
           players: playersData.online,
-          server: healthData.status === 'OK' ? 'Online' : 'Offline'
+          server: serverStatus,
+          ping: ping
         }));
       } catch (error) {
         console.error('Error al conectar con la API:', error);
         setStatusData(prev => ({
           ...prev,
-          server: 'Offline'
+          server: 'Offline',
+          ping: -1
         }));
       }
     };
@@ -119,9 +148,10 @@ const ServerStatus = () => {
         {/* Columna izquierda - Estados */}
         <div className="status-column">
           <StatusItem 
-            title="VPN"
+            title="Uptime"
             icon="/icons/vpn.gif"
-            value={statusData.vpn}
+            value={statusData.uptime}
+            type="number"
           />
           <StatusItem 
             title="Server"
