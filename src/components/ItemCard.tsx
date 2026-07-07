@@ -21,8 +21,20 @@ interface SearchResult {
   slots?: number;
   equip_level_min?: number;
   equip_level_max?: number;
-  refinable?: boolean;
+  refineable?: boolean;
+  gradable?: boolean;
   weapon_level?: number;
+  armor_level?: number;
+  range?: number;
+  gender?: string;
+  typeLabel?: string;
+  subtypeName?: string;
+  equipScript?: string;
+  unequipScript?: string;
+  jobsText?: string;
+  classesText?: string;
+  locationsText?: string;
+  droppedBy?: { id: number; name: string; level: number }[];
   equip_locations?: number[];
   equip_upper?: number[];
   equip_jobs?: number[];
@@ -263,8 +275,10 @@ const ItemCard: React.FC<ItemCardProps> = ({ result }) => {
                     <span className="result-card-id">(#{result.id})</span>
                   </h3>
                   <span className="item-type">
-                    {getTypeName(result.type)}
-                    {(result.type === 4 || result.type === 10) && result.subtype ? (
+                    {result.typeLabel || getTypeName(result.type)}
+                    {result.subtypeName ? (
+                      <span className="item-subtype"> — {result.subtypeName}</span>
+                    ) : (result.type === 4 || result.type === 10) && result.subtype ? (
                       <span className={`item-type-${result.type === 4 ? 'weapon' : 'ammo'}`}>
                         {' - '}
                         {getSubtypeName(result.type, result.subtype)}
@@ -308,12 +322,18 @@ const ItemCard: React.FC<ItemCardProps> = ({ result }) => {
                 </div>
                 <div className="result-card-property">
                   <span className="property-label">Refinable</span>
-                  <span className="property-value">{result.refinable ? 'Sí' : 'No'}</span>
+                  <span className="property-value">{result.refineable ? 'Sí' : 'No'}</span>
                 </div>
                 <div className="result-card-property">
                   <span className="property-label">Nivel Arma</span>
                   <span className="property-value">{result.weapon_level || 1}</span>
                 </div>
+                {result.range != null && result.range > 0 && (
+                  <div className="result-card-property">
+                    <span className="property-label">Alcance</span>
+                    <span className="property-value">{result.range}</span>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -330,7 +350,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ result }) => {
                 </div>
                 <div className="result-card-property">
                   <span className="property-label">Refinable</span>
-                  <span className="property-value">{result.refinable ? 'Sí' : 'No'}</span>
+                  <span className="property-value">{result.refineable ? 'Sí' : 'No'}</span>
                 </div>
                 <div className="result-card-property" title={result.equip_locations ? getEquipLocationsText(result.equip_locations) : ''}>
                   <span className="property-label">Ubicación</span>
@@ -345,17 +365,39 @@ const ItemCard: React.FC<ItemCardProps> = ({ result }) => {
                 <div className="result-card-property">
                   <span className="property-label">Jobs</span>
                   <span className="property-value">
-                    {result.equip_jobs && result.equip_jobs.length > 0 
-                      ? result.equip_jobs.map(job => getJobName(job)).join(', ')
-                      : 'Todos'}
+                    {result.jobsText
+                      || (result.equip_jobs && result.equip_jobs.length > 0
+                        ? result.equip_jobs.map((job) => getJobName(job)).join(', ')
+                        : 'Todos')}
                   </span>
                 </div>
                 <div className="result-card-property">
                   <span className="property-label">Grupos</span>
                   <span className="property-value">
-                    {result.equip_upper?.length ? getUpperTypesText(result.equip_upper) : 'Todos'}
+                    {result.classesText
+                      || (result.equip_upper?.length ? getUpperTypesText(result.equip_upper) : 'Todos')}
                   </span>
                 </div>
+              </div>
+            </div>
+          )}
+          {result.locationsText && (
+            <div className="result-card-section">
+              <div className="result-card-property">
+                <span className="property-label">Ubicación</span>
+                <span className="property-value">{result.locationsText}</span>
+              </div>
+            </div>
+          )}
+          {result.droppedBy && result.droppedBy.length > 0 && (
+            <div className="result-card-section">
+              <div className="result-card-script-header">Lo dropean:</div>
+              <div className="result-card-dropped-by">
+                {result.droppedBy.map((mob) => (
+                  <Link key={mob.id} to={`/database?tab=mobs&q=${mob.id}`}>
+                    {mob.name} (Nv. {mob.level})
+                  </Link>
+                ))}
               </div>
             </div>
           )}
@@ -371,10 +413,20 @@ const ItemCard: React.FC<ItemCardProps> = ({ result }) => {
           )}
           {result.script && (
             <div className="result-card-section">
-              <div className="result-card-script-header">Script:</div>
-              <pre className="result-card-script">
-                {result.script}
-              </pre>
+              <div className="result-card-script-header">Al usar:</div>
+              <pre className="result-card-script">{result.script}</pre>
+            </div>
+          )}
+          {result.equipScript && (
+            <div className="result-card-section">
+              <div className="result-card-script-header">Al equipar:</div>
+              <pre className="result-card-script">{result.equipScript}</pre>
+            </div>
+          )}
+          {result.unequipScript && (
+            <div className="result-card-section">
+              <div className="result-card-script-header">Al desequipar:</div>
+              <pre className="result-card-script">{result.unequipScript}</pre>
             </div>
           )}
         </div>

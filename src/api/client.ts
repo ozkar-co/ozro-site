@@ -123,6 +123,13 @@ export interface MobDetail extends MobSummary {
   int?: number;
   dex?: number;
   luk?: number;
+  sp?: number;
+  attack2?: number;
+  walkSpeed?: number;
+  attackDelay?: number;
+  skillRange?: number;
+  chaseRange?: number;
+  ai?: string;
   modes?: Record<string, boolean>;
   drops: MobDrop[];
 }
@@ -149,6 +156,8 @@ export interface ItemDetail extends ItemSummary {
   weaponLevel?: number;
   armorLevel?: number;
   refineable?: boolean;
+  gradable?: boolean;
+  gender?: string;
   script?: string;
   equipScript?: string;
   unequipScript?: string;

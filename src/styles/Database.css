@@ -718,6 +718,42 @@ a {
   font-weight: 500;
 }
 
+.result-card-dropped-by {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.result-card-dropped-by a {
+  color: #4a6fa5;
+  text-decoration: none;
+}
+
+.result-card-dropped-by a:hover {
+  text-decoration: underline;
+}
+
+.modes-active-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.mode-tag {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  background: #e9ecef;
+  color: #666;
+}
+
+.mode-tag-active {
+  background: #d4edda;
+  color: #155724;
+}
+
 .result-card-description-header {
   font-weight: bold;
   margin-bottom: 0.5rem;

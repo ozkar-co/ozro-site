@@ -218,7 +218,10 @@ const Database = () => {
 
     const params = buildItemSearchParams(term, options, page, RESULTS_PER_PAGE);
     const data = await apiClient.searchItems(params);
-    let results = data.results.map((item) => mapItemToCard(item));
+    const details = await Promise.all(
+      data.results.map((summary) => apiClient.getItem(summary.id).catch(() => summary))
+    );
+    let results = details.map((item) => mapItemToCard(item));
     if (imagesReady) {
       results = await enrichItemResults(results);
     }

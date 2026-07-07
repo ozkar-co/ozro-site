@@ -32,6 +32,11 @@ interface MobResult {
   race: number;
   drop: MobDrop[];
   mode?: number[];
+  activeModes?: string[];
+  mobClass?: string;
+  attack2?: number;
+  sp?: number;
+  walkSpeed?: number;
   code_name?: string;
 }
 
@@ -141,6 +146,7 @@ const MobCard: React.FC<MobCardProps> = ({ result }) => {
                   </h3>
                   <span className="mob-level">
                     Nivel {result.lvl}
+                    {result.mobClass ? ` · ${result.mobClass}` : ''}
                   </span>
                 </div>
               </div>
@@ -156,8 +162,18 @@ const MobCard: React.FC<MobCardProps> = ({ result }) => {
               </div>
               <div className="result-card-property">
                 <span className="property-label">ATK</span>
-                <span className="property-value">{result.atk || 'NA'}</span>
+                <span className="property-value">
+                  {result.attack2 != null && result.attack2 !== result.atk
+                    ? `${result.atk || 'NA'}-${result.attack2}`
+                    : (result.atk || 'NA')}
+                </span>
               </div>
+              {result.sp != null && result.sp > 0 && (
+                <div className="result-card-property">
+                  <span className="property-label">SP</span>
+                  <span className="property-value">{result.sp.toLocaleString()}</span>
+                </div>
+              )}
               <div className="result-card-property">
                 <span className="property-label">DEF/MDEF</span>
                 <span className="property-value">{`${result.def || 'NA'}/${result.mdef || 'NA'}`}</span>
@@ -234,20 +250,28 @@ const MobCard: React.FC<MobCardProps> = ({ result }) => {
               </div>
             </div>
             <div className="result-card-modes">
-              <div className="modes-grid">
-              {Object.entries(MOB_MODES)
-                .map(([modeId, modeName]) => ({
-                  id: modeId,
-                  name: modeName,
-                  isActive: result.mode?.includes(Number(modeId))
-                }))
-                .sort((a, b) => (b.isActive ? 1 : 0) - (a.isActive ? 1 : 0))
-                .map(({ id, name, isActive }) => (
-                  <div key={id} className={`mode-item ${isActive ? 'mode-item-active' : ''}`}>
-                    <span>{name} :</span><strong> {isActive ? 'SI' : 'NO'}</strong>
-                  </div>
-                ))}
-              </div>
+              {result.activeModes && result.activeModes.length > 0 ? (
+                <div className="modes-active-list">
+                  {result.activeModes.map((mode) => (
+                    <span key={mode} className="mode-tag mode-tag-active">{mode}</span>
+                  ))}
+                </div>
+              ) : (
+                <div className="modes-grid">
+                {Object.entries(MOB_MODES)
+                  .map(([modeId, modeName]) => ({
+                    id: modeId,
+                    name: modeName,
+                    isActive: result.mode?.includes(Number(modeId))
+                  }))
+                  .sort((a, b) => (b.isActive ? 1 : 0) - (a.isActive ? 1 : 0))
+                  .map(({ id, name, isActive }) => (
+                    <div key={id} className={`mode-item ${isActive ? 'mode-item-active' : ''}`}>
+                      <span>{name} :</span><strong> {isActive ? 'SI' : 'NO'}</strong>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

@@ -48,9 +48,83 @@ const ITEM_TYPE_TO_API: Record<number, string> = {
   18: 'Usable'
 };
 
-const ITEM_TYPE_TO_NUMBER: Record<string, number> = Object.fromEntries(
-  Object.entries(ITEM_TYPE_TO_API).map(([num, name]) => [name, Number(num)])
-);
+const ITEM_TYPE_TO_NUMBER: Record<string, number> = {
+  Healing: 0,
+  Usable: 2,
+  Etc: 3,
+  Weapon: 4,
+  Armor: 5,
+  Card: 6,
+  Petegg: 7,
+  Petarmor: 8,
+  Ammo: 10,
+  Delayconsume: 11,
+  Cash: 3,
+  Shadowgear: 5,
+  Armor2: 5
+};
+
+const JOB_LABELS: Record<string, string> = {
+  novice: 'Novice', swordman: 'Swordman', mage: 'Mage', archer: 'Archer',
+  acolyte: 'Acolyte', merchant: 'Merchant', thief: 'Thief', knight: 'Knight',
+  priest: 'Priest', wizard: 'Wizard', blacksmith: 'Blacksmith', hunter: 'Hunter',
+  assassin: 'Assassin', crusader: 'Crusader', monk: 'Monk', sage: 'Sage',
+  rogue: 'Rogue', alchemist: 'Alchemist', barddancer: 'Bard/Dancer',
+  taekwon: 'Taekwon', stargladiator: 'Star Gladiator', soullinker: 'Soul Linker',
+  gunslinger: 'Gunslinger', ninja: 'Ninja', kagerouoboro: 'Kagerou/Oboro',
+  rebellion: 'Rebellion', summoner: 'Summoner', spirit_handler: 'Spirit Handler',
+  supernovice: 'Super Novice'
+};
+
+const CLASS_LABELS: Record<string, string> = {
+  normal: 'Normal', upper: 'Trans', baby: 'Baby', third: 'Third',
+  third_upper: 'Trans Third', third_baby: 'Baby Third', fourth: 'Fourth'
+};
+
+const LOCATION_LABELS: Record<string, string> = {
+  headTop: 'Head Top', headMid: 'Head Mid', headLow: 'Head Low',
+  armor: 'Armor', rightHand: 'Right Hand', leftHand: 'Left Hand',
+  garment: 'Garment', shoes: 'Shoes', rightAccessory: 'Acc. Right',
+  leftAccessory: 'Acc. Left', ammo: 'Ammo',
+  costumeHeadTop: 'Costume Top', costumeHeadMid: 'Costume Mid',
+  costumeHeadLow: 'Costume Low', costumeGarment: 'Costume Garment',
+  shadowArmor: 'Shadow Armor', shadowWeapon: 'Shadow Weapon',
+  shadowShield: 'Shadow Shield', shadowShoes: 'Shadow Shoes',
+  shadowRightAccessory: 'Shadow Acc. R', shadowLeftAccessory: 'Shadow Acc. L'
+};
+
+const MOB_MODE_LABELS: Record<string, string> = {
+  canmove: 'Can Move', looter: 'Looter', aggressive: 'Agresivo', assist: 'Assist',
+  castsensoridle: 'Cast Sensor', norandomwalk: 'No Random Walk', nocast: 'No Cast',
+  canattack: 'Can Attack', castsensorchase: 'Cast Chase', changechase: 'Change Chase',
+  angry: 'Angry', changetargetmelee: 'Change Target Melee',
+  changetargetchase: 'Change Target Chase', targetweak: 'Target Weak',
+  randomtarget: 'Random Target', ignoremelee: 'Ignore Melee',
+  ignoremagic: 'Ignore Magic', ignoreranged: 'Ignore Ranged',
+  mvp: 'MVP', ignoremisc: 'Ignore Misc', knockbackimmune: 'No Knockback',
+  teleportblock: 'No Teleport', fixeditemdrop: 'Fixed Drop', detector: 'Detector',
+  statusimmune: 'Status Immune', skillimmune: 'Skill Immune'
+};
+
+function formatJobs(jobs?: ItemDetail['jobs']): string {
+  if (!jobs) return '';
+  if (jobs.all) return 'Todos';
+  return jobs.jobs.map((j) => JOB_LABELS[j] || j).join(', ');
+}
+
+function formatClasses(classes?: ItemDetail['classes']): string {
+  if (!classes) return '';
+  if (classes.all) return 'Todos';
+  return classes.classes.map((c) => CLASS_LABELS[c] || c).join(', ');
+}
+
+function formatLocations(locations?: Record<string, boolean>): string {
+  if (!locations) return '';
+  return Object.entries(locations)
+    .filter(([, active]) => active)
+    .map(([key]) => LOCATION_LABELS[key] || key)
+    .join(', ');
+}
 
 const ELEMENT_FROM_API = Object.fromEntries(
   Object.entries(ELEMENT_TO_API).map(([id, name]) => [name, Number(id)])
@@ -174,7 +248,16 @@ export function mapMobToCard(mob: MobSummary | MobDetail, sprite = '/placeholder
       per: drop.rate ?? 0,
       itemName: drop.itemName,
       itemIcon: '/placeholder.png'
-    }))
+    })),
+    mobClass: mob.class || undefined,
+    activeModes: detail.modes
+      ? Object.entries(detail.modes)
+        .filter(([, active]) => active)
+        .map(([key]) => MOB_MODE_LABELS[key] || key)
+      : undefined,
+    attack2: detail.attack2 ?? undefined,
+    sp: detail.sp ?? undefined,
+    walkSpeed: detail.walkSpeed ?? undefined
   };
 }
 
@@ -184,10 +267,16 @@ export function mapItemToCard(
   illustration = '/placeholder.png'
 ): SearchResult {
   const detail = item as ItemDetail;
+  const jobsText = formatJobs(detail.jobs);
+  const classesText = formatClasses(detail.classes);
+  const locationsText = formatLocations(detail.locations);
+
   return {
     id: String(item.id),
     type: ITEM_TYPE_TO_NUMBER[item.type] ?? 3,
+    typeLabel: item.type,
     subtype: 0,
+    subtypeName: item.subtype || '',
     atk: item.attack ?? 0,
     matk: item.magicAttack ?? 0,
     defence: item.defense ?? 0,
@@ -196,7 +285,9 @@ export function mapItemToCard(
     weight: item.weight ?? 0,
     codename1: item.nameAegis,
     codename2: item.subtype || '',
-    script: detail.script || '',
+    script: detail.script?.trim() || '',
+    equipScript: detail.equipScript?.trim() || '',
+    unequipScript: detail.unequipScript?.trim() || '',
     name: item.name,
     description: '',
     icon,
@@ -204,7 +295,15 @@ export function mapItemToCard(
     slots: item.slots,
     equip_level_min: item.equipLevelMin,
     equip_level_max: item.equipLevelMax,
-    refinable: detail.refineable,
-    weapon_level: detail.weaponLevel
+    refineable: detail.refineable,
+    gradable: detail.gradable,
+    weapon_level: detail.weaponLevel,
+    armor_level: detail.armorLevel,
+    range: detail.range,
+    gender: detail.gender,
+    jobsText,
+    classesText,
+    locationsText,
+    droppedBy: detail.droppedBy || []
   };
 }
