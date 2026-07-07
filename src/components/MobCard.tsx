@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 interface MobDrop {
   id: number;
   type: 'normal' | 'card' | 'mvp';
@@ -129,7 +131,7 @@ const MobCard: React.FC<MobCardProps> = ({ result }) => {
               <div className="title-container">
                 <div className="title-row">
                   <h3>
-                    <span className="name-title"><a href={`/database?mob=${result.id}`}>{result.name}</a></span>
+                    <span className="name-title"><Link to={`/database?tab=mobs&q=${result.id}`}>{result.name}</Link></span>
                     {' '}
                     <span className="name-details">
                       [{result.name2} / {result.code_name}]
@@ -280,7 +282,7 @@ const MobCard: React.FC<MobCardProps> = ({ result }) => {
                             }}
                           />
                           <span className="drop-name">
-                            <a href={`/database?item=${drop.id}`}>{truncatedName}</a>{drop.type === 'mvp' ? ' (MVP)' : ''}
+                            <Link to={`/database?tab=items&q=${drop.id}`}>{truncatedName}</Link>{drop.type === 'mvp' ? ' (MVP)' : ''}
                           </span>
                           <span className="drop-chance">
                             {(Math.min(drop.per, 10000) / 100).toFixed(2)}%

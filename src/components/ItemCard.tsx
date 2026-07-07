@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 interface SearchResult {
   id: string;
   type: number;
@@ -252,7 +254,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ result }) => {
               <div className="title-container">
                 <div className="title-row">
                   <h3>
-                    <span className="name-title"><a href={`/database?item=${result.id}`}>{result.name}</a></span>
+                    <span className="name-title"><Link to={`/database?tab=items&q=${result.id}`}>{result.name}</Link></span>
                     {' '}
                     <span className="name-details">
                       [{result.codename1}/{result.codename2 || '???'}]

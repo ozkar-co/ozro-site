@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import ItemCard, { SearchResult, ITEM_TYPES } from './ItemCard';
@@ -13,8 +13,15 @@ import {
   mapMobToCard,
   SearchOptions
 } from '../api/databaseMappers';
+import {
+  buildDatabaseSearchParams,
+  getLegacyDeepLinkId,
+  hasSearchCriteria,
+  parseDatabaseUrl,
+  type DatabaseTab
+} from '../api/databaseUrl';
 
-type TabType = 'items' | 'mobs';
+type TabType = DatabaseTab;
 
 interface SearchState {
   total: number;
@@ -41,6 +48,13 @@ const emptyImageData = (): ImageData => ({
   mobSpriteBatches: {}
 });
 
+const emptySearchState = (): SearchState => ({
+  total: 0,
+  currentPage: 0,
+  results: [],
+  totalPages: 0
+});
+
 const defaultSearchOptions = (): SearchOptions => ({
   selectedTypes: [],
   selectedElements: [],
@@ -52,23 +66,39 @@ const defaultSearchOptions = (): SearchOptions => ({
 });
 
 const Database = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<TabType>('items');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [imageData, setImageData] = useState<ImageData>(emptyImageData());
   const [imagesReady, setImagesReady] = useState(false);
-  const [searchState, setSearchState] = useState<SearchState>({
-    total: 0,
-    currentPage: 0,
-    results: [],
-    totalPages: 0
-  });
+  const [searchState, setSearchState] = useState<SearchState>(emptySearchState);
   const [isOptionsVisible, setIsOptionsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [searchOptions, setSearchOptions] = useState<SearchOptions>(defaultSearchOptions());
-  const searchOptionsRef = useRef<HTMLDivElement>(null);
-  const location = useLocation();
+  const searchOptionsRef = useRef(searchOptions);
+  const searchOptionsPanelRef = useRef<HTMLDivElement>(null);
+
+  searchOptionsRef.current = searchOptions;
+
+  const navigateToSearch = useCallback((
+    tab: TabType,
+    q: string,
+    page: number,
+    replace = false
+  ) => {
+    const params = buildDatabaseSearchParams(tab, q, page);
+    navigate({ pathname: '/database', search: params.toString() }, { replace });
+  }, [navigate]);
+
+  useEffect(() => {
+    const legacy = getLegacyDeepLinkId(location.search);
+    if (legacy) {
+      navigateToSearch(legacy.tab, legacy.q, 0, true);
+    }
+  }, [location.search, navigateToSearch]);
 
   useEffect(() => {
     const loadImageDescriptors = async () => {
@@ -162,21 +192,12 @@ const Database = () => {
     }));
   }, [getImage]);
 
-  const runSearch = useCallback(async (
+  const fetchSearchResults = useCallback(async (
+    tab: TabType,
     term: string,
     options: SearchOptions,
-    tab: TabType,
-    page = 0
+    page: number
   ) => {
-    setSearchError(null);
-
-    if (!term.trim() && options.selectedTypes.length === 0 &&
-        options.selectedElements.length === 0 && options.selectedRaces.length === 0 &&
-        options.selectedSizes.length === 0) {
-      setSearchState({ total: 0, currentPage: 0, results: [], totalPages: 0 });
-      return;
-    }
-
     if (tab === 'mobs') {
       const params = buildMobSearchParams(term, options, page, RESULTS_PER_PAGE);
       const data = await apiClient.searchMobs(params);
@@ -187,13 +208,12 @@ const Database = () => {
       if (imagesReady) {
         results = await enrichMobResults(results);
       }
-      setSearchState({
+      return {
         total: data.total,
         currentPage: page,
         results,
         totalPages: Math.max(1, Math.ceil(data.total / RESULTS_PER_PAGE))
-      });
-      return;
+      };
     }
 
     const params = buildItemSearchParams(term, options, page, RESULTS_PER_PAGE);
@@ -202,64 +222,61 @@ const Database = () => {
     if (imagesReady) {
       results = await enrichItemResults(results);
     }
-    setSearchState({
+    return {
       total: data.total,
       currentPage: page,
       results,
       totalPages: Math.max(1, Math.ceil(data.total / RESULTS_PER_PAGE))
-    });
+    };
   }, [enrichItemResults, enrichMobResults, imagesReady]);
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const mobId = params.get('mob');
-    const itemId = params.get('item');
+    if (getLegacyDeepLinkId(location.search)) return;
 
-    if (mobId) {
-      setActiveTab('mobs');
-      setSearchTerm(mobId);
-    } else if (itemId) {
-      setActiveTab('items');
-      setSearchTerm(itemId);
+    const { tab, q, page } = parseDatabaseUrl(location.search);
+    const options = searchOptionsRef.current;
+
+    setActiveTab(tab);
+    setSearchTerm(q);
+
+    if (!hasSearchCriteria(q, options)) {
+      setSearchState(emptySearchState());
+      setSearchError(null);
+      return;
     }
-  }, [location.search]);
 
-  useEffect(() => {
-    const mobId = new URLSearchParams(location.search).get('mob');
-    const itemId = new URLSearchParams(location.search).get('item');
-    const term = mobId || itemId;
-    if (!term) return;
-
+    let cancelled = false;
     setIsSearching(true);
-    runSearch(term, defaultSearchOptions(), mobId ? 'mobs' : 'items', 0)
-      .catch((error) => setSearchError(error.message))
-      .finally(() => setIsSearching(false));
-  }, [location.search, runSearch]);
+    setSearchError(null);
 
-  const handleSearch = async (e: React.FormEvent) => {
+    fetchSearchResults(tab, q, options, page)
+      .then((state) => {
+        if (!cancelled) setSearchState(state);
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setSearchError(error instanceof Error ? error.message : 'Error al buscar');
+          setSearchState(emptySearchState());
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsSearching(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [location.search, fetchSearchResults]);
+
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSearching(true);
-    try {
-      await runSearch(searchTerm, searchOptions, activeTab, 0);
-    } catch (error) {
-      setSearchError(error instanceof Error ? error.message : 'Error al buscar');
-      setSearchState({ total: 0, currentPage: 0, results: [], totalPages: 0 });
-    } finally {
-      setIsSearching(false);
-    }
+    navigateToSearch(activeTab, searchTerm, 0);
   };
 
-  const handlePageChange = async (newPage: number) => {
+  const handlePageChange = (newPage: number) => {
     if (newPage < 0 || newPage >= searchState.totalPages) return;
-    setIsSearching(true);
-    try {
-      await runSearch(searchTerm, searchOptions, activeTab, newPage);
-      document.querySelector('.results-section')?.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (error) {
-      setSearchError(error instanceof Error ? error.message : 'Error al cambiar de página');
-    } finally {
-      setIsSearching(false);
-    }
+    navigateToSearch(activeTab, searchTerm, newPage);
+    document.querySelector('.results-section')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleOptionsToggle = () => {
@@ -276,11 +293,9 @@ const Database = () => {
   };
 
   const handleTabChange = (tab: TabType) => {
-    setActiveTab(tab);
-    setSearchTerm('');
     setSearchOptions(defaultSearchOptions());
-    setSearchState({ total: 0, currentPage: 0, results: [], totalPages: 0 });
     setSearchError(null);
+    navigate({ pathname: '/database', search: `tab=${tab}` });
   };
 
   return (
@@ -318,7 +333,7 @@ const Database = () => {
                   </button>
                 </div>
               </form>
-              <div className="search-options-container" ref={searchOptionsRef}>
+              <div className="search-options-container" ref={searchOptionsPanelRef}>
                 <button className="search-options-toggle" onClick={handleOptionsToggle}>
                   <i className={`arrow-icon ${isOptionsVisible ? 'up' : 'down'}`}></i>
                 </button>
