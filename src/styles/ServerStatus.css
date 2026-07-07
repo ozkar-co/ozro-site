@@ -75,6 +75,10 @@
   color: #333;
 }
 
+.status-value.partial {
+  color: #ff9800;
+}
+
 .status-value.online {
   color: #4CAF50;
 }
@@ -147,6 +151,13 @@
   font-size: 1rem;
   margin: 0;
   color: #333;
+  text-align: center;
+}
+
+.event-subtitle {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0.35rem 0 0;
   text-align: center;
 }
 

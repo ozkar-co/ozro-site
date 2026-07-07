@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import '../styles/ServerStatus.css';
 import { apiClient } from '../api/client';
 
@@ -7,25 +7,66 @@ interface StatusItemProps {
   icon: string;
   value: string;
   type?: 'status' | 'number';
+  statusClass?: string;
+}
+
+interface ServiceStatus {
+  login: string;
+  char: string;
+  map: string;
 }
 
 interface ServerStatusData {
   uptime: string;
   server: string;
-  'event-name': string;
-  'event-date': string;
+  serverStatusClass: string;
   players: number;
   ping: number;
+  services: ServiceStatus;
+  activeChars24h: number | null;
+  totalGuilds: number | null;
+  apiReachable: boolean;
 }
 
-const StatusItem = ({ title, icon, value, type = 'status' }: StatusItemProps) => (
+const SERVER_STATUS_LABELS: Record<string, string> = {
+  Online: 'En línea',
+  Partial: 'Parcial',
+  Offline: 'Desconectado'
+};
+
+const SERVICE_LABELS: Record<keyof ServiceStatus, string> = {
+  login: 'Login',
+  char: 'Char',
+  map: 'Map'
+};
+
+function formatUptime(formatted: string): string {
+  const parts = formatted.split(' ');
+  const nonZero = parts.filter((part) => !part.startsWith('0')).slice(0, 2);
+  return nonZero.length > 0 ? nonZero.join(' ') : formatted;
+}
+
+function resolveServerStatus(services: ServiceStatus): { label: string; className: string } {
+  const values = Object.values(services);
+  const onlineCount = values.filter((s) => s === 'online').length;
+
+  if (onlineCount === values.length) {
+    return { label: SERVER_STATUS_LABELS.Online, className: 'online' };
+  }
+  if (onlineCount > 0) {
+    return { label: SERVER_STATUS_LABELS.Partial, className: 'partial' };
+  }
+  return { label: SERVER_STATUS_LABELS.Offline, className: 'offline' };
+}
+
+const StatusItem = ({ title, icon, value, type = 'status', statusClass }: StatusItemProps) => (
   <div className="status-item">
     <div className="status-icon">
       <img src={icon} alt={title} />
     </div>
     <div className="status-info">
       <h4>{title}</h4>
-      <p className={`status-value ${type === 'status' ? value.toLowerCase() : ''}`}>
+      <p className={`status-value ${type === 'status' ? (statusClass || value.toLowerCase()) : ''}`}>
         {value}
       </p>
     </div>
@@ -37,154 +78,130 @@ const ServerStatus = () => {
   const statusRef = useRef<HTMLDivElement>(null);
   const [statusData, setStatusData] = useState<ServerStatusData>({
     uptime: '---',
-    server: 'Offline',
-    'event-name': 'Por definir',
-    'event-date': 'Por definir',
+    server: SERVER_STATUS_LABELS.Offline,
+    serverStatusClass: 'offline',
     players: 0,
-    ping: -1
+    ping: -1,
+    services: { login: 'offline', char: 'offline', map: 'offline' },
+    activeChars24h: null,
+    totalGuilds: null,
+    apiReachable: false
   });
 
-  useEffect(() => {
-    const fetchUptimeStatus = async () => {
-      try {
-        const uptimeData = await apiClient.uptime();
-        const formatted = uptimeData.uptime.formatted;
-        // Tomar solo valores que no sean cero, máximo 2
-        const parts = formatted.split(' ');
-        const nonZero = parts.filter(part => !part.startsWith('0')).slice(0, 2);
-        const uptimeFormatted = nonZero.length > 0 ? nonZero.join(' ') : formatted;
-        
-        setStatusData(prev => ({ 
-          ...prev, 
-          uptime: uptimeFormatted
-        }));
-      } catch (error) {
-        console.error('Error al obtener uptime:', error);
-        setStatusData(prev => ({
-          ...prev,
-          uptime: '---'
-        }));
-      }
-    };
+  const fetchStatus = useCallback(async () => {
+    const startTime = performance.now();
 
-    fetchUptimeStatus();
+    try {
+      const [uptimeRes, playersRes, statusRes, statsRes] = await Promise.all([
+        apiClient.uptime(),
+        apiClient.players(),
+        apiClient.status(),
+        apiClient.stats().catch(() => null)
+      ]);
 
-    const interval = setInterval(fetchUptimeStatus, 30000);
+      const ping = Math.round(performance.now() - startTime);
+      const services: ServiceStatus = {
+        login: statusRes.services.login.status,
+        char: statusRes.services.char.status,
+        map: statusRes.services.map.status
+      };
+      const { label, className } = resolveServerStatus(services);
 
-    return () => clearInterval(interval);
+      setStatusData({
+        uptime: formatUptime(uptimeRes.uptime.formatted),
+        server: label,
+        serverStatusClass: className,
+        players: playersRes.online,
+        ping,
+        services,
+        activeChars24h: statsRes?.characters.activeLast24h ?? null,
+        totalGuilds: statsRes?.guilds.total ?? null,
+        apiReachable: true
+      });
+    } catch (error) {
+      console.error('Error al conectar con la API:', error);
+      setStatusData((prev) => ({
+        ...prev,
+        server: SERVER_STATUS_LABELS.Offline,
+        serverStatusClass: 'offline',
+        ping: -1,
+        apiReachable: false
+      }));
+    }
   }, []);
 
   useEffect(() => {
-    const fetchServerStatus = async () => {
-      try {
-        const startTime = performance.now();
-        const [playersData, statusData] = await Promise.all([
-          apiClient.players(),
-          apiClient.status()
-        ]);
-        const endTime = performance.now();
-        const ping = Math.round(endTime - startTime);
-
-        // Determinar estado general del servidor
-        const allServices = Object.values(statusData.services);
-        const onlineServices = allServices.filter(s => s.status === 'online').length;
-        const totalServices = allServices.length;
-
-        let serverStatus = 'Offline';
-        if (onlineServices === totalServices) {
-          serverStatus = 'Online';
-        } else if (onlineServices > 0) {
-          serverStatus = 'Partial';
-        }
-
-        setStatusData(prev => ({
-          ...prev,
-          players: playersData.online,
-          server: serverStatus,
-          ping: ping
-        }));
-      } catch (error) {
-        console.error('Error al conectar con la API:', error);
-        setStatusData(prev => ({
-          ...prev,
-          server: 'Offline',
-          ping: -1
-        }));
-      }
-    };
-
-    fetchServerStatus();
-    const interval = setInterval(fetchServerStatus, 30000);
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchStatus]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          setIsVisible(entry.isIntersecting);
-        });
+        entries.forEach((entry) => setIsVisible(entry.isIntersecting));
       },
-      {
-        threshold: 0.2,
-        rootMargin: '-50px 0px',
-      }
+      { threshold: 0.2, rootMargin: '-50px 0px' }
     );
 
-    if (statusRef.current) {
-      observer.observe(statusRef.current);
-    }
-
-    return () => {
-      if (statusRef.current) {
-        observer.unobserve(statusRef.current);
-      }
-    };
+    const node = statusRef.current;
+    if (node) observer.observe(node);
+    return () => { if (node) observer.unobserve(node); };
   }, []);
+
+  const serviceSummary = (Object.keys(statusData.services) as (keyof ServiceStatus)[])
+    .map((key) => {
+      const online = statusData.services[key] === 'online';
+      return `${SERVICE_LABELS[key]} ${online ? '✓' : '✗'}`;
+    })
+    .join(' · ');
+
+  const activityLine = statusData.activeChars24h !== null
+    ? `${statusData.activeChars24h} activos (24h)${statusData.totalGuilds !== null ? ` · ${statusData.totalGuilds} guilds` : ''}`
+    : statusData.apiReachable ? 'Datos en vivo' : 'Sin conexión a la API';
 
   return (
     <div ref={statusRef} className={`server-status ${isVisible ? 'visible' : ''}`}>
       <div className="status-grid">
-        {/* Columna izquierda - Estados */}
         <div className="status-column">
-          <StatusItem 
+          <StatusItem
             title="Uptime"
             icon="/icons/vpn.gif"
             value={statusData.uptime}
             type="number"
           />
-          <StatusItem 
-            title="Server"
+          <StatusItem
+            title="Servidor"
             icon="/icons/server.gif"
             value={statusData.server}
+            type="status"
+            statusClass={statusData.serverStatusClass}
           />
         </div>
 
-        {/* Columna central - Evento */}
         <div className="status-center">
           <div className="event-card">
             <div className="event-icon">
-              <img src="/icons/event.gif" alt="Evento" />
+              <img src="/icons/event.gif" alt="Servicios" />
             </div>
             <div className="event-info">
               <div className="event-header">
-                <span className="event-label">Próximo Evento</span>
-                <span className="event-time">{statusData['event-date']}</span>
+                <span className="event-label">Servicios del juego</span>
               </div>
-              <h4 className="event-title">{statusData['event-name']}</h4>
+              <h4 className="event-title">{serviceSummary}</h4>
+              <p className="event-subtitle">{activityLine}</p>
             </div>
           </div>
         </div>
 
-        {/* Columna derecha - Estadísticas */}
         <div className="status-column">
-          <StatusItem 
-            title="Online"
+          <StatusItem
+            title="Jugadores"
             icon="/icons/players.gif"
             value={statusData.players.toString()}
             type="number"
           />
-          <StatusItem 
+          <StatusItem
             title="Ping"
             icon="/icons/ping.gif"
             value={statusData.ping === -1 ? '---' : `${statusData.ping} ms`}
@@ -196,4 +213,4 @@ const ServerStatus = () => {
   );
 };
 
-export default ServerStatus; 
+export default ServerStatus;
