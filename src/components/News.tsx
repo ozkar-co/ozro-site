@@ -1,10 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
+import { legacyUpdates, recentUpdates, type UpdateEntry } from '../data/updates';
 
-interface NewsProps {
-  children: React.ReactNode;
+function UpdateBlock({ entry }: { entry: UpdateEntry }) {
+  return (
+    <article className={entry.milestone ? 'news-entry news-milestone' : 'news-entry'}>
+      <strong>
+        {entry.date}
+        {entry.title ? ` — ${entry.title}` : ''}
+      </strong>
+      {entry.paragraphs.map((text, i) => (
+        <p key={i}>{text}</p>
+      ))}
+    </article>
+  );
 }
 
-const News = ({ children }: NewsProps) => {
+const News = () => {
   const [isVisible, setIsVisible] = useState(false);
   const newsRef = useRef<HTMLDivElement>(null);
 
@@ -33,16 +44,23 @@ const News = ({ children }: NewsProps) => {
   }, []);
 
   return (
-    <div 
+    <div
       ref={newsRef}
       className={`news-section ${isVisible ? 'visible' : ''}`}
     >
       <h2>Últimas Actualizaciones</h2>
       <div className="news-container">
-        {children}
+        {recentUpdates.map((entry) => (
+          <UpdateBlock key={entry.date} entry={entry} />
+        ))}
+        <hr className="news-divider" />
+        <p className="news-legacy-label">Historial (era Hercules)</p>
+        {legacyUpdates.map((entry) => (
+          <UpdateBlock key={entry.date} entry={entry} />
+        ))}
       </div>
     </div>
   );
 };
 
-export default News; 
+export default News;
