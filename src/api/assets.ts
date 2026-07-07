@@ -1,3 +1,5 @@
+import { API_BASE_URL } from './client';
+
 export interface SpriteRect {
   atlasUrl: string;
   x: number;
@@ -27,7 +29,7 @@ export interface AssetManifest {
 
 type AssetCategory = 'items/icons' | 'items/illustrations' | 'mobs/sprites';
 
-const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const API_BASE = API_BASE_URL.replace(/\/$/, '');
 export const ASSETS_BASE = (import.meta.env.VITE_ASSETS_URL || `${API_BASE}/assets`).replace(/\/$/, '');
 
 let manifestPromise: Promise<AssetManifest | null> | null = null;
