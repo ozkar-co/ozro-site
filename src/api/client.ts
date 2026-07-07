@@ -164,7 +164,14 @@ export interface ItemDetail extends ItemSummary {
   jobs?: { all: boolean; jobs: string[] };
   classes?: { all: boolean; classes: string[] };
   locations?: Record<string, boolean>;
-  droppedBy?: { id: number; name: string; level: number }[];
+  droppedBy?: {
+    id: number;
+    name: string;
+    level: number;
+    rate?: number;
+    dropType?: string;
+    chancePercent?: number | null;
+  }[];
 }
 
 export type MobSearchParams = Record<string, string | number | undefined>;
@@ -200,12 +207,12 @@ export const apiClient = {
   status: () => apiFetch<StatusResponse>('/status'),
 
   searchMobs: (params: MobSearchParams) =>
-    apiFetch<PaginatedResponse<MobSummary>>(`/mobs${buildQuery(params)}`),
+    apiFetch<PaginatedResponse<MobDetail>>(`/mobs${buildQuery(params)}`),
 
   getMob: (id: number | string) => apiFetch<MobDetail>(`/mobs/${id}`),
 
   searchItems: (params: ItemSearchParams) =>
-    apiFetch<PaginatedResponse<ItemSummary>>(`/items${buildQuery(params)}`),
+    apiFetch<PaginatedResponse<ItemDetail>>(`/items${buildQuery(params)}`),
 
   getItem: (id: number | string) => apiFetch<ItemDetail>(`/items/${id}`)
 };

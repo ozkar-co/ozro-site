@@ -107,6 +107,11 @@ const getElementName = (element: number): string => {
   return `${MOB_ELEMENTS[elementId as keyof typeof MOB_ELEMENTS]} ${level}` || `Unknown (${element})`;
 };
 
+const displayStat = (value: number | null | undefined): string => {
+  if (value === null || value === undefined) return 'NA';
+  return value.toLocaleString();
+};
+
 interface MobCardProps {
   result: MobResult;
 }
@@ -158,14 +163,14 @@ const MobCard: React.FC<MobCardProps> = ({ result }) => {
             <div className="result-card-properties">
               <div className="result-card-property">
                 <span className="property-label">HP</span>
-                <span className="property-value">{result.hp || 'NA'}</span>
+                <span className="property-value">{displayStat(result.hp)}</span>
               </div>
               <div className="result-card-property">
                 <span className="property-label">ATK</span>
                 <span className="property-value">
                   {result.attack2 != null && result.attack2 !== result.atk
-                    ? `${result.atk || 'NA'}-${result.attack2}`
-                    : (result.atk || 'NA')}
+                    ? `${displayStat(result.atk)}-${displayStat(result.attack2)}`
+                    : displayStat(result.atk)}
                 </span>
               </div>
               {result.sp != null && result.sp > 0 && (
@@ -176,7 +181,7 @@ const MobCard: React.FC<MobCardProps> = ({ result }) => {
               )}
               <div className="result-card-property">
                 <span className="property-label">DEF/MDEF</span>
-                <span className="property-value">{`${result.def || 'NA'}/${result.mdef || 'NA'}`}</span>
+                <span className="property-value">{`${displayStat(result.def)}/${displayStat(result.mdef)}`}</span>
               </div>
             </div>
           </div>
@@ -186,11 +191,11 @@ const MobCard: React.FC<MobCardProps> = ({ result }) => {
             <div className="result-card-properties">
               <div className="result-card-property">
                 <span className="property-label">Base EXP</span>
-                <span className="property-value">{result.exp?.toLocaleString() || 'NA'}</span>
+                <span className="property-value">{result.exp != null ? result.exp.toLocaleString() : 'NA'}</span>
               </div>
               <div className="result-card-property">
                 <span className="property-label">Job EXP</span>
-                <span className="property-value">{result.jexp?.toLocaleString() || 'NA'}</span>
+                <span className="property-value">{result.jexp != null ? result.jexp.toLocaleString() : 'NA'}</span>
               </div>
               {result.mexp > 0 && (
                 <div className="result-card-property">
@@ -225,27 +230,27 @@ const MobCard: React.FC<MobCardProps> = ({ result }) => {
               <div className="stats-grid">
                 <div className="stat-item">
                   <span className="stat-label">STR</span>
-                  <span className="stat-value">{result.str || 'NA'}</span>
+                  <span className="stat-value">{displayStat(result.str)}</span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-label">AGI</span>
-                  <span className="stat-value">{result.agi || 'NA'}</span>
+                  <span className="stat-value">{displayStat(result.agi)}</span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-label">VIT</span>
-                  <span className="stat-value">{result.vit || 'NA'}</span>
+                  <span className="stat-value">{displayStat(result.vit)}</span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-label">INT</span>
-                  <span className="stat-value">{result.int || 'NA'}</span>
+                  <span className="stat-value">{displayStat(result.int)}</span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-label">DEX</span>
-                  <span className="stat-value">{result.dex || 'NA'}</span>
+                  <span className="stat-value">{displayStat(result.dex)}</span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-label">LUK</span>
-                  <span className="stat-value">{result.luk || 'NA'}</span>
+                  <span className="stat-value">{displayStat(result.luk)}</span>
                 </div>
               </div>
             </div>

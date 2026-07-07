@@ -75,6 +75,7 @@ const Database = () => {
   const [imageData, setImageData] = useState<ImageData>(emptyImageData());
   const [imagesReady, setImagesReady] = useState(false);
   const [searchState, setSearchState] = useState<SearchState>(emptySearchState);
+  const [resultsTab, setResultsTab] = useState<TabType>('items');
   const [isOptionsVisible, setIsOptionsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [searchOptions, setSearchOptions] = useState<SearchOptions>(defaultSearchOptions());
@@ -198,13 +199,25 @@ const Database = () => {
     options: SearchOptions,
     page: number
   ) => {
+    const trimmed = term.trim();
+    const isIdLookup = /^\d+$/.test(trimmed);
+
     if (tab === 'mobs') {
+      if (isIdLookup) {
+        const mob = await apiClient.getMob(parseInt(trimmed, 10)).catch(() => null);
+        if (!mob) {
+          return { total: 0, currentPage: 0, results: [], totalPages: 0 };
+        }
+        let results = [mapMobToCard(mob)];
+        if (imagesReady) {
+          results = await enrichMobResults(results);
+        }
+        return { total: 1, currentPage: 0, results, totalPages: 1 };
+      }
+
       const params = buildMobSearchParams(term, options, page, RESULTS_PER_PAGE);
       const data = await apiClient.searchMobs(params);
-      const details = await Promise.all(
-        data.results.map((summary) => apiClient.getMob(summary.id).catch(() => summary))
-      );
-      let results = details.map((mob) => mapMobToCard(mob));
+      let results = data.results.map((mob) => mapMobToCard(mob));
       if (imagesReady) {
         results = await enrichMobResults(results);
       }
@@ -216,12 +229,21 @@ const Database = () => {
       };
     }
 
+    if (isIdLookup) {
+      const item = await apiClient.getItem(parseInt(trimmed, 10)).catch(() => null);
+      if (!item) {
+        return { total: 0, currentPage: 0, results: [], totalPages: 0 };
+      }
+      let results = [mapItemToCard(item)];
+      if (imagesReady) {
+        results = await enrichItemResults(results);
+      }
+      return { total: 1, currentPage: 0, results, totalPages: 1 };
+    }
+
     const params = buildItemSearchParams(term, options, page, RESULTS_PER_PAGE);
     const data = await apiClient.searchItems(params);
-    const details = await Promise.all(
-      data.results.map((summary) => apiClient.getItem(summary.id).catch(() => summary))
-    );
-    let results = details.map((item) => mapItemToCard(item));
+    let results = data.results.map((item) => mapItemToCard(item));
     if (imagesReady) {
       results = await enrichItemResults(results);
     }
@@ -251,10 +273,14 @@ const Database = () => {
     let cancelled = false;
     setIsSearching(true);
     setSearchError(null);
+    setSearchState(emptySearchState());
 
     fetchSearchResults(tab, q, options, page)
       .then((state) => {
-        if (!cancelled) setSearchState(state);
+        if (!cancelled) {
+          setResultsTab(tab);
+          setSearchState(state);
+        }
       })
       .catch((error) => {
         if (!cancelled) {
@@ -466,7 +492,10 @@ const Database = () => {
             {searchError && (
               <div className="no-results">{searchError}</div>
             )}
-            {!searchError && searchState.results.length > 0 ? (
+            {!searchError && isSearching && searchState.results.length === 0 && (
+              <div className="loading-results">Cargando resultados...</div>
+            )}
+            {!searchError && !isSearching && searchState.results.length > 0 && resultsTab === activeTab ? (
               <>
                 <div className="results-grid">
                   {searchState.results.map((result) =>
@@ -490,7 +519,7 @@ const Database = () => {
                 )}
               </>
             ) : (
-              !searchError && (
+              !searchError && !isSearching && (
                 <div className="no-results">
                   {searchTerm || searchOptions.selectedTypes.length > 0
                     ? 'No se encontraron resultados'

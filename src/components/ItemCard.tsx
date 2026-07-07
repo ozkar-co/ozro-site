@@ -34,7 +34,14 @@ interface SearchResult {
   jobsText?: string;
   classesText?: string;
   locationsText?: string;
-  droppedBy?: { id: number; name: string; level: number }[];
+  droppedBy?: {
+    id: number;
+    name: string;
+    level: number;
+    rate?: number;
+    chancePercent?: number | null;
+    dropType?: string;
+  }[];
   equip_locations?: number[];
   equip_upper?: number[];
   equip_jobs?: number[];
@@ -393,11 +400,16 @@ const ItemCard: React.FC<ItemCardProps> = ({ result }) => {
             <div className="result-card-section">
               <div className="result-card-script-header">Lo dropean:</div>
               <div className="result-card-dropped-by">
-                {result.droppedBy.map((mob) => (
-                  <Link key={mob.id} to={`/database?tab=mobs&q=${mob.id}`}>
-                    {mob.name} (Nv. {mob.level})
-                  </Link>
-                ))}
+                {result.droppedBy.map((mob) => {
+                  const pct = mob.chancePercent ?? (mob.rate != null ? Math.min(mob.rate, 10000) / 100 : null);
+                  return (
+                    <Link key={mob.id} to={`/database?tab=mobs&q=${mob.id}`}>
+                      {mob.name} (Nv. {mob.level})
+                      {pct != null ? ` — ${pct.toFixed(2)}%` : ''}
+                      {mob.dropType === 'mvp' ? ' [MVP]' : ''}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           )}

@@ -711,6 +711,13 @@ a {
   gap: 0.25rem;
 }
 
+.loading-results {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #666;
+  font-size: 1rem;
+}
+
 .result-card-script-header {
   color: #666;
   font-size: 0.9rem;
