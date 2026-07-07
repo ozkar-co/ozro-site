@@ -6,6 +6,7 @@ import ItemCard, { SearchResult, ITEM_TYPES } from './ItemCard';
 import MobCard, { MobResult, MOB_SIZE, MOB_ELEMENTS, MOB_RACES } from './MobCard';
 import '../styles/Database.css';
 import { apiClient } from '../api/client';
+import { loadManifest, resolveSprite, type SpriteRect } from '../api/assets';
 import {
   buildItemSearchParams,
   buildMobSearchParams,
@@ -30,23 +31,7 @@ interface SearchState {
   totalPages: number;
 }
 
-interface ImageData {
-  imageDescriptor: { icons: Record<string, number>; illustrations: Record<string, number> };
-  mobImageDescriptor: Record<string, number>;
-  iconBatches: Record<number, Record<string, string>>;
-  illustrationBatches: Record<number, Record<string, string>>;
-  mobSpriteBatches: Record<number, Record<string, string>>;
-}
-
 const RESULTS_PER_PAGE = 10;
-
-const emptyImageData = (): ImageData => ({
-  imageDescriptor: { icons: {}, illustrations: {} },
-  mobImageDescriptor: {},
-  iconBatches: {},
-  illustrationBatches: {},
-  mobSpriteBatches: {}
-});
 
 const emptySearchState = (): SearchState => ({
   total: 0,
@@ -72,7 +57,6 @@ const Database = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
-  const [imageData, setImageData] = useState<ImageData>(emptyImageData());
   const [imagesReady, setImagesReady] = useState(false);
   const [searchState, setSearchState] = useState<SearchState>(emptySearchState);
   const [resultsTab, setResultsTab] = useState<TabType>('items');
@@ -102,73 +86,23 @@ const Database = () => {
   }, [location.search, navigateToSearch]);
 
   useEffect(() => {
-    const loadImageDescriptors = async () => {
-      try {
-        const [imageDescriptorResponse, mobImageDescriptorResponse] = await Promise.all([
-          fetch('/data/images_descriptor.json'),
-          fetch('/data/mob-images-descriptor.json')
-        ]);
-        const [imageDescriptor, mobImageDescriptor] = await Promise.all([
-          imageDescriptorResponse.json(),
-          mobImageDescriptorResponse.json()
-        ]);
-        setImageData((prev) => ({
-          ...prev,
-          imageDescriptor,
-          mobImageDescriptor
-        }));
-        setImagesReady(true);
-      } catch (error) {
-        console.error('Error cargando descriptores de imágenes:', error);
-        setImagesReady(true);
-      }
-    };
-    loadImageDescriptors();
+    loadManifest()
+      .then(() => setImagesReady(true))
+      .catch(() => setImagesReady(true));
   }, []);
-
-  const loadImageBatch = useCallback(async (
-    batchNumber: number,
-    type: 'icons' | 'illustrations' | 'sprites'
-  ): Promise<Record<string, string> | null> => {
-    const batchKey = type === 'sprites'
-      ? 'mobSpriteBatches'
-      : type === 'icons'
-        ? 'iconBatches'
-        : 'illustrationBatches';
-    const batchPrefix = type === 'sprites' ? 'mob_sprites' : type;
-
-    const cached = imageData[batchKey][batchNumber];
-    if (cached) return cached;
-
-    try {
-      const response = await fetch(`/data/${batchPrefix}_batch_${batchNumber}.json`);
-      if (!response.ok) return null;
-      const batchData = await response.json();
-      setImageData((prev) => ({
-        ...prev,
-        [batchKey]: { ...prev[batchKey], [batchNumber]: batchData }
-      }));
-      return batchData;
-    } catch {
-      return null;
-    }
-  }, [imageData]);
 
   const getImage = useCallback(async (
     id: string,
     type: 'icons' | 'illustrations' | 'sprites'
-  ): Promise<string> => {
-    const descriptor = type === 'sprites'
-      ? imageData.mobImageDescriptor
-      : imageData.imageDescriptor[type === 'icons' ? 'icons' : 'illustrations'];
-
-    if (!descriptor || descriptor[id] === undefined) {
-      return '/placeholder.png';
-    }
-
-    const batch = await loadImageBatch(descriptor[id], type);
-    return batch?.[id] || '/placeholder.png';
-  }, [imageData, loadImageBatch]);
+  ): Promise<SpriteRect | string> => {
+    const category = type === 'sprites'
+      ? 'mobs/sprites'
+      : type === 'icons'
+        ? 'items/icons'
+        : 'items/illustrations';
+    const sprite = await resolveSprite(id, category);
+    return sprite || '/placeholder.png';
+  }, []);
 
   const enrichMobResults = useCallback(async (mobs: MobResult[]): Promise<MobResult[]> => {
     return Promise.all(mobs.map(async (mob) => {

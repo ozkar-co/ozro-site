@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import type { SpriteRect } from '../api/assets';
+import AtlasSprite from './AtlasSprite';
 
 interface SearchResult {
   id: string;
@@ -15,8 +17,8 @@ interface SearchResult {
   script: string;
   name: string;
   description: string;
-  icon: string;
-  illustration: string;
+  icon: SpriteRect | string;
+  illustration: SpriteRect | string;
   stack_amount?: number;
   slots?: number;
   equip_level_min?: number;
@@ -249,26 +251,18 @@ const ItemCard: React.FC<ItemCardProps> = ({ result }) => {
     <div className="result-card">
       <div className="result-card-content">
         <div className="result-card-image">
-          <img 
-            src={result.illustration || result.icon || '/placeholder.png'}
+          <AtlasSprite
+            sprite={result.illustration || result.icon}
             alt={result.name}
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = '/placeholder.png';
-            }}
           />
         </div>
         <div className="result-card-info">
           <div className="result-card-header">
             <div className="result-card-title">
-              <img 
-                src={result.icon || '/placeholder.png'}
+              <AtlasSprite
+                sprite={result.icon}
                 alt={result.name}
                 className="small-icon"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/placeholder.png';
-                }}
               />
               <div className="title-container">
                 <div className="title-row">

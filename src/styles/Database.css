@@ -386,7 +386,8 @@ a {
   position: relative;
 }
 
-.result-card-image img {
+.result-card-image img,
+.result-card-image [role="img"] {
   height: auto;
   max-width: 90px;
   object-fit: contain;

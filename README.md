@@ -34,13 +34,15 @@ Requiere [Firebase CLI](https://firebase.google.com/docs/cli) autenticado con el
 npm run deploy
 ```
 
-## Datos estáticos (`public/data/`)
+## Datos estáticos (assets desde API)
 
-Solo se usan **imágenes** empaquetadas en JSON (iconos, ilustraciones, sprites de monstruos):
+Iconos, ilustraciones y sprites de monstruos se sirven como **atlases WebP** desde `ozro-backup` (`/assets/*`), generados con la herramienta GRF en `ozro-cli/tools/grf`:
 
-- `images_descriptor.json` — mapa item id → batch de icono/ilustración
-- `mob-images-descriptor.json` — mapa mob id → batch de sprite
-- `icons_batch_*.json`, `illustrations_batch_*.json`, `mob_sprites_batch_*.json`
+```bash
+cd ozro-cli && npm run assets
+```
+
+Variables: `VITE_ASSETS_URL` (default: `VITE_API_URL/assets`).
 
 La base de datos de items/mobs y la búsqueda se resuelven contra la API (`/items`, `/mobs`).
 

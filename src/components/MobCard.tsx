@@ -1,18 +1,20 @@
 import { Link } from 'react-router-dom';
+import type { SpriteRect } from '../api/assets';
+import AtlasSprite from './AtlasSprite';
 
 interface MobDrop {
   id: number;
   type: 'normal' | 'card' | 'mvp';
   per: number;
   itemName: string;
-  itemIcon: string;
+  itemIcon: SpriteRect | string;
 }
 
 interface MobResult {
   id: string;
   name: string;
   name2: string;
-  sprite: string;
+  sprite: SpriteRect | string;
   hp: number;
   lvl: number;
   def: number;
@@ -126,14 +128,7 @@ const MobCard: React.FC<MobCardProps> = ({ result }) => {
               <img src="/icons/mvp.gif" alt="MVP" />
             </div>
             )}
-            <img 
-            src={result.sprite || '/placeholder.png'}
-            alt={result.name}
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = '/placeholder.png';
-            }}
-          />
+            <AtlasSprite sprite={result.sprite} alt={result.name} />
         </div>
         <div className="result-card-info">
           <div className="result-card-header">
@@ -301,14 +296,10 @@ const MobCard: React.FC<MobCardProps> = ({ result }) => {
                       
                       return (
                         <div key={`${drop.id}-${index}`} className={`result-card-drop ${drop.type}`}>
-                          <img 
-                            src={drop.itemIcon || '/placeholder.png'}
+                          <AtlasSprite
+                            sprite={drop.itemIcon}
                             alt={formattedName}
                             className="drop-icon"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = '/placeholder.png';
-                            }}
                           />
                           <span className="drop-name">
                             <Link to={`/database?tab=items&q=${drop.id}`}>{truncatedName}</Link>{drop.type === 'mvp' ? ' (MVP)' : ''}
