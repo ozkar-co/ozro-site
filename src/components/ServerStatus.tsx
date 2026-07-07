@@ -10,22 +10,14 @@ interface StatusItemProps {
   statusClass?: string;
 }
 
-interface ServiceStatus {
-  login: string;
-  char: string;
-  map: string;
-}
-
 interface ServerStatusData {
   uptime: string;
   server: string;
   serverStatusClass: string;
   players: number;
   ping: number;
-  services: ServiceStatus;
-  activeChars24h: number | null;
-  totalGuilds: number | null;
-  apiReachable: boolean;
+  eventName: string;
+  eventDate: string;
 }
 
 const SERVER_STATUS_LABELS: Record<string, string> = {
@@ -34,11 +26,11 @@ const SERVER_STATUS_LABELS: Record<string, string> = {
   Offline: 'Desconectado'
 };
 
-const SERVICE_LABELS: Record<keyof ServiceStatus, string> = {
-  login: 'Login',
-  char: 'Char',
-  map: 'Map'
-};
+interface ServiceStatus {
+  login: string;
+  char: string;
+  map: string;
+}
 
 function formatUptime(formatted: string): string {
   const parts = formatted.split(' ');
@@ -82,21 +74,18 @@ const ServerStatus = () => {
     serverStatusClass: 'offline',
     players: 0,
     ping: -1,
-    services: { login: 'offline', char: 'offline', map: 'offline' },
-    activeChars24h: null,
-    totalGuilds: null,
-    apiReachable: false
+    eventName: 'Por definir',
+    eventDate: 'Por definir'
   });
 
   const fetchStatus = useCallback(async () => {
     const startTime = performance.now();
 
     try {
-      const [uptimeRes, playersRes, statusRes, statsRes] = await Promise.all([
+      const [uptimeRes, playersRes, statusRes] = await Promise.all([
         apiClient.uptime(),
         apiClient.players(),
-        apiClient.status(),
-        apiClient.stats().catch(() => null)
+        apiClient.status()
       ]);
 
       const ping = Math.round(performance.now() - startTime);
@@ -107,25 +96,21 @@ const ServerStatus = () => {
       };
       const { label, className } = resolveServerStatus(services);
 
-      setStatusData({
+      setStatusData((prev) => ({
+        ...prev,
         uptime: formatUptime(uptimeRes.uptime.formatted),
         server: label,
         serverStatusClass: className,
         players: playersRes.online,
-        ping,
-        services,
-        activeChars24h: statsRes?.characters.activeLast24h ?? null,
-        totalGuilds: statsRes?.guilds.total ?? null,
-        apiReachable: true
-      });
+        ping
+      }));
     } catch (error) {
       console.error('Error al conectar con la API:', error);
       setStatusData((prev) => ({
         ...prev,
         server: SERVER_STATUS_LABELS.Offline,
         serverStatusClass: 'offline',
-        ping: -1,
-        apiReachable: false
+        ping: -1
       }));
     }
   }, []);
@@ -149,17 +134,6 @@ const ServerStatus = () => {
     return () => { if (node) observer.unobserve(node); };
   }, []);
 
-  const serviceSummary = (Object.keys(statusData.services) as (keyof ServiceStatus)[])
-    .map((key) => {
-      const online = statusData.services[key] === 'online';
-      return `${SERVICE_LABELS[key]} ${online ? '✓' : '✗'}`;
-    })
-    .join(' · ');
-
-  const activityLine = statusData.activeChars24h !== null
-    ? `${statusData.activeChars24h} activos (24h)${statusData.totalGuilds !== null ? ` · ${statusData.totalGuilds} guilds` : ''}`
-    : statusData.apiReachable ? 'Datos en vivo' : 'Sin conexión a la API';
-
   return (
     <div ref={statusRef} className={`server-status ${isVisible ? 'visible' : ''}`}>
       <div className="status-grid">
@@ -182,14 +156,14 @@ const ServerStatus = () => {
         <div className="status-center">
           <div className="event-card">
             <div className="event-icon">
-              <img src="/icons/event.gif" alt="Servicios" />
+              <img src="/icons/event.gif" alt="Evento" />
             </div>
             <div className="event-info">
               <div className="event-header">
-                <span className="event-label">Servicios del juego</span>
+                <span className="event-label">Próximo Evento</span>
+                <span className="event-time">{statusData.eventDate}</span>
               </div>
-              <h4 className="event-title">{serviceSummary}</h4>
-              <p className="event-subtitle">{activityLine}</p>
+              <h4 className="event-title">{statusData.eventName}</h4>
             </div>
           </div>
         </div>

@@ -117,7 +117,7 @@ const Main = () => {
           <InfoCard
             iconUrl={`/mobs/${randomMobs[1]}.webp`}
             title="Una Experiencia Balanceada y Renovada"
-            description="Disfruta de un servidor Renewal con mecánicas ajustadas y balanceadas. Jugamos en el episodio 14.3 con rates ajustados para un progresión fluida: 5x/5x/10x. Aunque hay bonificaciones y penalizaciones de EXP y el drop varia dependiendo del tipo de item."
+            description="Disfruta de un servidor Renewal episodio 14.3 con rates 5x/5x/10x EXP y drops balanceados (5x–15x equip, 100x cards en mobs normales). MVP drops en suelo a 1x; recompensa directa MVP 5x."
           />
           <InfoCard
             iconUrl={`/mobs/${randomMobs[2]}.webp`}

@@ -13,25 +13,21 @@ const contentMap: Record<string, ReactNode> = {
       <h2>Especificaciones</h2>
       <div className="content-section">
         <p>
-          Nuestro servidor ofrece una experiencia renovada y equilibrada,
-          diseñada para aquellos que buscan un desafío sin perder la esencia clásica del juego.
-          <br />
-          Este servidor ha sido balanceado y optimizado para poder jugar con un grupo reducido de jugadores.
-          Sin depender de un gran mercado o mecanicas propias de un juego masivo.
-        </p>
-        <p>
-          Algunas de las características mas destacadas de este servidor son:
+          Servidor Renewal privado, balanceado para un grupo pequeño (~3 jugadores).
+          Acceso por VPN con invitación; pincode desactivado.
         </p>
         <ul>
-          <li>Servidor Renewal basado en el episodio 14.3 con ajustes personalizados.</li>
-          <li>Acceso exclusivo mediante VPN privada, garantizando un entorno seguro y controlado.</li>
-          <li>Enfoque familiar y comunidad reducida, optimizado para pocos jugadores.</li>
-          <li>Balance y jugabilidad mejorada, con ajustes en la experiencia, el combate y la progresión.</li>
-          <li>Personalización y optimización, con un sistema de penalizaciones y recompensas.</li>
-          <li>Mecanicas de comercio orientadas la independencia de los jugadores.</li>
-          <li>Narrativa inmersiva con un lore progresivo y quests únicas que expanden el mundo del juego.</li>
+          <li><strong>Episodio:</strong> 14.3</li>
+          <li><strong>Modo:</strong> Renewal</li>
+          <li><strong>Nivel máximo:</strong> 175 / 60 (tablas EXP renewal)</li>
+          <li><strong>Acceso:</strong> VPN privada, solo invitación</li>
+          <li><strong>Comunidad:</strong> familiar, sin economía masiva</li>
+          <li><strong>Fuente de rates:</strong> <code>conf/import/battle_conf.txt</code></li>
         </ul>
-
+        <p>
+          Filosofía: progresión fluida sin carrera competitiva, NPCs y quests custom,
+          y mecánicas orientadas a jugar solo o en party pequeña.
+        </p>
       </div>
     </div>
   ),
@@ -39,28 +35,28 @@ const contentMap: Record<string, ReactNode> = {
     <div className="info-content">
       <h2>Tasas de Experiencia</h2>
       <div className="content-section">
-        <p>
-          Contamos con un sistema de experiencia balanceado,
-          pensado para mantener el progreso dinámico sin perder el desafío:
-        </p>
+        <p>Valores efectivos del servidor (100 = 1x oficial en rAthena):</p>
         <ul>
-          <li>Experiencia Base y Job normal: 5x</li>
-          <li>Experiencia de MVPs: 10x</li>
-          <li>Experiencia de Quests: 3x</li>
+          <li><strong>Base EXP:</strong> 5x</li>
+          <li><strong>Job EXP:</strong> 5x</li>
+          <li><strong>MVP EXP:</strong> 10x</li>
+          <li><strong>Quest EXP (NPCs):</strong> 3x</li>
         </ul>
-        <p>
-          Las tasas están ajustadas para ofrecer una progresión satisfactoria sin hacer el juego demasiado fácil.
-          Los MVPs dan el doble de experiencia para incentivar la caza de Boss, mientras que las quests dan menos
-          para mantener el balance.
-        </p>
-        <p>
-          Además, se aplican bonificaciones especiales:
-        </p>
+        <h3>Bonificaciones y party</h3>
         <ul>
-          <li>Experiencia de party: +80% por cada miembro adicional.</li>
-          <li>Bonificación por ataque en party: +25% de EXP por cada atacante.</li>
-          <li>Multi Level-Up habilitado, permitiendo subir varios niveles de una sola vez.</li>
+          <li>Multi level-up habilitado</li>
+          <li>+25% base EXP por cada atacante extra (tope 12 atacantes)</li>
+          <li>Party even share bonus: <strong>0</strong> (sin bonus extra por tamaño de party)</li>
+          <li>Rango de nivel para share en party: 15 niveles</li>
+          <li>Merchant Shop EXP: 1% del zeny recibido × nivel de skill (Discount/Overcharge)</li>
         </ul>
+        <h3>Al morir</h3>
+        <ul>
+          <li>Pérdida de 1% de base EXP y 1% de job EXP del nivel actual</li>
+          <li>En max level no se pierde EXP</li>
+          <li>Penalización de zeny al morir en PvP: 1%</li>
+        </ul>
+        <p>Heal EXP y Resurrection EXP están desactivados.</p>
       </div>
     </div>
   ),
@@ -68,30 +64,30 @@ const contentMap: Record<string, ReactNode> = {
     <div className="info-content">
       <h2>Tasas de Drop</h2>
       <div className="content-section">
-        <p>
-          Contamos con un sistema de drop balanceado,
-          pensado para mantener el progreso dinámico sin perder el desafío:
-        </p>
+        <h3>Mobs normales</h3>
         <ul>
-          <li>Ítems comunes: ×10</li>
-          <li>Consumibles: ×20</li>
-          <li>Equipamiento: ×30</li>
-          <li>Cartas: ×200</li>
+          <li>Common (etc): 5x</li>
+          <li>Healing: 10x</li>
+          <li>Usable: 10x</li>
+          <li>Equipment: 15x</li>
+          <li>Card: 100x</li>
         </ul>
-        <p>
-          Además, se aplican tasas especiales:
-        </p>
+        <h3>Boss (no MVP)</h3>
+        <p>Mismos multiplicadores que mobs normales para common, heal, usable, equip y card.</p>
+        <h3>MVP</h3>
         <ul>
-          <li>Tesoros de WoE: ×5</li>
-          <li>Ítems comunes de Boss: ×5</li>
-          <li>Consumibles de Boss: ×10</li>
-          <li>Equipamiento de Boss: ×15</li>
-          <li>Cartas de MVPs: ×100</li>
+          <li>Drops en suelo (common, heal, usable, equip, card): <strong>1x</strong> (default, sin override)</li>
+          <li>Recompensa MVP directa al inventario: 5x</li>
         </ul>
-        <p>
-          El sistema de drop está diseñado para que los items mantengan su valor mientras se hace más accesible
-          conseguir el equipo necesario para progresar.
-        </p>
+        <h3>Otros</h3>
+        <ul>
+          <li>Tesoros WoE: 5x</li>
+          <li>Tope efectivo de drop: 90%</li>
+          <li>Anuncio de drops raros: ≤ 1%</li>
+          <li>Autoloot mercenario y homúnculo: sí</li>
+          <li>Items van al suelo (no auto-get)</li>
+          <li>Duración de item en suelo: 60 s</li>
+        </ul>
       </div>
     </div>
   ),
@@ -125,48 +121,34 @@ const contentMap: Record<string, ReactNode> = {
     <div className="info-content">  
       <h2>Mecanicas Únicas</h2>
       <div className="content-section">
-        <p>
-          Nuestro servidor busca ofrecer una experiencia ajustada para quienes buscan algo diferente.
-          Con mecánicas únicas, mejoras en la jugabilidad y un entorno optimizado,
-          te ofrecemos una aventura renovada sin perder la esencia clásica.
-        </p>
-        <p>
-          Algunas de las características que mejoran la Jugabilidad:
-        </p>
+        <h3>Combate y monstruos</h3>
         <ul>
-          <li>No necesitas completar misiones para cambiar al primer Job.</li>
-          <li>Los monstruos tienen el doble de HP y pueden realizar golpes críticos.</li>
-          <li>Bonificaciones adicionales de experiencia en party para incentivar el juego en equipo.</li>
-          <li>Los Boss tienen Heal reducido, ya no se necesita una gran party para derrotarlos.</li>
-          <li>La barra de vida de los enemigos está oculta, excepto en los Boss.</li>
+          <li>HP de mobs y MVPs: ×2</li>
+          <li>Zeny por kill de mob: sí (cantidad pequeña)</li>
+          <li>Barra de HP de mobs oculta</li>
+          <li>MVP tomb: activo</li>
+          <li>Los mobs <strong>no</strong> hacen golpes críticos</li>
+          <li>Flee penalty en mobs: sí</li>
         </ul>
-        <p>
-          Algunos cambios para balancear la Economía:
-        </p>
+        <h3>Economía y sistemas activos</h3>
         <ul>
-          <li>Cada monstruo derrotado otorga una pequeña cantidad de Zeny.</li>
-          <li>Al morir, pierdes el 10% del Zeny en posesión, fomentando un manejo estratégico del dinero.</li>
-          <li>Las Bounty Missions otorgan Cash Points y Special Gold, dando más opciones para progresar.</li>
-          <li>Los Merchant pueden ganar Job EXP al comerciar, reforzando su rol dentro del mundo del juego.</li>
+          <li>Bounty Boards en 14 ciudades</li>
+          <li>Quests repetibles de EXP (17 misiones)</li>
+          <li>Merchant gana Job EXP al vender (Shop EXP)</li>
+          <li>Autoloot mercenario y homúnculo</li>
+          <li>Vending sin tax; barter activo; banco activo</li>
         </ul>
-        <p>
-          Cambios en el sistema de Mascotas:
-        </p>
+        <h3>Mascotas</h3>
         <ul>
-          <li>Ademas de los bonos habituales, las mascotas pueden atacar.</li>
-          <li>Las mascotas deben ser leales para que puedan defender a sus dueños.</li>
-          <li>Las mascotas pueden subir de nivel, aumentando su utilidad.</li>
-          <li>Las mascotas pueden infligir golpes críticos.</li>
+          <li>No requieren equip de pet para funcionar</li>
+          <li>Pueden atacar y dar EXP de ataque al master</li>
+          <li>Velocidad de level pet: 50%</li>
         </ul>
-        <p>
-          Consideraciones sobre la Cash Shop:
-        </p>
+        <h3>Pendiente / no activo</h3>
         <ul>
-          <li>Los Cash Points pueden comprarse y venderse por Zeny directamente mediante un NPC.</li>
-          <li>Se Pueden comprar Card Sets, Endow Scrolls y High Priest Scrolls directamente en la Cash Shop.</li>
-          <li>Algunos consumibles también están disponibles, facilitando la preparación para el combate.</li>
-          <li>Equipo Rental que permite ganar mas experiencia.</li>
-          <li>El Equipamento que antes era de Cash Shop ahora se consigue mediante Quests.</li>
+          <li>Primer job sin quest (jobmaster desactivado)</li>
+          <li>Platinum skills automáticas al rebirth</li>
+          <li>Boss con heal reducido — no verificado en config</li>
         </ul>
       </div>
     </div>
@@ -257,50 +239,28 @@ const contentMap: Record<string, ReactNode> = {
     <div className="info-content">
       <h2>Restricciones y penalizaciones</h2>
       <div className="content-section">
-        <p>
-          Para mantener el balance del juego, evitar abusos y mantener la progresión se establecen los siguientes límites:
-        </p>
-        <h3>Niveles Máximos</h3>
-        <ul>  
-          <li>Clases Regulares: 99/50</li>
-          <li>Clases Expanded: 99/60</li>
-          <li>Clases Renacidas: 99/70</li>
-          <li>Clases Avanzadas: 175/60</li>
-        </ul>
-        <h3>Estadísticas Máximas</h3>
+        <h3>Jugador</h3>
         <ul>
-          <li>Baby Classes: 80</li>
-          <li>Clases Regulares: 99</li>
-          <li>Clases Expanded Avanzadas: 125</li>
-          <li>Clases Avanzadas: 130</li>
+          <li>ASPD máximo (normal): 190</li>
+          <li>ASPD máximo (3rd / extended): 193</li>
+          <li>HP máximo nivel 175: 1.100.000</li>
+          <li>Respawn con 50% HP y 50% SP</li>
+          <li>Sin límite de skill points por nivel</li>
         </ul>
-        <h3>Restricciones Generales</h3>
+        <h3>Party</h3>
         <ul>
-          <li>Velocidad de ataque máxima (ASPD): 193 clases regulares y 195 clases avanzadas</li>
-          <li>Máximo de Zeny: 2,147,483,647</li>
-          <li>Nivel máximo para compartir experiencia en Party: 15 niveles</li>
-          <li>Máximo nivel de Safe Refine Ticket: +9</li>
-          <li>Máximo nivel de Refine: +20</li>
+          <li>Rango de nivel para share: 15</li>
+          <li>Misma cuenta en party: bloqueado</li>
         </ul>
-        <h3>Penalizaciones de Experiencia y Drop</h3>
+        <h3>Features desactivados</h3>
         <ul>
-          <li>Monstruos 30 niveles por encima: Drop reducido al 50%, experiencia al 40%.</li>
-          <li>Monstruos 15 niveles por encima: Drop reducido al 60%, experiencia al 100%.</li>
-          <li>Monstruos 10 niveles por encima: Drop reducido al 75%, pero experiencia aumentada a 140%.</li>
-          <li>Monstruos en el rango de nivel del jugador: Experiencia y drop normales.</li>
-          <li>Monstruos 10 niveles por debajo: Drop reducido al 75%, experiencia reducida al 90%.</li>
-          <li>Monstruos 15 niveles por debajo: Drop reducido al 60%, experiencia reducida al 80%.</li>
-          <li>Monstruos 30 niveles por debajo: Drop reducido al 50%, experiencia mínima del 10%.</li>
+          <li>Achievements, attendance, equip switch, private airship, roulette</li>
         </ul>
-        <h3>Indicador de Penalizaciones</h3>
-        <p>
-          Para ayudar a los jugadores a visualizar las penalizaciones de experiencia y drop, se ha implementado un indicador visual.
-          Este indicador muestra el nivel del monstruo en comparación con el nivel del jugador, lo que facilita la selección de objetivos adecuados.
-        </p>
+        <h3>Penalización al morir</h3>
         <ul>
-          <li>Rojo: Monstruos 10+ niveles por encima.</li>
-          <li>Rosa: Monstruos dentro del rango de nivel.</li>
-          <li>Gris: Monstruos 15+ niveles por debajo.</li>
+          <li>1% base EXP y 1% job EXP del nivel actual</li>
+          <li>1% zeny en PvP</li>
+          <li>Sin pérdida de EXP en max level</li>
         </ul>
       </div>
     </div>
@@ -310,14 +270,12 @@ const contentMap: Record<string, ReactNode> = {
     <div className="info-content">
       <h2>Comercio e Intercambio</h2>
       <div className="content-section">
+        <p>NPCs activos en el servidor:</p>
         <ul>
-          <li><strong>Card Trader</strong> - Permite intercambiar cartas por objetos especiales.</li>
-          <li><strong>Cash Point Merchant</strong> - Facilita la compra y venta de Cash Points usando Zeny.</li>
-          <li><strong>Thrasher</strong> - Recolecta objetos aleatorios por un alto precio.</li>
-          <li><strong>Old Blacksmith</strong> - Permite intercambiar el Special Gold obtenido en Bounty Missions por piedras y bendiciones de Blacksmith.</li>
-          <li><strong>Monke</strong> - Un simpático Yoyo que intercambia bananas por frutas aleatorias.</li>
-          <li><strong>Ox Hunter (Ushi)</strong> - Un minotauro viajero que escucha las historias de MVPs cazados y otorga Ox Coins como recompensa.</li>
-          <li><strong>Ox Merchant (Kuma)</strong> - Un minotauro mercader que ofrece objetos únicos de tierras lejanas a cambio de Ox Coins.</li>
+          <li><strong>Sophie</strong> — Cambio puntos cash ↔ zeny (<code>points2zeny.txt</code>)</li>
+          <li><strong>Monke</strong> — Intercambia bananas por frutas aleatorias</li>
+          <li><strong>Card Collector</strong> — Archivo de cartas por cuenta y progreso de colección</li>
+          <li><strong>Card Remover</strong> — Quita cartas de equipamiento</li>
         </ul>
       </div>
     </div>
@@ -327,12 +285,11 @@ const contentMap: Record<string, ReactNode> = {
     <div className="info-content">
       <h2>Buffs y Soporte</h2>
       <div className="content-section">
+        <p>NPCs activos en el servidor:</p>
         <ul>
-          <li><strong>Healer</strong> - Cura completamente al personaje y otorga Buffs temporales.</li>
-          <li><strong>Endower</strong> - Un sabio viajero que encanta armas con poder elemental por un costo.</li>
-          <li><strong>Soul Linker</strong> - Otorga Buffs exclusivos de Soul Linker a cambio de Zeny.</li>
-          <li><strong>Dungeon Warper</strong> - Permite el teletransporte rápido a mazmorras, disponible solo para personajes avanzados.</li>
-          <li><strong>Reset Girl</strong> - Permite reiniciar estadísticas y habilidades del personaje. Solo se puede usar una vez por personaje regular, pero los personajes avanzados tienen resets ilimitados.</li>
+          <li><strong>Healer</strong> — Cura y buffs temporales (curación y buffs por separado)</li>
+          <li><strong>Stylist</strong> — Cambio de apariencia</li>
+          <li><strong>Canalizadora Mística</strong> — Reset de stats/skills (birthstone + zeny)</li>
         </ul>
       </div>
     </div>
@@ -342,11 +299,48 @@ const contentMap: Record<string, ReactNode> = {
     <div className="info-content">
       <h2>Otros NPCs</h2>
       <div className="content-section">
+        <p>NPCs activos en el servidor:</p>
         <ul>
-          <li><strong>Cronista</strong> - Lleva un conteo de los aventureros que recorren el mundo.</li>
-          <li><strong>Card Collector</strong> - Lleva un registro de todas las cartas coleccionadas por el jugador, permitiendo hacer seguimiento del progreso.</li>
-          <li><strong>MVP Tracker</strong> - Registra las muertes de MVPs y realiza anuncios globales cuando un MVP es derrotado, además de llevar un ranking de asesinatos y asistencias.</li>
+          <li><strong>Kaz el Cronista</strong> — Lore básico y conteo de jugadores online</li>
+          <li><strong>Bounty Boards</strong> — Misiones de caza por ciudad (14 mapas)</li>
+          <li><strong>Quests repetibles</strong> — EXP repetible por monstruo (17 quests)</li>
         </ul>
+      </div>
+    </div>
+  ),
+
+  'bounty-missions': (
+    <div className="info-content">
+      <h2>Bounty Missions</h2>
+      <div className="content-section">
+        <p>
+          Tablones de caza activos en 14 ciudades (<code>npc/custom/ozro/bounty/</code>).
+          Misiones de caza por mapa para obtener recompensas recurrentes.
+        </p>
+      </div>
+    </div>
+  ),
+
+  'hunting-missions': (
+    <div className="info-content">
+      <h2>Hunting Missions</h2>
+      <div className="content-section">
+        <p>
+          Script presente en repo (<code>hunting_missions.txt</code>) pero <strong>desactivado</strong> en
+          <code>scripts_custom.conf</code>. Candidato a daily loop futuro.
+        </p>
+      </div>
+    </div>
+  ),
+
+  'crimson-weapons': (
+    <div className="info-content">
+      <h2>Crimson Weapons</h2>
+      <div className="content-section">
+        <p>
+          Quest en reformulación. En Renewal de rAthena ya es posible obtener las armas Crimson;
+          el encantador Marcus y la quest custom están pendientes de alinear con el diseño actual.
+        </p>
       </div>
     </div>
   ),
