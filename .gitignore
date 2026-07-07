@@ -26,5 +26,3 @@ dist-ssr
 .env
 
 .firebase
-
-scripts/data/*
