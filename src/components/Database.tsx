@@ -8,6 +8,11 @@ import '../styles/Database.css';
 import { apiClient } from '../api/client';
 import { loadManifest, resolveSprite, type SpriteRect } from '../api/assets';
 import {
+  PLACEHOLDER_ITEM_ICON,
+  PLACEHOLDER_ITEM_ILLUSTRATION,
+  PLACEHOLDER_MOB_SPRITE
+} from '../api/placeholders';
+import {
   buildItemSearchParams,
   buildMobSearchParams,
   mapItemToCard,
@@ -101,7 +106,10 @@ const Database = () => {
         ? 'items/icons'
         : 'items/illustrations';
     const sprite = await resolveSprite(id, category);
-    return sprite || '/placeholder.png';
+    if (sprite) return sprite;
+    if (type === 'icons') return PLACEHOLDER_ITEM_ICON;
+    if (type === 'illustrations') return PLACEHOLDER_ITEM_ILLUSTRATION;
+    return PLACEHOLDER_MOB_SPRITE;
   }, []);
 
   const enrichMobResults = useCallback(async (mobs: MobResult[]): Promise<MobResult[]> => {
@@ -110,7 +118,7 @@ const Database = () => {
       const drop = await Promise.all(
         (mob.drop || []).map(async (entry) => ({
           ...entry,
-          itemIcon: entry.id ? await getImage(String(entry.id), 'icons') : '/placeholder.png'
+          itemIcon: entry.id ? await getImage(String(entry.id), 'icons') : PLACEHOLDER_ITEM_ICON
         }))
       );
       return { ...mob, sprite, drop };

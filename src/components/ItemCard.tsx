@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
 import type { SpriteRect } from '../api/assets';
 import AtlasSprite from './AtlasSprite';
+import {
+  PLACEHOLDER_ITEM_ICON,
+  PLACEHOLDER_ITEM_ILLUSTRATION
+} from '../api/placeholders';
 
 interface SearchResult {
   id: string;
@@ -254,6 +258,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ result }) => {
           <AtlasSprite
             sprite={result.illustration || result.icon}
             alt={result.name}
+            fallback={PLACEHOLDER_ITEM_ILLUSTRATION}
           />
         </div>
         <div className="result-card-info">
@@ -263,6 +268,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ result }) => {
                 sprite={result.icon}
                 alt={result.name}
                 className="small-icon"
+                fallback={PLACEHOLDER_ITEM_ICON}
               />
               <div className="title-container">
                 <div className="title-row">

@@ -1,4 +1,5 @@
 import type { SpriteRect } from '../api/assets';
+import { PLACEHOLDER_ITEM_ICON } from '../api/placeholders';
 
 interface AtlasSpriteProps {
   sprite: SpriteRect | string | null | undefined;
@@ -11,7 +12,7 @@ const AtlasSprite = ({
   sprite,
   alt = '',
   className = '',
-  fallback = '/placeholder.png'
+  fallback = PLACEHOLDER_ITEM_ICON
 }: AtlasSpriteProps) => {
   if (!sprite) {
     return <img src={fallback} alt={alt} className={className} />;

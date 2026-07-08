@@ -1,6 +1,11 @@
 import type { ItemDetail, ItemSummary, MobDetail, MobSummary } from './client';
 import type { MobResult } from '../components/MobCard';
 import type { SearchResult } from '../components/ItemCard';
+import {
+  PLACEHOLDER_ITEM_ICON,
+  PLACEHOLDER_ITEM_ILLUSTRATION,
+  PLACEHOLDER_MOB_SPRITE
+} from './placeholders';
 
 const ELEMENT_TO_API: Record<number, string> = {
   0: 'Neutral',
@@ -217,7 +222,7 @@ function numericElement(element: string, elementLevel = 1): number {
   return base + (Math.max(1, elementLevel) - 1) * 20;
 }
 
-export function mapMobToCard(mob: MobSummary | MobDetail, sprite = '/placeholder.png'): MobResult {
+export function mapMobToCard(mob: MobSummary | MobDetail, sprite = PLACEHOLDER_MOB_SPRITE): MobResult {
   const detail = mob as MobDetail;
   return {
     id: String(mob.id),
@@ -247,7 +252,7 @@ export function mapMobToCard(mob: MobSummary | MobDetail, sprite = '/placeholder
       type: drop.type === 'mvp' ? 'mvp' as const : drop.itemAegis?.includes('_C') ? 'card' as const : 'normal' as const,
       per: drop.rate ?? 0,
       itemName: drop.itemName,
-      itemIcon: '/placeholder.png'
+      itemIcon: PLACEHOLDER_ITEM_ICON
     })),
     mobClass: mob.class || undefined,
     activeModes: detail.modes
@@ -263,8 +268,8 @@ export function mapMobToCard(mob: MobSummary | MobDetail, sprite = '/placeholder
 
 export function mapItemToCard(
   item: ItemSummary | ItemDetail,
-  icon = '/placeholder.png',
-  illustration = '/placeholder.png'
+  icon = PLACEHOLDER_ITEM_ICON,
+  illustration = PLACEHOLDER_ITEM_ILLUSTRATION
 ): SearchResult {
   const detail = item as ItemDetail;
   const jobsText = formatJobs(detail.jobs);
