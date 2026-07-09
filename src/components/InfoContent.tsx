@@ -48,7 +48,7 @@ const contentMap: Record<string, ReactNode> = {
           <li>+25% base EXP por cada atacante extra (tope 12 atacantes)</li>
           <li>Party even share bonus: <strong>0</strong> (sin bonus extra por tamaño de party)</li>
           <li>Rango de nivel para share en party: 15 niveles</li>
-          <li><Pjs misma cuenta en party: exp bloqueado</li>
+          <li>Pjs misma cuenta en party: exp bloqueado</li>
           <li>Merchant Shop EXP: 1% del zeny recibido × nivel de skill (Discount/Overcharge)</li>
           <li>EXP en mapas PvP: sí</li>
         </ul>
