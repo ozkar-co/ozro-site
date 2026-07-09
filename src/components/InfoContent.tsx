@@ -22,7 +22,6 @@ const contentMap: Record<string, ReactNode> = {
           <li><strong>Nivel máximo:</strong> 175 / 60 (tablas EXP renewal)</li>
           <li><strong>Acceso:</strong> VPN privada, solo invitación</li>
           <li><strong>Comunidad:</strong> familiar, sin economía masiva</li>
-          <li><strong>Fuente de rates:</strong> <code>conf/import/battle_conf.txt</code></li>
         </ul>
         <p>
           Filosofía: progresión fluida sin carrera competitiva, NPCs y quests custom,
@@ -35,7 +34,6 @@ const contentMap: Record<string, ReactNode> = {
     <div className="info-content">
       <h2>Tasas de Experiencia</h2>
       <div className="content-section">
-        <p>Valores efectivos del servidor (100 = 1x oficial en rAthena):</p>
         <ul>
           <li><strong>Base EXP:</strong> 5x</li>
           <li><strong>Job EXP:</strong> 5x</li>
@@ -46,9 +44,8 @@ const contentMap: Record<string, ReactNode> = {
         <ul>
           <li>Multi level-up habilitado</li>
           <li>+25% base EXP por cada atacante extra (tope 12 atacantes)</li>
-          <li>Party even share bonus: <strong>0</strong> (sin bonus extra por tamaño de party)</li>
+          <li>Party even share bonus: sin bonus extra por tamaño de party</li>
           <li>Rango de nivel para share en party: 15 niveles</li>
-          <li>Pjs misma cuenta en party: exp bloqueado</li>
           <li>Merchant Shop EXP: 1% del zeny recibido × nivel de skill (Discount/Overcharge)</li>
           <li>EXP en mapas PvP: sí</li>
         </ul>
@@ -61,9 +58,8 @@ const contentMap: Record<string, ReactNode> = {
         <ul>
           <li>Pérdida de 1% de base EXP y 1% de job EXP del nivel actual</li>
           <li>En max level no se pierde EXP</li>
-          <li>Penalización de zeny al morir en PvP: 1%</li>
+          <li>Penalización de zeny al morir: 1%</li>
         </ul>
-        <p>Heal EXP y Resurrection EXP están desactivados.</p>
       </div>
     </div>
   ),
