@@ -16,6 +16,7 @@ export const recentUpdates: UpdateEntry[] = [
       'Ludovico el Sepulturero (Prontera): muertes del personaje y contador global de caidas en el reino.',
       'Garrett el Recolector (Geffen): sustituye al Trasher de la era Hercules; compra dos tipos de chatarra al dia a buen precio, con limite de gasto diario. Sistema de reputacion por personaje.',
       'Correcciones: Kaz el Cronista (dialogos y ventanas de texto), endow elemental (ya no aplica Stone Curse), soul link con espiritus renewal y status correcto en rAthena.',
+      'Web: pagina de informacion alineada con la configuracion del servidor (rates, drops, mecanicas); seccion de descargas con patch OzRo, Vodoo y DLLs opcionales.',
     ],
   },
   {

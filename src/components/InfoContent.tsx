@@ -48,7 +48,14 @@ const contentMap: Record<string, ReactNode> = {
           <li>+25% base EXP por cada atacante extra (tope 12 atacantes)</li>
           <li>Party even share bonus: <strong>0</strong> (sin bonus extra por tamaño de party)</li>
           <li>Rango de nivel para share en party: 15 niveles</li>
+          <li><Pjs misma cuenta en party: exp bloqueado</li>
           <li>Merchant Shop EXP: 1% del zeny recibido × nivel de skill (Discount/Overcharge)</li>
+          <li>EXP en mapas PvP: sí</li>
+        </ul>
+        <h3>Feedback en juego</h3>
+        <ul>
+          <li>Muestra EXP ganada: sí</li>
+          <li>Muestra zeny ganado: sí</li>
         </ul>
         <h3>Al morir</h3>
         <ul>
@@ -83,10 +90,13 @@ const contentMap: Record<string, ReactNode> = {
         <ul>
           <li>Tesoros WoE: 5x</li>
           <li>Tope efectivo de drop: 90%</li>
+          <li>Drops logaritmicos: no (lineales)</li>
           <li>Anuncio de drops raros: ≤ 1%</li>
           <li>Autoloot mercenario y homúnculo: sí</li>
           <li>Items van al suelo (no auto-get)</li>
           <li>Duración de item en suelo: 60 s</li>
+          <li>Bonus de prioridad de loot (first attack): +30%</li>
+          <li>Los summons de Alchemist: si dropean loot</li>
         </ul>
       </div>
     </div>
@@ -96,20 +106,57 @@ const contentMap: Record<string, ReactNode> = {
       <h2>Descargas</h2>
       <div className="content-section">
         <p>
-          Descarga el cliente para disfrutar de la experiencia en nuestro servidor.
-          <br />
-          Recuerda que las cuentas nuevas debes solicitarlas a los administradores.
+          Instala el cliente base, aplica el patch de OzRo y conectate con ZeroTier.
+          Las cuentas nuevas debes solicitarlas a los administradores.
         </p>
+        <h3>Cliente base</h3>
         <ul>
-          <li><a href="https://drive.usercontent.google.com/download?id=1VTzGUOz4OpP__ZTZ4UkKQndinIJNkcHS&export=download" target="_blank" rel="noopener noreferrer">Descargar desde Google Drive</a></li>
+          <li>
+            <a href="https://drive.usercontent.google.com/download?id=1VTzGUOz4OpP__ZTZ4UkKQndinIJNkcHS&export=download" target="_blank" rel="noopener noreferrer">
+              Cliente Renewal (Google Drive)
+            </a>
+          </li>
         </ul>
+        <h3>Patch OzRo (requerido)</h3>
         <p>
-          Para poderte conectar al servidor necesitas tener instalada la VPN de ZeroTier.
-          <br />
-          La informacion de identificador de red puedes solicitarla a los administradores.
+          Extrae sobre la carpeta del cliente despues de instalarlo. Este archivo se actualiza
+          con frecuencia; el enlace permanece fijo.
         </p>
         <ul>
-          <li><a href="https://download.zerotier.com/dist/ZeroTier%20One.msi" target="_blank" rel="noopener noreferrer">Descargar ZeroTier</a></li>
+          <li>
+            <a href="https://drive.google.com/file/d/1i9QjmnQFGhWL3amj-7_R7fViPIfaR-zH/view?usp=drive_link" target="_blank" rel="noopener noreferrer">
+              Patch OzRo (Google Drive)
+            </a>
+          </li>
+        </ul>
+        <h3>Herramientas recomendadas</h3>
+        <ul>
+          <li>
+            <a href="https://drive.google.com/file/d/1A8aX1A_tEFMzZr9Jsxdq6aSLzCh-i3UE/view?usp=drive_link" target="_blank" rel="noopener noreferrer">
+              Vodoo
+            </a>
+            {' '}— Herramienta QOL para mejor rendimiento y compatibilidad con el cliente.
+          </li>
+        </ul>
+        <h3>Opcional</h3>
+        <ul>
+          <li>
+            <a href="https://drive.google.com/file/d/1-Pp3tq1J_TRLVc5UvqpQ5SM0niKsZkRw/view?usp=drive_link" target="_blank" rel="noopener noreferrer">
+              OzRO_DLLs.zip
+            </a>
+            {' '}— DLLs de compatibilidad si el cliente falla al iniciar o tiene errores graficos.
+          </li>
+        </ul>
+        <h3>VPN (ZeroTier)</h3>
+        <p>
+          Para conectarte al servidor necesitas ZeroTier. El identificador de red debes solicitarlo a los administradores.
+        </p>
+        <ul>
+          <li>
+            <a href="https://download.zerotier.com/dist/ZeroTier%20One.msi" target="_blank" rel="noopener noreferrer">
+              Descargar ZeroTier
+            </a>
+          </li>
         </ul>
         <p>
           Si tienes alguna duda, no dudes en contactar con los administradores.
@@ -129,6 +176,8 @@ const contentMap: Record<string, ReactNode> = {
           <li>MVP tomb: activo</li>
           <li>Los mobs <strong>no</strong> hacen golpes críticos</li>
           <li>Flee penalty en mobs: sí</li>
+          <li>Falcon y Warg simultaneos: permitido</li>
+          <li>Boss: Heal/Full Heal sobre mobs cura solo 1 HP</li>
         </ul>
         <h3>Economía y sistemas activos</h3>
         <ul>
@@ -138,18 +187,13 @@ const contentMap: Record<string, ReactNode> = {
           <li>Merchant gana Job EXP al vender (Shop EXP)</li>
           <li>Autoloot mercenario y homúnculo</li>
           <li>Vending sin tax; barter activo; banco activo</li>
+          <li>Reconexion a instancias: sí</li>
         </ul>
         <h3>Mascotas</h3>
         <ul>
           <li>No requieren equip de pet para funcionar</li>
           <li>Pueden atacar y dar EXP de ataque al master</li>
           <li>Velocidad de level pet: 50%</li>
-        </ul>
-        <h3>Pendiente / no activo</h3>
-        <ul>
-          <li>Primer job sin quest (jobmaster desactivado)</li>
-          <li>Platinum skills automáticas al rebirth</li>
-          <li>Boss con heal reducido — no verificado en config</li>
         </ul>
       </div>
     </div>
@@ -256,6 +300,7 @@ const contentMap: Record<string, ReactNode> = {
         <h3>Features desactivados</h3>
         <ul>
           <li>Achievements, attendance, equip switch, private airship, roulette</li>
+          <li>Barter extended</li>
         </ul>
         <h3>Penalización al morir</h3>
         <ul>
