@@ -8,6 +8,17 @@ export interface UpdateEntry {
 /** Changelog OzRo derivado del git log de rathena (17 ene 2026 – hoy). */
 export const recentUpdates: UpdateEntry[] = [
   {
+    date: '9 de julio de 2026',
+    paragraphs: [
+      'Port y activacion de cuatro NPCs OzRo de la fase 1: Sabio de los Elementos, Ludovico el Sepulturero, Kessinger (Vinculador de Almas) y Garrett el Recolector.',
+      'Sabio de los Elementos: imbuicion elemental al arma (Fuego, Viento, Hielo, Tierra) por 15.000 zeny y piedra; duracion aproximada de 30 minutos. Ubicaciones en Izlude, Prontera, Morocc y Geffen.',
+      'Kessinger: Soul Link de pago (20.000 zeny, ~20 minutos) para jobs compatibles, incluyendo clases renewal (Genetic, Creator, etc.). Varias ciudades.',
+      'Ludovico el Sepulturero (Prontera): muertes del personaje y contador global de caidas en el reino.',
+      'Garrett el Recolector (Geffen): sustituye al Trasher de la era Hercules; compra dos tipos de chatarra al dia a buen precio, con limite de gasto diario. Sistema de reputacion por personaje.',
+      'Correcciones: Kaz el Cronista (dialogos y ventanas de texto), endow elemental (ya no aplica Stone Curse), soul link con espiritus renewal y status correcto en rAthena.',
+    ],
+  },
+  {
     date: '6 de julio de 2026',
     paragraphs: [
       'Se añadieron los documentos de diseño OzRo (visión, configuración del servidor e inventario de NPCs) como referencia interna del proyecto.',

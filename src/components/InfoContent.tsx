@@ -134,6 +134,7 @@ const contentMap: Record<string, ReactNode> = {
         <ul>
           <li>Bounty Boards en 14 ciudades</li>
           <li>Quests repetibles de EXP (17 misiones)</li>
+          <li>Garrett el Recolector: oferta diaria de dos items de chatarra con precio elevado</li>
           <li>Merchant gana Job EXP al vender (Shop EXP)</li>
           <li>Autoloot mercenario y homúnculo</li>
           <li>Vending sin tax; barter activo; banco activo</li>
@@ -273,6 +274,7 @@ const contentMap: Record<string, ReactNode> = {
         <p>NPCs activos en el servidor:</p>
         <ul>
           <li><strong>Sophie</strong> — Cambio puntos cash ↔ zeny (<code>points2zeny.txt</code>)</li>
+          <li><strong>Garrett el Recolector</strong> — Compra dos tipos de chatarra al dia a buen precio (x10 valor de venta, minimo 500 zeny/unidad); limite de gasto diario. Geffen</li>
           <li><strong>Monke</strong> — Intercambia bananas por frutas aleatorias</li>
           <li><strong>Card Collector</strong> — Archivo de cartas por cuenta y progreso de colección</li>
           <li><strong>Card Remover</strong> — Quita cartas de equipamiento</li>
@@ -290,6 +292,8 @@ const contentMap: Record<string, ReactNode> = {
           <li><strong>Healer</strong> — Cura y buffs temporales (curación y buffs por separado)</li>
           <li><strong>Stylist</strong> — Cambio de apariencia</li>
           <li><strong>Canalizadora Mística</strong> — Reset de stats/skills (birthstone + zeny)</li>
+          <li><strong>Sabio de los Elementos</strong> — Imbuye propiedad elemental al arma (Fuego, Viento, Hielo, Tierra) por zeny y piedra elemental; efecto ~30 min. Izlude, Prontera, Morocc, Geffen</li>
+          <li><strong>Kessinger, Vinculador de Almas</strong> — Soul Link de pago (20.000 zeny, ~20 min); jobs 2-1/2-2 y renewal compatibles. Yuno, Prontera, Morocc, Comodo, Geffen</li>
         </ul>
       </div>
     </div>
@@ -301,7 +305,8 @@ const contentMap: Record<string, ReactNode> = {
       <div className="content-section">
         <p>NPCs activos en el servidor:</p>
         <ul>
-          <li><strong>Kaz el Cronista</strong> — Lore básico y conteo de jugadores online</li>
+          <li><strong>Kaz el Cronista</strong> — Lore del reino y registro de aventureros; conteo de jugadores online. Geffen</li>
+          <li><strong>Ludovico el Sepulturero</strong> — Estadisticas de muertes del personaje y ecos de muerte en todo el reino. Prontera</li>
           <li><strong>Bounty Boards</strong> — Misiones de caza por ciudad (14 mapas)</li>
           <li><strong>Quests repetibles</strong> — EXP repetible por monstruo (17 quests)</li>
         </ul>
