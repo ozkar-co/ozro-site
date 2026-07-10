@@ -10,6 +10,8 @@ export const recentUpdates: UpdateEntry[] = [
   {
     date: '9 de julio de 2026',
     paragraphs: [
+      'Soporte de acentos en español para los diálogos de NPCs: el servidor y los scripts custom usan codificación Western (ISO-8859-1), de modo que tildes, eñes y signos de puntuación se muestran correctamente en el cliente.',
+      'Inicio del proyecto de traducción del juego al español, con la colaboración del jugador Kioto25mr. La primera fase cubre los NPCs custom activos de OzRo.',
       'Port y activacion de cuatro NPCs OzRo de la fase 1: Sabio de los Elementos, Ludovico el Sepulturero, Kessinger (Vinculador de Almas) y Garrett el Recolector.',
       'Sabio de los Elementos: imbuicion elemental al arma (Fuego, Viento, Hielo, Tierra) por 15.000 zeny y piedra; duracion aproximada de 30 minutos. Ubicaciones en Izlude, Prontera, Morocc y Geffen.',
       'Kessinger: Soul Link de pago (20.000 zeny, ~20 minutos) para jobs compatibles, incluyendo clases renewal (Genetic, Creator, etc.). Varias ciudades.',
