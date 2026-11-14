@@ -18,19 +18,16 @@ const contentMap: Record<string, ReactNode> = {
           Acceso por VPN con invitación; pincode desactivado.
         </p>
         <ul>
-          <li><strong>Cliente:</strong> Ragexe 2019-06-05 (PACKETVER 20190605)</li>
-          <li><strong>Motor:</strong> rAthena Renewal</li>
-          <li><strong>Episodio base:</strong> Renewal clásico + contenido custom</li>
-          <li><strong>Nivel máximo (server):</strong> 200 / 70 (tablas renewal)</li>
+          <li><strong>Episodio:</strong> 18 rev. 2019-06-05</li>
+          <li><strong>Modo:</strong> Renewal</li>
+          <li><strong>Nivel máximo:</strong> 175 / 60</li>
+          <li><strong>4th jobs:</strong> deshabilitados</li>
           <li><strong>Acceso:</strong> VPN privada, solo invitación</li>
           <li><strong>Comunidad:</strong> familiar, sin economía masiva</li>
         </ul>
         <p>
-          <strong>Alcance:</strong> el techo de assets y protocolo lo fija el cliente
-          2019-06-05. Contenido verificado: ciudades base, bounty boards, NPCs e items
-          custom y quests custom con definición en el cliente. Las instancias y job
-          quests se habilitan a medida que se validan sus mapas; no se prometen
-          episodios posteriores.
+          Contenido validado contra el cliente 2019-06-05. Instancias y job quests se
+          habilitan a medida que se validan sus mapas.
         </p>
         <p>
           Filosofía: progresión fluida sin carrera competitiva, NPCs y quests custom,
