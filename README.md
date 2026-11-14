@@ -49,6 +49,25 @@ git pull
 
 La tarea de backup corre dentro del mismo proceso (diario 3 AM, completo domingos 4 AM). Las tablas se configuran en `backup.conf` y los archivos se guardan en `backups/`.
 
+Cada backup incluye la **estructura** (`CREATE TABLE`) y los datos, por lo que es autocontenido:
+
+```
+backups/AAAAMMDD_HHMMSS_full/
+├── full_backup.sql   # Restauración completa (estructura + datos)
+├── schema/           # CREATE TABLE por tabla
+├── sql/              # Estructura + datos por tabla
+├── json/             # Datos en JSON
+└── metadata.json
+```
+
+Restaurar un backup completo sin depender de otra base de datos:
+
+```bash
+mysql -u USER -p < backups/AAAAMMDD_HHMMSS_full/full_backup.sql
+```
+
+`full_backup.sql` crea la base de datos si no existe y usa el nombre de `MARIADB_DATABASE`.
+
 ## Estructura
 
 ```
