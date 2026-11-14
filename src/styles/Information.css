@@ -1,0 +1,196 @@
+.information {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px;
+}
+
+.server-info-section {
+  flex: 1;
+  padding: 5rem 2rem;
+  margin: 0;
+  background-image: url('/bg.webp');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  position: relative;
+}
+
+.server-info-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(to bottom, white, transparent);
+  z-index: 2;
+}
+
+.server-info-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(to bottom, transparent, white);
+  z-index: 2;
+}
+
+.info-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+}
+
+/* Estilos compartidos para paneles */
+.info-sidebar, .info-content-container {
+  background: url('/bg2.webp');
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: overlay;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.scrollable-content {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  padding-right: 0.75rem;
+}
+
+/* Estilos del scrollbar */
+.scrollable-content::-webkit-scrollbar-button {
+  display: none;
+}
+
+.scrollable-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-content::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb {
+  background: #ff8d7f;
+  border-radius: 10px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb:hover {
+  background: #ff7a6a;
+}
+
+/* Para Firefox */
+.scrollable-content {
+  scrollbar-width: thin;
+  scrollbar-color: #ff8d7f #f0f0f0;
+}
+
+/* Sidebar Styles */
+.sidebar-category {
+  margin-bottom: 1.5rem;
+}
+
+.sidebar-category h3 {
+  color: #1a1a1a;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
+  font-weight: bold;
+}
+
+.sidebar-category ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  margin: 0.25rem 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #333;
+}
+
+.sidebar-item:hover {
+  background-color: rgba(255, 255, 255, 0.6);
+  color: #1a1a1a;
+}
+
+.sidebar-item.active {
+  background-color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.sidebar-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 0.75rem;
+  object-fit: contain;
+}
+
+/* Content Styles */
+.info-content {
+  max-width: 800px;
+}
+
+.info-content h2 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-size: 1.75rem;
+}
+
+.content-section {
+  margin-bottom: 2rem;
+}
+
+.content-section h3 {
+  color: #444;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+}
+
+.content-section ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.content-section li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+  color: #666;
+}
+
+.content-section p {
+  line-height: 1.6;
+  color: #666;
+}
+
+/* Responsive Design */
+@media (max-width: 825px) {
+  .info-container {
+    grid-template-columns: 1fr;
+  }
+
+  .info-sidebar, .info-content-container {
+    padding: 1.5rem;
+  }
+
+  .scrollable-content {
+    max-height: 300px;
+  }
+} 
