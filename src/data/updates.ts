@@ -9,6 +9,17 @@ export interface UpdateEntry {
 export const recentUpdates: UpdateEntry[] = [
   {
     date: '14 de noviembre de 2026',
+    title: 'Cliente 2019-06-05 y Bounty Boards',
+    paragraphs: [
+      'Se fijó el PACKETVER oficial del servidor en 20190605, coincidiendo con el cliente desplegado (Ragexe 2019-06-05). Login, selección de personaje y hotkeys quedan alineados.',
+      'Nueva sección Bounty Boards en Información: selector de ciudad, rangos de nivel y monstruos pedidos por cada tablero (13 ciudades, 32 tableros).',
+      'Se normalizaron los NPCs restantes a Latin-1 y se documentó la regla de alineación de quests con CTRL+U.',
+      'Se reactivaron FAKE_ANGEL y MINI_DEMON en el tablero de Geffen, con sus recompensas de EXP (236.250/176.625 y 303.750/227.700).',
+      'Se suprimieron dos mensajes de sistema del cliente sin uso en el servidor (sincronización de cuenta y aviso de stall display).',
+    ],
+  },
+  {
+    date: '14 de noviembre de 2026',
     paragraphs: [
       'Nueva sección Enciclopedia: directorio de NPCs con mapa, coordenadas, función, quests y sprite.',
       'La página carga solo el mapa seleccionado y los sprites visibles, para mantener el sitio ligero.',

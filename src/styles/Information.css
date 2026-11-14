@@ -180,6 +180,66 @@
   color: #666;
 }
 
+/* Bounty Boards */
+.bounty-select-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0 1.25rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.bounty-select {
+  background: #fff;
+  color: #333;
+  border: 1px solid #c9b07a;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  min-width: 190px;
+}
+
+.bounty-board {
+  margin-top: 1.25rem;
+}
+
+.bounty-board h3 {
+  margin: 0 0 0.5rem;
+  color: #8a6d3b;
+  font-size: 1.15rem;
+}
+
+.bounty-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.bounty-table th,
+.bounty-table td {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+}
+
+.bounty-table th {
+  color: #8a6d3b;
+  font-weight: 600;
+}
+
+.bounty-table td:nth-child(2),
+.bounty-table td:nth-child(3),
+.bounty-table th:nth-child(2),
+.bounty-table th:nth-child(3) {
+  text-align: right;
+}
+
+.bounty-note {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
 /* Responsive Design */
 @media (max-width: 825px) {
   .info-container {

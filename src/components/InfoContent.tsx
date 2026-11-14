@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import '../styles/Information.css';
 import Stats from './Stats';
+import BountyBoards from './BountyBoards';
 
 interface InfoContentProps {
   selectedSection: string;
@@ -17,12 +18,20 @@ const contentMap: Record<string, ReactNode> = {
           Acceso por VPN con invitación; pincode desactivado.
         </p>
         <ul>
-          <li><strong>Episodio:</strong> 14.3</li>
-          <li><strong>Modo:</strong> Renewal</li>
-          <li><strong>Nivel máximo:</strong> 175 / 60 (tablas EXP renewal)</li>
+          <li><strong>Cliente:</strong> Ragexe 2019-06-05 (PACKETVER 20190605)</li>
+          <li><strong>Motor:</strong> rAthena Renewal</li>
+          <li><strong>Episodio base:</strong> Renewal clásico + contenido custom</li>
+          <li><strong>Nivel máximo (server):</strong> 200 / 70 (tablas renewal)</li>
           <li><strong>Acceso:</strong> VPN privada, solo invitación</li>
           <li><strong>Comunidad:</strong> familiar, sin economía masiva</li>
         </ul>
+        <p>
+          <strong>Alcance:</strong> el techo de assets y protocolo lo fija el cliente
+          2019-06-05. Contenido verificado: ciudades base, bounty boards, NPCs e items
+          custom y quests custom con definición en el cliente. Las instancias y job
+          quests se habilitan a medida que se validan sus mapas; no se prometen
+          episodios posteriores.
+        </p>
         <p>
           Filosofía: progresión fluida sin carrera competitiva, NPCs y quests custom,
           y mecánicas orientadas a jugar solo o en party pequeña.
@@ -348,24 +357,14 @@ const contentMap: Record<string, ReactNode> = {
         <ul>
           <li><strong>Kaz el Cronista</strong> — Lore del reino y registro de aventureros; conteo de jugadores online. Geffen</li>
           <li><strong>Ludovico el Sepulturero</strong> — Estadisticas de muertes del personaje y ecos de muerte en todo el reino. Prontera</li>
-          <li><strong>Bounty Boards</strong> — Misiones de caza por ciudad (14 mapas)</li>
+          <li><strong>Bounty Boards</strong> — Misiones de caza por ciudad (13 ciudades, 32 tableros)</li>
           <li><strong>Quests repetibles</strong> — EXP repetible por monstruo (17 quests)</li>
         </ul>
       </div>
     </div>
   ),
 
-  'bounty-missions': (
-    <div className="info-content">
-      <h2>Bounty Missions</h2>
-      <div className="content-section">
-        <p>
-          Tablones de caza activos en 14 ciudades (<code>npc/custom/ozro/bounty/</code>).
-          Misiones de caza por mapa para obtener recompensas recurrentes.
-        </p>
-      </div>
-    </div>
-  ),
+  'bounty-missions': <BountyBoards />,
 
   'hunting-missions': (
     <div className="info-content">

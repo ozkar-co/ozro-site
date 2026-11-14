@@ -33,7 +33,7 @@ const sections: InfoSection[] = [
 
   // Quests Personalizadas
   { id: 'crimson-weapons', title: 'Crimson Weapons', icon: '/icons/weapon.png', category: 'Quests Personalizadas' },
-  { id: 'bounty-missions', title: 'Bounty Missions', icon: '/icons/bounty.png', category: 'Quests Personalizadas' },
+  { id: 'bounty-missions', title: 'Bounty Boards', icon: '/icons/bounty.png', category: 'Quests Personalizadas' },
   { id: 'hunting-missions', title: 'Hunting Missions', icon: '/icons/hunt.png', category: 'Quests Personalizadas' },
 ];
 
