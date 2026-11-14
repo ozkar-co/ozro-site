@@ -23,11 +23,10 @@ Edita `.env` con las credenciales de MariaDB y el puerto (`API_PORT`, por defect
 
 ```bash
 npm install
-npm run build   # compila a dist/
-./run.sh        # web + API en http://localhost:3001
+./run.sh        # compila dist/ y arranca web + API en http://localhost:3001
 ```
 
-`run.sh` instala dependencias si faltan, compila si no existe `dist/` y arranca el proceso.
+`run.sh` instala dependencias si faltan, compila siempre el frontend y arranca el proceso.
 
 ## Desarrollo de la UI
 
@@ -43,8 +42,7 @@ El proxy de `/api` y `/assets` está configurado en `vite.config.ts`.
 
 ```bash
 git pull
-npm run build
-# reiniciar el proceso
+# reiniciar el proceso; run.sh compila el frontend al arrancar
 ```
 
 ## Backups

@@ -20,10 +20,8 @@ if [[ ! -d node_modules ]]; then
     npm install
 fi
 
-if [[ ! -d dist ]]; then
-    echo "Compilando el sitio..."
-    npm run build
-fi
+echo "Compilando el sitio..."
+npm run build
 
 PORT="$(grep -E '^API_PORT=' .env 2>/dev/null | cut -d= -f2- | tr -d '[:space:]"' || true)"
 PORT="${PORT:-3001}"
