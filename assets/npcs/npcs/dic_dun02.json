@@ -1,0 +1,1 @@
+[{"id":"e9115ab0c071","name":"Rose#13_3","x":110,"y":127,"dir":5,"sprite":"489","function":"quest","visible":true,"isInstance":false,"quests":{"given":[11162,11168],"checked":[11162,11168]}},{"id":"f96fb5a0621a","name":"scarabahole0007","x":102,"y":148,"dir":0,"sprite":null,"function":"warp","visible":false,"isInstance":false}]
