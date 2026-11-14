@@ -1,0 +1,405 @@
+.encyclopedia {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: white;
+}
+
+.encyclopedia-content {
+  flex: 1;
+  padding: 110px 2rem 4rem;
+  background-image: url('/bg.webp');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  position: relative;
+}
+
+.encyclopedia-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(to bottom, white, transparent);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.encyclopedia-content::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(to bottom, transparent, white);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.encyclopedia-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 3;
+}
+
+.encyclopedia-hero {
+  text-align: center;
+  margin: 0.5rem 0 2rem;
+}
+
+.encyclopedia-hero h1 {
+  color: #333;
+  font-size: 2.6rem;
+  margin: 0 0 0.5rem;
+}
+
+.encyclopedia-hero p {
+  color: #555;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.encyclopedia-stats {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.encyclopedia-stats span {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #e0e0e0;
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.encyclopedia-panel {
+  background: url('/bg2.webp');
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: overlay;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.npc-controls {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.npc-controls-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.npc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.npc-field span {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #666;
+  font-weight: 600;
+}
+
+.npc-field select,
+.npc-field input {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  color: #333;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.npc-field select:focus,
+.npc-field input:focus {
+  outline: none;
+  border-color: #ff8d7f;
+  box-shadow: 0 0 0 2px rgba(255, 141, 127, 0.15);
+}
+
+.npc-field-map {
+  flex: 1 1 340px;
+}
+
+.npc-field-search {
+  flex: 1 1 260px;
+}
+
+.npc-field-function {
+  flex: 0 1 220px;
+}
+
+.npc-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #555;
+  padding-bottom: 0.6rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.npc-check input {
+  accent-color: #ff8d7f;
+  width: 16px;
+  height: 16px;
+}
+
+.npc-results-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin: 1.5rem 0 1rem;
+}
+
+.npc-results-head h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.npc-results-head p {
+  margin: 0.2rem 0 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.npc-map-tag {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #e0e0e0;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #666;
+}
+
+.npc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.npc-card {
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0.85rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  min-height: 96px;
+}
+
+.npc-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.npc-card.is-hidden {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.npc-sprite {
+  flex: 0 0 72px;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 0.25rem;
+  box-sizing: border-box;
+}
+
+.npc-sprite img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.npc-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.npc-info h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.npc-function {
+  display: inline-block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: #f0f0f0;
+  color: #555;
+  font-weight: 600;
+}
+
+.fn-quest {
+  background: #ffe8e4;
+  color: #b03a2e;
+}
+
+.fn-dialogo {
+  background: #e8f0ff;
+  color: #2c5aa0;
+}
+
+.fn-tienda {
+  background: #e9f7ef;
+  color: #1e8449;
+}
+
+.fn-warp {
+  background: #f3e8ff;
+  color: #7d3c98;
+}
+
+.fn-soporte {
+  background: #fff4e0;
+  color: #b9770e;
+}
+
+.fn-kafra {
+  background: #e0f7fa;
+  color: #00838f;
+}
+
+.fn-almacen {
+  background: #f0f0f0;
+  color: #555;
+}
+
+.fn-otro {
+  background: #f5f5f5;
+  color: #777;
+}
+
+.npc-location {
+  margin: 0.35rem 0 0;
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.npc-quests {
+  margin: 0.2rem 0 0;
+  color: #a04000;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.npc-loading,
+.npc-empty {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.encyclopedia-attribution {
+  margin: 1.5rem 0 0;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #777;
+}
+
+.encyclopedia-attribution a {
+  color: #b03a2e;
+}
+
+@media (max-width: 768px) {
+  .encyclopedia-content {
+    padding: 95px 1rem 2rem;
+    background-attachment: scroll;
+  }
+
+  .encyclopedia-panel {
+    padding: 1rem;
+  }
+
+  .npc-controls-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .npc-field,
+  .npc-field-map,
+  .npc-field-search,
+  .npc-field-function {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .npc-check {
+    padding-bottom: 0;
+  }
+
+  .npc-results-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .npc-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+
+  .npc-card {
+    padding: 0.7rem;
+    gap: 0.6rem;
+  }
+
+  .npc-sprite {
+    flex-basis: 56px;
+    width: 56px;
+    height: 56px;
+  }
+
+  .npc-info h3 {
+    font-size: 0.92rem;
+  }
+}

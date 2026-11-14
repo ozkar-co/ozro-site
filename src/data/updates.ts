@@ -8,6 +8,14 @@ export interface UpdateEntry {
 /** Changelog OzRo derivado del git log de rathena (17 ene 2026 – hoy). */
 export const recentUpdates: UpdateEntry[] = [
   {
+    date: '14 de noviembre de 2026',
+    paragraphs: [
+      'Nueva sección Enciclopedia: directorio de NPCs con mapa, coordenadas, función, quests y sprite.',
+      'La página carga solo el mapa seleccionado y los sprites visibles, para mantener el sitio ligero.',
+      'El sitio y la API ahora se sirven desde un único servidor en ro.ozkr.net.',
+    ],
+  },
+  {
     date: '9 de julio de 2026',
     paragraphs: [
       'Soporte de acentos en español para los diálogos de NPCs: el servidor y los scripts custom usan codificación Western (ISO-8859-1), de modo que tildes, eñes y signos de puntuación se muestran correctamente en el cliente.',

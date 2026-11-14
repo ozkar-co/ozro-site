@@ -6,6 +6,7 @@ import './App.css';
 const Main = lazy(() => import('./components/Main'));
 const Information = lazy(() => import('./components/Information'));
 const Database = lazy(() => import('./components/Database'));
+const Encyclopedia = lazy(() => import('./components/Encyclopedia'));
 const Rankings = lazy(() => import('./components/Rankings'));
 const Donate = lazy(() => import('./components/Donate'));
 const Thanks = lazy(() => import('./components/Thanks'));
@@ -24,6 +25,7 @@ const App = () => {
           <Route path="/" element={<Main />} />
           <Route path="/information" element={<Information />} />
           <Route path="/database" element={<Database />} />
+          <Route path="/encyclopedia" element={<Encyclopedia />} />
           <Route path="/rankings" element={<Rankings />} />
           <Route path="/donate" element={<Donate />} />
           <Route path="/thanks" element={<Thanks />} />
