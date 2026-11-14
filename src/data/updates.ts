@@ -9,9 +9,9 @@ export interface UpdateEntry {
 export const recentUpdates: UpdateEntry[] = [
   {
     date: '14 de noviembre de 2026',
-    title: 'Episodio 18 rev. 2019-06-05 y Bounty Boards',
+    title: 'Episodio 17.1 rev. 2019-06-05 y Bounty Boards',
     paragraphs: [
-      'Objetivo de contenido: Episodio 18 rev. 2019-06-05 (cliente Ragexe 2019-06-05, PACKETVER 20190605), con nivel máximo 175/60.',
+      'Objetivo de contenido: Episodio 17.1 rev. 2019-06-05 (cliente Ragexe 2019-06-05, PACKETVER 20190605), con nivel máximo 175/60.',
       '4th jobs bloqueados: no son soportados por el cliente 2019 y en esta versión de rAthena están bugueados. El bloqueo es central en pc_jobchange, así que cubre @jobchange, scripts y futuros job masters.',
       'Nueva sección Bounty Boards en Información: selector de ciudad, rangos de nivel y monstruos pedidos por cada tablero (13 ciudades, 32 tableros).',
       'Se normalizaron los NPCs restantes a Latin-1 y se documentó la regla de alineación de quests con CTRL+U.',
