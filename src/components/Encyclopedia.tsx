@@ -12,6 +12,7 @@ import {
   type NpcMapsIndex,
   type NpcSpriteIndex
 } from '../api/npcData';
+import { episodes } from '../data/episodes';
 import '../styles/Encyclopedia.css';
 
 const FUNCTION_LABELS: Record<string, string> = {
@@ -196,6 +197,34 @@ const Encyclopedia = () => {
                 {sprites ? sprites.counts.sprites.toLocaleString('es') : '—'} sprites
               </span>
             </div>
+          </section>
+
+          <section className="encyclopedia-episodes">
+            <div className="episodes-head">
+              <h2>Episodios</h2>
+              <p>
+                Línea principal hasta Episode 17.1, en orden de lanzamiento. Los enlaces
+                van a iRO Wiki; se irán reemplazando por páginas propias.
+              </p>
+            </div>
+            <ol className="episode-list">
+              {episodes.map((episode) => (
+                <li
+                  className="episode-item"
+                  key={`${episode.id}-${episode.date}-${episode.title}`}
+                >
+                  <span className="episode-date">{episode.date}</span>
+                  <a
+                    className="episode-title"
+                    href={episode.wiki}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {episode.title}
+                  </a>
+                </li>
+              ))}
+            </ol>
           </section>
 
           <section className="encyclopedia-panel">

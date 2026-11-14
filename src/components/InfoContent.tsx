@@ -21,7 +21,6 @@ const contentMap: Record<string, ReactNode> = {
           <li><strong>Episodio:</strong> 17.1 rev. 2019-06-05</li>
           <li><strong>Modo:</strong> Renewal</li>
           <li><strong>Nivel máximo:</strong> 175 / 60</li>
-          <li><strong>4th jobs:</strong> deshabilitados</li>
           <li><strong>Acceso:</strong> VPN privada, solo invitación</li>
           <li><strong>Comunidad:</strong> familiar, sin economía masiva</li>
         </ul>
