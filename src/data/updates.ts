@@ -9,13 +9,14 @@ export interface UpdateEntry {
 export const recentUpdates: UpdateEntry[] = [
   {
     date: '14 de noviembre de 2026',
-    title: 'Episodio 17.1 rev. 2019-06-05 y Bounty Boards',
+    title: 'Cierre de jornada: Ep17.1 y bases para lo que viene',
     paragraphs: [
-      'Objetivo de contenido: Episodio 17.1 rev. 2019-06-05 (cliente Ragexe 2019-06-05, PACKETVER 20190605), con nivel máximo 175/60.',
-      'Nueva sección Bounty Boards en Información: selector de ciudad, rangos de nivel y monstruos pedidos por cada tablero (13 ciudades, 32 tableros).',
-      'Se normalizaron los NPCs restantes a Latin-1 y se documentó la regla de alineación de quests con CTRL+U.',
-      'Se reactivaron FAKE_ANGEL y MINI_DEMON en el tablero de Geffen, con sus recompensas de EXP (236.250/176.625 y 303.750/227.700).',
-      'Se suprimieron dos mensajes de sistema del cliente sin uso en el servidor (sincronización de cuenta y aviso de stall display).',
+      'Cliente y protocolo: PACKETVER 20190605 (Ragexe 2019-06-05), Episodio 17.1 rev. 2019-06-05 y nivel máximo 175/60.',
+      'Bounty Boards: nueva sección con selector de ciudad (13 ciudades, 32 tableros); FAKE_ANGEL y MINI_DEMON reactivados en Geffen con su EXP.',
+      'Quests y mapas: Episode 17.2/18 deshabilitados; Novice Academy deshabilitada; Warlock, Mechanic y Sura desbloqueados con clones de sus mapas base (job3_war01, jupe_core, job_sword1).',
+      'Enciclopedia: lista cronológica de episodios hasta 17.1 con enlaces a la wiki, base para documentar la línea principal.',
+      'Encoding: NPCs normalizados a Latin-1 y limpieza de mensajes de sistema del cliente que no aplican al server.',
+      'Próximo: documentar quests principales (scraping + IA + validación contra scripts), traducir NPCs al español, job master, completar assets de mapas faltantes (new_*), validar instancias y reemplazar enlaces de wiki por páginas propias.',
     ],
   },
   {
