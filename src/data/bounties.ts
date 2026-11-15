@@ -19,10 +19,19 @@ export interface BountyCity {
 
 export const bountyBoards: BountyCity[] = [
   { city: "Alberta", boards: [
+    { minLevel: 1, maxLevel: 20, monsters: [
+      { name: "Wormtail", mobId: 1024, questId: 70305, baseExp: 17550, jobExp: 13050 },
+    ] },
+    { minLevel: 20, maxLevel: 40, monsters: [
+      { name: "Hydra", mobId: 1068, questId: 70306, baseExp: 34950, jobExp: 39450 },
+    ] },
+    { minLevel: 40, maxLevel: 60, monsters: [
+      { name: "Pirate Skeleton", mobId: 1071, questId: 70307, baseExp: 55350, jobExp: 62100 },
+    ] },
     { minLevel: 80, maxLevel: 100, monsters: [
-      { name: "Permeter", mobId: 1314, questId: 70305, baseExp: 195150, jobExp: 220050 },
-      { name: "Solider", mobId: 1316, questId: 70306, baseExp: 267600, jobExp: 250650 },
-      { name: "Freezer", mobId: 1319, questId: 70307, baseExp: 279900, jobExp: 262350 },
+      { name: "Permeter", mobId: 1314, questId: 70308, baseExp: 195150, jobExp: 220050 },
+      { name: "Solider", mobId: 1316, questId: 70309, baseExp: 267600, jobExp: 250650 },
+      { name: "Freezer", mobId: 1319, questId: 70310, baseExp: 279900, jobExp: 262350 },
     ] },
   ] },
   { city: "Aldebaran", boards: [
@@ -76,22 +85,22 @@ export const bountyBoards: BountyCity[] = [
   ] },
   { city: "Eclage", boards: [
     { minLevel: 145, maxLevel: 165, monsters: [
-      { name: "Antique Book", mobId: 2366, questId: 70351, baseExp: 1083750, jobExp: 1056600 },
-      { name: "Cenere", mobId: 2365, questId: 70352, baseExp: 1067550, jobExp: 1028100 },
-      { name: "Lichtern Yellow", mobId: 2368, questId: 70353, baseExp: 1060650, jobExp: 1045800 },
-      { name: "Lichtern Blue", mobId: 2367, questId: 70354, baseExp: 1078050, jobExp: 1026150 },
-      { name: "Lichtern Red", mobId: 2369, questId: 70355, baseExp: 1080150, jobExp: 1082250 },
-      { name: "Lichtern Green", mobId: 2370, questId: 70356, baseExp: 1082100, jobExp: 1027800 },
+      { name: "Antique Book", mobId: 2366, questId: 70387, baseExp: 1083750, jobExp: 1056600 },
+      { name: "Cenere", mobId: 2365, questId: 70388, baseExp: 1067550, jobExp: 1028100 },
+      { name: "Lichtern Yellow", mobId: 2368, questId: 70389, baseExp: 1060650, jobExp: 1045800 },
+      { name: "Lichtern Blue", mobId: 2367, questId: 70390, baseExp: 1078050, jobExp: 1026150 },
+      { name: "Lichtern Red", mobId: 2369, questId: 70391, baseExp: 1080150, jobExp: 1082250 },
+      { name: "Lichtern Green", mobId: 2370, questId: 70392, baseExp: 1082100, jobExp: 1027800 },
     ] },
   ] },
   { city: "Einbroch", boards: [
     { minLevel: 80, maxLevel: 100, monsters: [
-      { name: "Holden", mobId: 1628, questId: 70323, baseExp: 198900, jobExp: 203700 },
-      { name: "Metaling", mobId: 1613, questId: 70324, baseExp: 469800, jobExp: 297000 },
-      { name: "Noxious", mobId: 1620, questId: 70325, baseExp: 146400, jobExp: 267750 },
-      { name: "Porcellio", mobId: 1619, questId: 70326, baseExp: 213300, jobExp: 218250 },
-      { name: "Teddy Bear", mobId: 1622, questId: 70327, baseExp: 243000, jobExp: 269850 },
-      { name: "Venomous", mobId: 1621, questId: 70328, baseExp: 195900, jobExp: 200550 },
+      { name: "Holden", mobId: 1628, questId: 70344, baseExp: 198900, jobExp: 203700 },
+      { name: "Metaling", mobId: 1613, questId: 70345, baseExp: 469800, jobExp: 297000 },
+      { name: "Noxious", mobId: 1620, questId: 70346, baseExp: 146400, jobExp: 267750 },
+      { name: "Porcellio", mobId: 1619, questId: 70347, baseExp: 213300, jobExp: 218250 },
+      { name: "Teddy Bear", mobId: 1622, questId: 70348, baseExp: 243000, jobExp: 269850 },
+      { name: "Venomous", mobId: 1621, questId: 70349, baseExp: 195900, jobExp: 200550 },
     ] },
   ] },
   { city: "Geffen", boards: [
@@ -195,12 +204,17 @@ export const bountyBoards: BountyCity[] = [
   ] },
   { city: "Lasagna", boards: [
     { minLevel: 1, maxLevel: 20, monsters: [
-      { name: "Eggring", mobId: 3495, questId: 70357, baseExp: 2000, jobExp: 1500 },
-      { name: "Leaf Lunatic", mobId: 3496, questId: 70358, baseExp: 2000, jobExp: 1500 },
-      { name: "Grass Fabre", mobId: 3497, questId: 70359, baseExp: 2000, jobExp: 1500 },
-      { name: "Wild Hornet", mobId: 3498, questId: 70360, baseExp: 2000, jobExp: 1500 },
-      { name: "Sweet Roda Frog", mobId: 3499, questId: 70361, baseExp: 2000, jobExp: 1500 },
-      { name: "Hunter Desert Wolf", mobId: 3500, questId: 70362, baseExp: 2000, jobExp: 1500 },
+      { name: "Eggring", mobId: 3495, questId: 70393, baseExp: 10000, jobExp: 7500 },
+      { name: "Leaf Lunatic", mobId: 3496, questId: 70394, baseExp: 10000, jobExp: 7500 },
+      { name: "Grass Fabre", mobId: 3497, questId: 70395, baseExp: 10000, jobExp: 7500 },
+      { name: "Wild Hornet", mobId: 3498, questId: 70396, baseExp: 10000, jobExp: 7500 },
+      { name: "Sweet Roda Frog", mobId: 3499, questId: 70397, baseExp: 10000, jobExp: 7500 },
+      { name: "Hunter Desert Wolf", mobId: 3500, questId: 70398, baseExp: 10000, jobExp: 7500 },
+    ] },
+    { minLevel: 140, maxLevel: 160, monsters: [
+      { name: "Combat Basilisk", mobId: 3503, questId: 70399, baseExp: 200000, jobExp: 150000 },
+      { name: "Combat Basilisk", mobId: 3504, questId: 70400, baseExp: 200000, jobExp: 150000 },
+      { name: "Jungle Madragora", mobId: 3506, questId: 70401, baseExp: 200000, jobExp: 150000 },
     ] },
   ] },
   { city: "Lighthalzen", boards: [
@@ -244,25 +258,30 @@ export const bountyBoards: BountyCity[] = [
   ] },
   { city: "Lutie", boards: [
     { minLevel: 20, maxLevel: 40, monsters: [
-      { name: "Cookie", mobId: 1265, questId: 70314, baseExp: 35100, jobExp: 39600 },
-      { name: "Christmas Cookie", mobId: 1246, questId: 70315, baseExp: 42300, jobExp: 47550 },
-      { name: "Cruiser", mobId: 1248, questId: 70316, baseExp: 43200, jobExp: 48600 },
-      { name: "Marin", mobId: 1243, questId: 70317, baseExp: 126300, jobExp: 129000 },
-      { name: "Myst Case", mobId: 1249, questId: 70318, baseExp: 43200, jobExp: 48600 },
+      { name: "Cookie", mobId: 1265, questId: 70335, baseExp: 35100, jobExp: 39600 },
+      { name: "Christmas Cookie", mobId: 1246, questId: 70336, baseExp: 42300, jobExp: 47550 },
+      { name: "Cruiser", mobId: 1248, questId: 70337, baseExp: 43200, jobExp: 48600 },
+      { name: "Marin", mobId: 1243, questId: 70338, baseExp: 126300, jobExp: 129000 },
+      { name: "Myst Case", mobId: 1249, questId: 70339, baseExp: 43200, jobExp: 48600 },
     ] },
   ] },
   { city: "Malangdo", boards: [
     { minLevel: 75, maxLevel: 95, monsters: [
-      { name: "Red Eruma", mobId: 2197, questId: 70321, baseExp: 286200, jobExp: 286200 },
-      { name: "Siorava", mobId: 2199, questId: 70322, baseExp: 180000, jobExp: 180000 },
+      { name: "Red Eruma", mobId: 2197, questId: 70342, baseExp: 286200, jobExp: 286200 },
+      { name: "Siorava", mobId: 2199, questId: 70343, baseExp: 180000, jobExp: 180000 },
     ] },
   ] },
   { city: "Manuk", boards: [
+    { minLevel: 120, maxLevel: 140, monsters: [
+      { name: "Bradium Golem", mobId: 2024, questId: 70374, baseExp: 1277700, jobExp: 539250 },
+      { name: "Centipede Larva", mobId: 1999, questId: 70375, baseExp: 571200, jobExp: 300450 },
+      { name: "Tatacho", mobId: 1986, questId: 70376, baseExp: 733500, jobExp: 463800 },
+    ] },
     { minLevel: 140, maxLevel: 160, monsters: [
-      { name: "Uni Horn Scaraba", mobId: 2083, questId: 70341, baseExp: 783000, jobExp: 601650 },
-      { name: "Horn Scaraba", mobId: 2084, questId: 70342, baseExp: 867000, jobExp: 682350 },
-      { name: "Antler Scaraba", mobId: 2085, questId: 70343, baseExp: 949500, jobExp: 788250 },
-      { name: "Rake Scaraba", mobId: 2086, questId: 70344, baseExp: 1048500, jobExp: 899250 },
+      { name: "Uni Horn Scaraba", mobId: 2083, questId: 70377, baseExp: 783000, jobExp: 601650 },
+      { name: "Horn Scaraba", mobId: 2084, questId: 70378, baseExp: 867000, jobExp: 682350 },
+      { name: "Antler Scaraba", mobId: 2085, questId: 70379, baseExp: 949500, jobExp: 788250 },
+      { name: "Rake Scaraba", mobId: 2086, questId: 70380, baseExp: 1048500, jobExp: 899250 },
     ] },
   ] },
   { city: "Mid Camp", boards: [
@@ -291,19 +310,45 @@ export const bountyBoards: BountyCity[] = [
     ] },
   ] },
   { city: "Morocc", boards: [
+    { minLevel: 1, maxLevel: 20, monsters: [
+      { name: "Baby Desert Wolf", mobId: 1107, questId: 70311, baseExp: 13500, jobExp: 10200 },
+      { name: "Drops", mobId: 1113, questId: 70312, baseExp: 4050, jobExp: 3000 },
+      { name: "Picky", mobId: 1049, questId: 70313, baseExp: 9450, jobExp: 7050 },
+      { name: "Picky (Shell)", mobId: 1050, questId: 70314, baseExp: 10800, jobExp: 8100 },
+      { name: "Scorpion", mobId: 1001, questId: 70315, baseExp: 16200, jobExp: 12150 },
+    ] },
+    { minLevel: 20, maxLevel: 40, monsters: [
+      { name: "Ant Egg", mobId: 1097, questId: 70316, baseExp: 27000, jobExp: 30450 },
+      { name: "Andre", mobId: 1095, questId: 70317, baseExp: 32400, jobExp: 36450 },
+      { name: "Deniro", mobId: 1105, questId: 70318, baseExp: 31050, jobExp: 34950 },
+      { name: "Familiar", mobId: 1005, questId: 70319, baseExp: 21600, jobExp: 24300 },
+      { name: "Piere", mobId: 1160, questId: 70320, baseExp: 32400, jobExp: 36450 },
+    ] },
+    { minLevel: 40, maxLevel: 60, monsters: [
+      { name: "Isis", mobId: 1029, questId: 70321, baseExp: 83700, jobExp: 88500 },
+      { name: "Metaller", mobId: 1058, questId: 70322, baseExp: 70800, jobExp: 76050 },
+      { name: "Minorous", mobId: 1149, questId: 70323, baseExp: 85500, jobExp: 84300 },
+      { name: "Mummy", mobId: 1041, questId: 70324, baseExp: 76500, jobExp: 82200 },
+      { name: "Verit", mobId: 1032, questId: 70325, baseExp: 65100, jobExp: 70050 },
+    ] },
     { minLevel: 60, maxLevel: 80, monsters: [
-      { name: "Golem", mobId: 1040, questId: 70308, baseExp: 84900, jobExp: 91200 },
-      { name: "Hode", mobId: 1127, questId: 70309, baseExp: 99600, jobExp: 106500 },
-      { name: "Marduk", mobId: 1140, questId: 70310, baseExp: 127500, jobExp: 130800 },
-      { name: "Pasana", mobId: 1154, questId: 70311, baseExp: 160200, jobExp: 179100 },
-      { name: "Sandman", mobId: 1165, questId: 70312, baseExp: 98400, jobExp: 105750 },
-      { name: "Zerom", mobId: 1178, questId: 70313, baseExp: 113400, jobExp: 144000 },
+      { name: "Golem", mobId: 1040, questId: 70326, baseExp: 84900, jobExp: 91200 },
+      { name: "Hode", mobId: 1127, questId: 70327, baseExp: 99600, jobExp: 106500 },
+      { name: "Marduk", mobId: 1140, questId: 70328, baseExp: 127500, jobExp: 130800 },
+      { name: "Pasana", mobId: 1154, questId: 70329, baseExp: 160200, jobExp: 179100 },
+      { name: "Sandman", mobId: 1165, questId: 70330, baseExp: 98400, jobExp: 105750 },
+      { name: "Zerom", mobId: 1178, questId: 70331, baseExp: 113400, jobExp: 144000 },
+    ] },
+    { minLevel: 120, maxLevel: 140, monsters: [
+      { name: "Minorus (Nightmare)", mobId: 2353, questId: 70332, baseExp: 660300, jobExp: 573000 },
+      { name: "Mimic (Nightmare)", mobId: 2356, questId: 70333, baseExp: 480150, jobExp: 811200 },
+      { name: "Verit (Nightmare)", mobId: 2355, questId: 70334, baseExp: 622200, jobExp: 471300 },
     ] },
   ] },
   { city: "Niflheim", boards: [
     { minLevel: 100, maxLevel: 120, monsters: [
-      { name: "Disguise", mobId: 1506, questId: 70319, baseExp: 401700, jobExp: 251100 },
-      { name: "Loli Ruri", mobId: 1505, questId: 70320, baseExp: 502200, jobExp: 313950 },
+      { name: "Disguise", mobId: 1506, questId: 70340, baseExp: 401700, jobExp: 251100 },
+      { name: "Loli Ruri", mobId: 1505, questId: 70341, baseExp: 502200, jobExp: 313950 },
     ] },
   ] },
   { city: "Payon", boards: [
@@ -369,23 +414,35 @@ export const bountyBoards: BountyCity[] = [
     ] },
   ] },
   { city: "Rachel", boards: [
+    { minLevel: 80, maxLevel: 100, monsters: [
+      { name: "Anacondaq", mobId: 1030, questId: 70350, baseExp: 288300, jobExp: 180300 },
+      { name: "Roween", mobId: 1782, questId: 70351, baseExp: 304200, jobExp: 285300 },
+      { name: "Siroma", mobId: 1776, questId: 70352, baseExp: 274050, jobExp: 205350 },
+    ] },
+    { minLevel: 100, maxLevel: 120, monsters: [
+      { name: "Desert Wolf", mobId: 1220, questId: 70353, baseExp: 931800, jobExp: 631800 },
+      { name: "Drosera", mobId: 1781, questId: 70354, baseExp: 243000, jobExp: 151950 },
+      { name: "Hill Wind", mobId: 1680, questId: 70355, baseExp: 342000, jobExp: 213750 },
+      { name: "Ice Titan", mobId: 1777, questId: 70356, baseExp: 490200, jobExp: 396600 },
+      { name: "Snowier", mobId: 1775, questId: 70357, baseExp: 349800, jobExp: 218700 },
+    ] },
     { minLevel: 120, maxLevel: 140, monsters: [
-      { name: "Agav", mobId: 1769, questId: 70329, baseExp: 766800, jobExp: 442350 },
-      { name: "Echio", mobId: 1787, questId: 70330, baseExp: 719400, jobExp: 415200 },
-      { name: "Hodremlin", mobId: 1773, questId: 70331, baseExp: 732600, jobExp: 422850 },
-      { name: "Isilla", mobId: 1772, questId: 70332, baseExp: 673800, jobExp: 388800 },
-      { name: "Seeker", mobId: 1774, questId: 70333, baseExp: 781800, jobExp: 450900 },
-      { name: "Vanberk", mobId: 1771, questId: 70334, baseExp: 631800, jobExp: 364500 },
+      { name: "Agav", mobId: 1769, questId: 70358, baseExp: 766800, jobExp: 442350 },
+      { name: "Echio", mobId: 1787, questId: 70359, baseExp: 719400, jobExp: 415200 },
+      { name: "Hodremlin", mobId: 1773, questId: 70360, baseExp: 732600, jobExp: 422850 },
+      { name: "Isilla", mobId: 1772, questId: 70361, baseExp: 673800, jobExp: 388800 },
+      { name: "Seeker", mobId: 1774, questId: 70362, baseExp: 781800, jobExp: 450900 },
+      { name: "Vanberk", mobId: 1771, questId: 70363, baseExp: 631800, jobExp: 364500 },
     ] },
   ] },
   { city: "Splendide", boards: [
     { minLevel: 100, maxLevel: 120, monsters: [
-      { name: "Pinguicula", mobId: 1995, questId: 70345, baseExp: 438000, jobExp: 399300 },
-      { name: "Dark Pinguicula", mobId: 2015, questId: 70346, baseExp: 409500, jobExp: 362850 },
-      { name: "Nepenthes", mobId: 1988, questId: 70347, baseExp: 506700, jobExp: 268950 },
-      { name: "Cornus", mobId: 1992, questId: 70348, baseExp: 1216800, jobExp: 600600 },
-      { name: "Naga", mobId: 1993, questId: 70349, baseExp: 573900, jobExp: 331800 },
-      { name: "Luciola Vespa", mobId: 1994, questId: 70350, baseExp: 441900, jobExp: 270900 },
+      { name: "Pinguicula", mobId: 1995, questId: 70381, baseExp: 438000, jobExp: 399300 },
+      { name: "Dark Pinguicula", mobId: 2015, questId: 70382, baseExp: 409500, jobExp: 362850 },
+      { name: "Nepenthes", mobId: 1988, questId: 70383, baseExp: 506700, jobExp: 268950 },
+      { name: "Cornus", mobId: 1992, questId: 70384, baseExp: 1216800, jobExp: 600600 },
+      { name: "Naga", mobId: 1993, questId: 70385, baseExp: 573900, jobExp: 331800 },
+      { name: "Luciola Vespa", mobId: 1994, questId: 70386, baseExp: 441900, jobExp: 270900 },
     ] },
   ] },
   { city: "Umbala", boards: [
@@ -397,13 +454,19 @@ export const bountyBoards: BountyCity[] = [
     ] },
   ] },
   { city: "Veins", boards: [
+    { minLevel: 100, maxLevel: 120, monsters: [
+      { name: "Drosera", mobId: 1781, questId: 70364, baseExp: 243000, jobExp: 151950 },
+      { name: "Galion", mobId: 1783, questId: 70365, baseExp: 318300, jobExp: 199050 },
+      { name: "Magmaring", mobId: 1836, questId: 70366, baseExp: 456300, jobExp: 285450 },
+      { name: "Muscipular", mobId: 1780, questId: 70367, baseExp: 349800, jobExp: 218700 },
+    ] },
     { minLevel: 120, maxLevel: 140, monsters: [
-      { name: "Kasa", mobId: 1833, questId: 70335, baseExp: 1091700, jobExp: 1156350 },
-      { name: "Knocker", mobId: 1838, questId: 70336, baseExp: 719400, jobExp: 565200 },
-      { name: "Necromancer", mobId: 1870, questId: 70337, baseExp: 897000, jobExp: 897000 },
-      { name: "Ragged Zombie", mobId: 1865, questId: 70338, baseExp: 572100, jobExp: 463050 },
-      { name: "Salamander", mobId: 1831, questId: 70339, baseExp: 1154100, jobExp: 1070850 },
-      { name: "Zombie Slaughter", mobId: 1864, questId: 70340, baseExp: 620700, jobExp: 405300 },
+      { name: "Kasa", mobId: 1833, questId: 70368, baseExp: 1091700, jobExp: 1156350 },
+      { name: "Knocker", mobId: 1838, questId: 70369, baseExp: 719400, jobExp: 565200 },
+      { name: "Necromancer", mobId: 1870, questId: 70370, baseExp: 897000, jobExp: 897000 },
+      { name: "Ragged Zombie", mobId: 1865, questId: 70371, baseExp: 572100, jobExp: 463050 },
+      { name: "Salamander", mobId: 1831, questId: 70372, baseExp: 1154100, jobExp: 1070850 },
+      { name: "Zombie Slaughter", mobId: 1864, questId: 70373, baseExp: 620700, jobExp: 405300 },
     ] },
   ] },
 ];
