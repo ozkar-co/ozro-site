@@ -392,6 +392,80 @@ export async function getMobMeta() {
     };
 }
 
+export async function getMobsDroppingItems(itemAegisList) {
+    const aegisNames = [...new Set((itemAegisList || []).filter(Boolean))];
+    if (aegisNames.length === 0) return new Map();
+
+    const placeholders = aegisNames.map(() => '?').join(', ');
+    const dropColumns = mobDropColumns();
+    const selects = dropColumns.map((col) => `
+        SELECT m.id, m.name_english, m.name_aegis, m.level,
+               m.${col.item} AS item_aegis,
+               m.${col.rate} AS rate,
+               '${col.type}' AS drop_type
+        FROM ${effectiveMobsSql('m')}
+        WHERE m.${col.item} IN (${placeholders})
+    `);
+    const params = dropColumns.flatMap(() => aegisNames);
+
+    const rows = await query(
+        `(${selects.join(' UNION ALL ')})
+         ORDER BY item_aegis ASC, rate DESC, level ASC, name_english ASC`,
+        params
+    );
+
+    const mobsById = new Map();
+    for (const row of rows) {
+        if (!mobsById.has(row.id)) {
+            mobsById.set(row.id, {
+                id: row.id,
+                name: row.name_english,
+                nameAegis: row.name_aegis,
+                level: row.level
+            });
+        }
+    }
+    await attachSpawnSummaries([...mobsById.values()]);
+
+    const byItem = new Map();
+    const seen = new Map();
+    for (const row of rows) {
+        if (!row.item_aegis) continue;
+        const key = `${row.item_aegis}|${row.id}|${row.drop_type || 'normal'}`;
+        const rate = Number(row.rate) || 0;
+        const previous = seen.get(key);
+        if (previous != null && previous >= rate) continue;
+        seen.set(key, rate);
+
+        if (!byItem.has(row.item_aegis)) byItem.set(row.item_aegis, []);
+        const mob = mobsById.get(row.id) || {};
+        byItem.get(row.item_aegis).push({
+            id: mob.id,
+            name: mob.name,
+            nameAegis: mob.nameAegis,
+            level: mob.level,
+            rate,
+            dropType: row.drop_type || 'normal',
+            chancePercent: rate > 0 ? Math.min(rate, 10000) / 100 : 0,
+            spawnMaps: mob.spawnMaps,
+            spawnMapCount: mob.spawnMapCount,
+            spawnAmount: mob.spawnAmount,
+            hasWorldSpawn: mob.hasWorldSpawn
+        });
+    }
+
+    for (const drops of byItem.values()) {
+        drops.sort((a, b) =>
+            Number(b.hasWorldSpawn === true) - Number(a.hasWorldSpawn === true) ||
+            b.rate - a.rate ||
+            a.level - b.level ||
+            a.name.localeCompare(b.name)
+        );
+    }
+
+    return byItem;
+}
+
 export async function getMobsDroppingItem(itemAegis) {
     const dropColumns = mobDropColumns();
     const rateCase = dropColumns.map((col) => `WHEN m.${col.item} = ? THEN m.${col.rate}`).join(' ');
@@ -418,5 +492,12 @@ export async function getMobsDroppingItem(itemAegis) {
         dropType: row.drop_type || 'normal',
         chancePercent: row.rate != null ? (Math.min(row.rate, 10000) / 100) : null
     }));
-    return attachSpawnSummaries(results);
+    await attachSpawnSummaries(results);
+    results.sort((a, b) =>
+        Number(b.hasWorldSpawn === true) - Number(a.hasWorldSpawn === true) ||
+        b.rate - a.rate ||
+        a.level - b.level ||
+        a.name.localeCompare(b.name)
+    );
+    return results;
 }

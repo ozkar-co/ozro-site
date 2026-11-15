@@ -8,6 +8,18 @@ export interface UpdateEntry {
 /** Changelog OzRo derivado del git log de rathena (17 ene 2026 – hoy). */
 export const recentUpdates: UpdateEntry[] = [
   {
+    date: '15 de noviembre de 2026',
+    title: 'Base de datos de spawns y mapas',
+    paragraphs: [
+      'Nueva base de datos de aparición de monstruos generada desde los scripts activos del servidor: 3.867 puntos de spawn en 410 mapas y 1.384 monstruos distintos.',
+      'La ficha de cada monstruo muestra sus mapas de aparición, coordenadas, cantidad, tiempo de respawn y si el spawn es aleatorio, de jefe o de instancia.',
+      'La ficha de cada objeto muestra qué monstruos lo dropean y el porcentaje de drop, con enlaces directos a los mapas donde aparecen esos monstruos.',
+      'Nuevos filtros activos por defecto: se ocultan los monstruos sin spawn (salvo que se incluyan instancias) y los objetos sin drop natural. Se pueden desactivar desde las opciones de búsqueda.',
+      'Nueva sección Mapas: selector por mapa, vista esquemática del terreno, puntos de spawn, leyenda de jefe/instancia y listado de monstruos con sus cantidades.',
+      'Las vistas de mapa se generan desde el map_cache del servidor; el mapa mundial interactivo queda como siguiente fase.',
+    ],
+  },
+  {
     date: '14 de noviembre de 2026',
     title: 'Cierre de jornada: Ep17.1 y bases para lo que viene',
     paragraphs: [

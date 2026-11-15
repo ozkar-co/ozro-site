@@ -1,5 +1,5 @@
 import { query } from '../../services/mariadb.js';
-import { getMobsDroppingItem } from './mobQuery.js';
+import { getMobsDroppingItem, getMobsDroppingItems } from './mobQuery.js';
 import {
     effectiveMobsSql,
     effectiveItemsSql,
@@ -220,11 +220,23 @@ export async function searchItems(params) {
         [...values, limit, offset]
     );
 
+    const results = rows.map(mapItemDetail);
+    if (isMobDataAvailable() && results.length > 0) {
+        const dropsByItem = await getMobsDroppingItems(results.map((item) => item.nameAegis));
+        for (const item of results) {
+            item.droppedBy = dropsByItem.get(item.nameAegis) || [];
+        }
+    } else {
+        for (const item of results) {
+            item.droppedBy = [];
+        }
+    }
+
     return {
         total,
         page,
         limit,
-        results: rows.map(mapItemDetail)
+        results
     };
 }
 

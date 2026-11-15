@@ -365,7 +365,7 @@ Búsqueda de objetos con filtros. Usa tablas renewal unidas (`item_db_re_usable`
 }
 ```
 
-**Nota:** `hasNaturalDrop` usa `mob_spawn`; si la tabla no existe, el filtro se ignora. Filtro por descripción de item no disponible en v1 (no está en las tablas `item_db_re_*`).
+**Nota:** cada resultado incluye `droppedBy` con los mobs que dropean el objeto, su porcentaje y los mapas de spawn del mob. `hasNaturalDrop` usa `mob_spawn`; si la tabla no existe, el filtro se ignora. Filtro por descripción de item no disponible en v1 (no está en las tablas `item_db_re_*`).
 
 ---
 
