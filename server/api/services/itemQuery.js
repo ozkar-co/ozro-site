@@ -4,11 +4,13 @@ import {
     effectiveMobsSql,
     effectiveItemsSql,
     isMobDataAvailable,
+    isSpawnDataAvailable,
     mobDropColumns,
     parsePagination,
     parseCsv,
     parseBool,
     parseIntParam,
+    spawnTableSql,
     ITEM_TYPES,
     ITEM_CLASSES,
     ITEM_CLASS_COLUMNS,
@@ -107,6 +109,20 @@ function buildHasDropExists() {
     return `EXISTS (SELECT 1 FROM ${effectiveMobsSql('m')} WHERE ${orConditions.join(' OR ')})`;
 }
 
+function buildHasNaturalDropExists() {
+    const orConditions = mobDropColumns().map(
+        (col) => `(m.${col.item} = i.name_aegis AND m.${col.rate} > 0)`
+    );
+    return `EXISTS (
+        SELECT 1 FROM ${effectiveMobsSql('m')}
+        WHERE (${orConditions.join(' OR ')})
+        AND EXISTS (
+            SELECT 1 FROM ${spawnTableSql('s')}
+            WHERE s.mob_id = m.id AND s.is_instance = 0
+        )
+    )`;
+}
+
 function buildItemFilters(params) {
     const conditions = [];
     const values = [];
@@ -173,6 +189,12 @@ function buildItemFilters(params) {
         conditions.push(buildHasDropExists());
     } else if (hasDrop === false) {
         conditions.push(`NOT ${buildHasDropExists()}`);
+    }
+
+    const hasNaturalDrop = parseBool(params.hasNaturalDrop);
+    if (hasNaturalDrop !== null && isSpawnDataAvailable()) {
+        const exists = buildHasNaturalDropExists();
+        conditions.push(hasNaturalDrop ? exists : `NOT ${exists}`);
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { SpriteRect } from '../api/assets';
+import type { MobSpawnMapSummary } from '../api/client';
 import AtlasSprite from './AtlasSprite';
 import {
   PLACEHOLDER_ITEM_ICON,
@@ -47,6 +48,10 @@ interface SearchResult {
     rate?: number;
     chancePercent?: number | null;
     dropType?: string;
+    spawnMaps?: MobSpawnMapSummary[];
+    spawnMapCount?: number;
+    spawnAmount?: number;
+    hasWorldSpawn?: boolean;
   }[];
   equip_locations?: number[];
   equip_upper?: number[];
@@ -403,11 +408,29 @@ const ItemCard: React.FC<ItemCardProps> = ({ result }) => {
                 {result.droppedBy.map((mob) => {
                   const pct = mob.chancePercent ?? (mob.rate != null ? Math.min(mob.rate, 10000) / 100 : null);
                   return (
-                    <Link key={mob.id} to={`/database?tab=mobs&q=${mob.id}`}>
-                      {mob.name} (Nv. {mob.level})
-                      {pct != null ? ` — ${pct.toFixed(2)}%` : ''}
-                      {mob.dropType === 'mvp' ? ' [MVP]' : ''}
-                    </Link>
+                    <div key={mob.id} className="dropped-by-item">
+                      <Link to={`/database?tab=mobs&q=${mob.id}`}>
+                        {mob.name} (Nv. {mob.level})
+                        {pct != null ? ` — ${pct.toFixed(2)}%` : ''}
+                        {mob.dropType === 'mvp' ? ' [MVP]' : ''}
+                      </Link>
+                      <div className="dropped-by-maps">
+                        {(mob.spawnMaps ?? [])
+                          .filter((spawn) => !spawn.instance)
+                          .map((spawn) => (
+                            <Link
+                              key={spawn.map}
+                              to={`/maps/${encodeURIComponent(spawn.map)}`}
+                              className="dropped-by-map"
+                            >
+                              {spawn.map}
+                            </Link>
+                          ))}
+                        {mob.hasWorldSpawn === false && (
+                          <span className="dropped-by-map is-muted">Sin spawn en el mundo</span>
+                        )}
+                      </div>
+                    </div>
                   );
                 })}
               </div>

@@ -35,6 +35,7 @@ const Header = () => {
             <li><Link to="/database" onClick={() => handleNavClick('/database')}>Base de Datos</Link></li>
             <li><Link to="/rankings" onClick={() => handleNavClick('/rankings')}>Rankings</Link></li>
             <li><Link to="/encyclopedia" onClick={() => handleNavClick('/encyclopedia')}>Enciclopedia</Link></li>
+            <li><Link to="/maps" onClick={() => handleNavClick('/maps')}>Mapas</Link></li>
             <li><Link to="/donate" onClick={() => handleNavClick('/donate')}>Donar</Link></li>
           </ul>
         </nav>

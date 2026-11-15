@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { SpriteRect } from '../api/assets';
+import type { MobSpawnMapSummary, MobSpawnPoint } from '../api/client';
 import AtlasSprite from './AtlasSprite';
 
 interface MobDrop {
@@ -40,6 +41,11 @@ interface MobResult {
   sp?: number;
   walkSpeed?: number;
   code_name?: string;
+  spawns?: MobSpawnPoint[];
+  spawnMaps?: MobSpawnMapSummary[];
+  spawnMapCount?: number;
+  spawnAmount?: number;
+  hasWorldSpawn?: boolean;
 }
 
 const MOB_SIZE = {
@@ -153,6 +159,54 @@ const MobCard: React.FC<MobCardProps> = ({ result }) => {
               </div>
             </div>
           </div>
+
+          <div className="result-card-section mob-spawn-section">
+            <div className="mob-spawn-header">Spawns:</div>
+            {result.spawnMaps && result.spawnMaps.length > 0 ? (
+              <div className="mob-spawn-list">
+                {result.spawnMaps.map((spawn) => (
+                  <Link
+                    key={spawn.map}
+                    to={`/maps/${encodeURIComponent(spawn.map)}`}
+                    className={`mob-spawn-map${spawn.instance ? ' is-instance' : ''}`}
+                    title={`${spawn.points} punto(s) de spawn · ${spawn.amount} mobs`}
+                  >
+                    {spawn.map}
+                    <span className="mob-spawn-amount">{spawn.amount}</span>
+                    {spawn.boss && <span className="mob-spawn-badge">Boss</span>}
+                    {spawn.instance && <span className="mob-spawn-badge">Instancia</span>}
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="mob-spawn-empty">
+                {result.hasWorldSpawn === false
+                  ? 'Sin spawn en mapas del mundo'
+                  : 'Sin datos de spawn'}
+              </div>
+            )}
+          </div>
+
+          {result.spawns && result.spawns.length > 0 && (
+            <div className="result-card-section mob-spawn-detail">
+              <div className="result-card-script-header">Puntos de spawn:</div>
+              <div className="mob-spawn-detail-list">
+                {result.spawns.map((spawn, index) => (
+                  <div
+                    key={`${spawn.map}-${spawn.x}-${spawn.y}-${index}`}
+                    className={`mob-spawn-detail-row${spawn.instance ? ' is-instance' : ''}`}
+                  >
+                    <Link to={`/maps/${encodeURIComponent(spawn.map)}`}>{spawn.map}</Link>
+                    <span>{spawn.x === 0 && spawn.y === 0 ? 'aleatorio' : `${spawn.x}, ${spawn.y}`}</span>
+                    <span>{spawn.amount} mobs</span>
+                    <span>{(spawn.delay / 1000).toLocaleString('es')}s respawn</span>
+                    {spawn.boss && <span className="mob-spawn-badge">Boss</span>}
+                    {spawn.instance && <span className="mob-spawn-badge">Instancia</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Primera fila: HP, ATK, DEF/MDEF */}
           <div className="result-card-section">

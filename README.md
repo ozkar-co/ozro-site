@@ -78,6 +78,23 @@ public/    estáticos del sitio
 dist/      build del frontend (gitignored)
 ```
 
+## Spawns y mapas
+
+La tabla `mob_spawn`, los JSON de `/assets/spawns` y las vistas de `/assets/maps` se generan desde rAthena:
+
+```bash
+cd ../rathena
+python3 tools/mob_spawns.py --out /tmp/ozro-spawns
+mysql -u USER -p rathena < /tmp/ozro-spawns/mob_spawn.sql
+
+cd ../ozro-site
+rm -rf assets/spawns && mkdir -p assets/spawns
+cp -r /tmp/ozro-spawns/web/spawns/* assets/spawns/
+python3 tools/build_map_images.py --rathena ../rathena --maps assets/spawns/maps.json --out assets/maps
+```
+
+`tools/build_map_images.py` renderiza las vistas desde `db/map_cache.dat`; no necesita los GRF del cliente.
+
 Documentación de endpoints: [doc/endpoints.md](doc/endpoints.md).
 
 ---

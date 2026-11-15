@@ -8,6 +8,7 @@ router.use((req, res, next) => {
     if (!isMobDataAvailable()) {
         return res.status(503).json(mobUnavailableError());
     }
+
     next();
 });
 

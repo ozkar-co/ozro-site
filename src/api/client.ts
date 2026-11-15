@@ -86,6 +86,30 @@ export interface PaginatedResponse<T> {
   results: T[];
 }
 
+export interface MobSpawnMapSummary {
+  map: string;
+  mapName?: string;
+  amount: number;
+  points: number;
+  boss: boolean;
+  instance: boolean;
+}
+
+export interface MobSpawnPoint {
+  map: string;
+  mapName?: string;
+  x: number;
+  y: number;
+  xs: number;
+  ys: number;
+  amount: number;
+  delay: number;
+  delay2: number;
+  boss: boolean;
+  instance: boolean;
+  source?: { file: string; line: number };
+}
+
 export interface MobSummary {
   id: number;
   name: string;
@@ -105,6 +129,10 @@ export interface MobSummary {
   size: string;
   isMvp: boolean;
   class?: string;
+  spawnMaps?: MobSpawnMapSummary[];
+  spawnMapCount?: number;
+  spawnAmount?: number;
+  hasWorldSpawn?: boolean;
 }
 
 export interface MobDrop {
@@ -132,6 +160,7 @@ export interface MobDetail extends MobSummary {
   ai?: string;
   modes?: Record<string, boolean>;
   drops: MobDrop[];
+  spawns?: MobSpawnPoint[];
 }
 
 export interface ItemSummary {
@@ -171,6 +200,10 @@ export interface ItemDetail extends ItemSummary {
     rate?: number;
     dropType?: string;
     chancePercent?: number | null;
+    spawnMaps?: MobSpawnMapSummary[];
+    spawnMapCount?: number;
+    spawnAmount?: number;
+    hasWorldSpawn?: boolean;
   }[];
 }
 

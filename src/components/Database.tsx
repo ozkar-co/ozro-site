@@ -52,7 +52,10 @@ const defaultSearchOptions = (): SearchOptions => ({
   selectedSizes: [],
   showBoss: true,
   showNormal: true,
-  showMvp: true
+  showMvp: true,
+  hideMobsWithoutSpawn: true,
+  includeInstanceSpawns: false,
+  hideItemsWithoutNaturalDrop: true
 });
 
 const Database = () => {
@@ -311,26 +314,44 @@ const Database = () => {
                 {isOptionsVisible && (
                   <div className={`search-options-panel ${isClosing ? 'closing' : ''}`}>
                     {activeTab === 'items' ? (
-                      <div className="search-types">
-                        <div className="search-types-title">Filtrar por tipo:</div>
-                        <div className="search-types-grid">
-                          {Object.entries(ITEM_TYPES).map(([typeId, typeName]) => (
-                            <label key={typeId} className="type-checkbox">
+                      <>
+                        <div className="search-types">
+                          <div className="search-types-title">Filtrar por tipo:</div>
+                          <div className="search-types-grid">
+                            {Object.entries(ITEM_TYPES).map(([typeId, typeName]) => (
+                              <label key={typeId} className="type-checkbox">
+                                <input
+                                  type="checkbox"
+                                  checked={searchOptions.selectedTypes.includes(Number(typeId))}
+                                  onChange={() => setSearchOptions((prev) => ({
+                                    ...prev,
+                                    selectedTypes: prev.selectedTypes.includes(Number(typeId))
+                                      ? prev.selectedTypes.filter((t) => t !== Number(typeId))
+                                      : [...prev.selectedTypes, Number(typeId)]
+                                  }))}
+                                />
+                                {typeName}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="search-types">
+                          <div className="search-types-title">Fuente de obtención:</div>
+                          <div className="search-types-grid">
+                            <label className="type-checkbox">
                               <input
                                 type="checkbox"
-                                checked={searchOptions.selectedTypes.includes(Number(typeId))}
+                                checked={searchOptions.hideItemsWithoutNaturalDrop}
                                 onChange={() => setSearchOptions((prev) => ({
                                   ...prev,
-                                  selectedTypes: prev.selectedTypes.includes(Number(typeId))
-                                    ? prev.selectedTypes.filter((t) => t !== Number(typeId))
-                                    : [...prev.selectedTypes, Number(typeId)]
+                                  hideItemsWithoutNaturalDrop: !prev.hideItemsWithoutNaturalDrop
                                 }))}
                               />
-                              {typeName}
+                              Ocultar sin drop natural
                             </label>
-                          ))}
+                          </div>
                         </div>
-                      </div>
+                      </>
                     ) : (
                       <>
                         <div className="search-types">
@@ -359,6 +380,34 @@ const Database = () => {
                                 onChange={() => setSearchOptions((p) => ({ ...p, showMvp: !p.showMvp }))}
                               />
                               Monstruos MVP
+                            </label>
+                          </div>
+                        </div>
+                        <div className="search-types">
+                          <div className="search-types-title">Spawn:</div>
+                          <div className="search-types-grid">
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.hideMobsWithoutSpawn}
+                                onChange={() => setSearchOptions((p) => ({
+                                  ...p,
+                                  hideMobsWithoutSpawn: !p.hideMobsWithoutSpawn
+                                }))}
+                              />
+                              Ocultar sin spawn
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.includeInstanceSpawns}
+                                onChange={() => setSearchOptions((p) => ({
+                                  ...p,
+                                  includeInstanceSpawns: !p.includeInstanceSpawns
+                                }))}
+                                disabled={!searchOptions.hideMobsWithoutSpawn}
+                              />
+                              Incluir instancias
                             </label>
                           </div>
                         </div>

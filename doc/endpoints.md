@@ -12,6 +12,11 @@ Archivos estáticos de imágenes del juego (atlases WebP + manifest JSON). Gener
 - `GET /assets/items/icons/atlas_N.webp` — atlas de iconos
 - `GET /assets/items/illustrations/atlas_N.webp` — atlas de ilustraciones
 - `GET /assets/mobs/sprites/atlas_N.webp` — atlas de sprites de monstruos
+- `GET /assets/spawns/maps.json` — índice de mapas con spawns
+- `GET /assets/spawns/maps/<map>.json` — puntos de spawn de un mapa
+- `GET /assets/spawns/mobs/<mobId>.json` — mapas de spawn de un monstruo
+- `GET /assets/maps/index.json` — metadatos de las vistas de mapa
+- `GET /assets/maps/images/<map>.webp` — vista simplificada del mapa
 
 Cada atlas tiene un `.json` hermano con coordenadas `{ "itemId": { "x", "y", "w", "h" } }`.
 
@@ -248,6 +253,9 @@ Búsqueda de monstruos con filtros. Usa tablas renewal (`mob_db_re` + `mob_db2_r
 | `jobExpMin` / `jobExpMax` | Rango de job exp |
 | `attackRange` | Rango de ataque |
 | `mvp` | `true` o `false` |
+| `hasSpawn` | `true` = solo mobs con spawn; `false` = sin spawn |
+| `includeInstances` | `true` = incluir spawns en mapas de instancia |
+| `spawnMap` | Solo mobs que aparecen en ese mapa |
 | `page` | Página (default: 1) |
 | `limit` | Resultados por página (default: 20, max: 100) |
 
@@ -270,7 +278,10 @@ Búsqueda de monstruos con filtros. Usa tablas renewal (`mob_db_re` + `mob_db2_r
       "size": "Medium",
       "baseExp": 2,
       "jobExp": 1,
-      "isMvp": false
+      "isMvp": false,
+      "hasWorldSpawn": true,
+      "spawnMapCount": 3,
+      "spawnAmount": 92
     }
   ]
 }
@@ -300,13 +311,15 @@ Opciones de filtro disponibles en la base de datos.
 
 ## GET /api/mobs/:id
 
-Detalle de un monstruo con stats, modos y drops resueltos contra `item_db_re_*`.
+Detalle de un monstruo con stats, modos, drops resueltos contra `item_db_re_*` y puntos de spawn.
 
-**Respuesta exitosa:** objeto con campos del listado más `str`, `agi`, `vit`, `int`, `dex`, `luk`, `modes`, `drops`.
+**Respuesta exitosa:** objeto con campos del listado más `str`, `agi`, `vit`, `int`, `dex`, `luk`, `modes`, `drops`, `spawnMaps` y `spawns`.
+
+Cada entrada de `spawns` incluye `map`, `x`, `y`, `xs`, `ys`, `amount`, `delay`, `delay2`, `boss`, `instance` y `source`.
 
 **404:** monstruo no encontrado.
 
-**Nota:** el filtro `hasSpawn` (ocultar monstruos sin ubicación de spawn) queda pendiente hasta importar datos de spawn.
+**Nota:** `hasSpawn` y `spawnMap` requieren la tabla `mob_spawn` generada por `rathena/tools/mob_spawns.py`. Si la tabla no existe, estos filtros se ignoran para no romper la búsqueda.
 
 ---
 
@@ -326,6 +339,7 @@ Búsqueda de objetos con filtros. Usa tablas renewal unidas (`item_db_re_usable`
 | `script` | Keyword en columna `script` |
 | `slots` | Slots separados por coma (`0,1,2,3,4`) |
 | `hasDrop` | `true` = solo items que algún mob dropea; `false` = sin drop |
+| `hasNaturalDrop` | `true` = drop de un mob con spawn en el mundo; `false` = sin drop natural |
 | `page` | Página (default: 1) |
 | `limit` | Resultados por página (default: 20, max: 100) |
 
@@ -351,7 +365,7 @@ Búsqueda de objetos con filtros. Usa tablas renewal unidas (`item_db_re_usable`
 }
 ```
 
-**Nota:** filtro por descripción de item no disponible en v1 (no está en las tablas `item_db_re_*`).
+**Nota:** `hasNaturalDrop` usa `mob_spawn`; si la tabla no existe, el filtro se ignora. Filtro por descripción de item no disponible en v1 (no está en las tablas `item_db_re_*`).
 
 ---
 
@@ -375,7 +389,7 @@ Opciones de filtro para objetos.
 
 ## GET /api/items/:id
 
-Detalle de un objeto con jobs, clases, ubicaciones de equip, scripts y lista `droppedBy` (mobs que lo dropean).
+Detalle de un objeto con jobs, clases, ubicaciones de equip, scripts y lista `droppedBy` (mobs que lo dropean). Cada mob incluye `spawnMaps` y `hasWorldSpawn` para mostrar dónde se obtiene naturalmente.
 
 **404:** objeto no encontrado.
 

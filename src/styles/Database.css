@@ -1137,3 +1137,133 @@ a {
     grid-template-columns: 1fr;
   }
 } 
+
+/* Spawns */
+.mob-spawn-section {
+  background: rgba(255, 141, 127, 0.06);
+  border: 1px solid rgba(255, 141, 127, 0.15);
+  border-radius: 6px;
+  padding: 0.55rem 0.7rem;
+}
+
+.mob-spawn-header {
+  color: #666;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.mob-spawn-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.mob-spawn-map {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e6d5d1;
+  color: #4a6fa5;
+  font-size: 0.78rem;
+}
+
+.mob-spawn-map:hover {
+  border-color: #ff8d7f;
+  text-decoration: none;
+}
+
+.mob-spawn-map.is-instance {
+  background: #f3effc;
+  border-color: #d8cdf0;
+  color: #5b3fa0;
+}
+
+.mob-spawn-amount {
+  color: #666;
+  font-size: 0.72rem;
+}
+
+.mob-spawn-badge {
+  display: inline-block;
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  background: #fde2e2;
+  color: #a33;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 600;
+}
+
+.mob-spawn-empty {
+  color: #777;
+  font-size: 0.82rem;
+  font-style: italic;
+}
+
+.mob-spawn-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.mob-spawn-detail-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+  align-items: center;
+  padding: 0.3rem 0.5rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 4px;
+  color: #555;
+  font-size: 0.82rem;
+}
+
+.mob-spawn-detail-row.is-instance {
+  background: rgba(124, 92, 191, 0.06);
+}
+
+.mob-spawn-detail-row a {
+  color: #4a6fa5;
+  font-weight: 600;
+}
+
+.mob-spawn-detail-row a:hover {
+  text-decoration: underline;
+}
+
+.dropped-by-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.dropped-by-maps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.dropped-by-map {
+  display: inline-block;
+  padding: 0.08rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(74, 111, 165, 0.08);
+  color: #4a6fa5;
+  font-size: 0.7rem;
+}
+
+.dropped-by-map:hover {
+  text-decoration: none;
+  background: rgba(74, 111, 165, 0.16);
+}
+
+.dropped-by-map.is-muted {
+  background: rgba(0, 0, 0, 0.05);
+  color: #888;
+  font-style: italic;
+}

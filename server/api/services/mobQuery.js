@@ -2,6 +2,7 @@ import { query } from '../../services/mariadb.js';
 import {
     effectiveMobsSql,
     effectiveItemsSql,
+    isSpawnDataAvailable,
     mobDropColumns,
     mobDropMatchSql,
     mobDropMatchParams,
@@ -9,6 +10,7 @@ import {
     parseCsv,
     parseBool,
     parseIntParam,
+    spawnTableSql,
     MOB_ELEMENTS,
     MOB_RACES,
     MOB_SIZES
@@ -117,6 +119,92 @@ function mapMobDetailFromRow(row, drops = []) {
     };
 }
 
+export async function attachSpawnSummaries(targets) {
+    if (!Array.isArray(targets) || targets.length === 0) return targets;
+
+    if (!isSpawnDataAvailable()) {
+        for (const target of targets) {
+            target.spawnMaps = [];
+            target.spawnMapCount = 0;
+            target.spawnAmount = 0;
+            target.hasWorldSpawn = undefined;
+        }
+        return targets;
+    }
+
+    const ids = [...new Set(targets.map((target) => Number(target.id)).filter(Number.isFinite))];
+    if (ids.length === 0) return targets;
+
+    const placeholders = ids.map(() => '?').join(', ');
+    const rows = await query(
+        `SELECT mob_id, map,
+                SUM(amount) AS amount,
+                COUNT(*) AS points,
+                MAX(is_boss) AS boss,
+                MAX(is_instance) AS instance
+         FROM ${spawnTableSql('s')}
+         WHERE mob_id IN (${placeholders})
+         GROUP BY mob_id, map
+         ORDER BY mob_id ASC, instance ASC, map ASC`,
+        ids
+    );
+
+    const byMob = new Map();
+    for (const row of rows) {
+        const mobId = Number(row.mob_id);
+        if (!byMob.has(mobId)) byMob.set(mobId, []);
+        byMob.get(mobId).push({
+            map: row.map,
+            mapName: row.map,
+            amount: Number(row.amount) || 0,
+            points: Number(row.points) || 0,
+            boss: Boolean(row.boss),
+            instance: Boolean(row.instance)
+        });
+    }
+
+    for (const target of targets) {
+        const maps = byMob.get(Number(target.id)) || [];
+        target.spawnMaps = maps;
+        target.spawnMapCount = maps.length;
+        target.spawnAmount = maps.reduce((sum, item) => sum + item.amount, 0);
+        target.hasWorldSpawn = maps.some((item) => !item.instance);
+    }
+
+    return targets;
+}
+
+export async function getMobSpawns(mobId) {
+    if (!isSpawnDataAvailable()) return [];
+
+    const rows = await query(
+        `SELECT map, x, y, xs, ys, amount, delay, delay2,
+                is_boss, is_instance, source_file, source_line
+         FROM ${spawnTableSql('s')}
+         WHERE mob_id = ?
+         ORDER BY is_instance ASC, map ASC, amount DESC, x ASC, y ASC`,
+        [mobId]
+    );
+
+    return rows.map((row) => ({
+        map: row.map,
+        mapName: row.map,
+        x: row.x,
+        y: row.y,
+        xs: row.xs,
+        ys: row.ys,
+        amount: Number(row.amount) || 0,
+        delay: row.delay,
+        delay2: row.delay2,
+        boss: Boolean(row.is_boss),
+        instance: Boolean(row.is_instance),
+        source: {
+            file: row.source_file,
+            line: row.source_line
+        }
+    }));
+}
+
 async function attachDropsToMobRows(rows) {
     if (rows.length === 0) return [];
 
@@ -216,6 +304,26 @@ function buildMobFilters(params) {
         conditions.push('(COALESCE(m.mode_mvp, 0) = 0 AND COALESCE(m.mvp_exp, 0) = 0)');
     }
 
+    const hasSpawn = parseBool(params.hasSpawn);
+    if (hasSpawn !== null && isSpawnDataAvailable()) {
+        const includeInstances = parseBool(params.includeInstances) === true;
+        const instanceClause = includeInstances ? '' : ' AND s.is_instance = 0';
+        const exists = `EXISTS (
+            SELECT 1 FROM ${spawnTableSql('s')}
+            WHERE s.mob_id = m.id${instanceClause}
+        )`;
+        conditions.push(hasSpawn ? exists : `NOT ${exists}`);
+    }
+
+    const spawnMap = typeof params.spawnMap === 'string' ? params.spawnMap.trim() : '';
+    if (spawnMap && isSpawnDataAvailable()) {
+        conditions.push(`EXISTS (
+            SELECT 1 FROM ${spawnTableSql('s')}
+            WHERE s.mob_id = m.id AND s.map = ?
+        )`);
+        values.push(spawnMap);
+    }
+
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
     return { whereClause, values };
 }
@@ -240,6 +348,7 @@ export async function searchMobs(params) {
     );
 
     const results = await attachDropsToMobRows(rows);
+    await attachSpawnSummaries(results);
 
     return {
         total,
@@ -258,7 +367,10 @@ export async function getMobById(id) {
 
     const row = rows[0];
     const drops = await resolveDropItems(extractDrops(row));
-    return mapMobDetailFromRow(row, drops);
+    const mob = mapMobDetailFromRow(row, drops);
+    mob.spawns = await getMobSpawns(id);
+    await attachSpawnSummaries([mob]);
+    return mob;
 }
 
 export async function getMobMeta() {
@@ -297,7 +409,7 @@ export async function getMobsDroppingItem(itemAegis) {
          ORDER BY rate DESC, m.level ASC, m.name_english ASC`,
         [...rateParams, ...typeParams, ...whereParams]
     );
-    return rows.map((row) => ({
+    const results = rows.map((row) => ({
         id: row.id,
         name: row.name_english,
         nameAegis: row.name_aegis,
@@ -306,4 +418,5 @@ export async function getMobsDroppingItem(itemAegis) {
         dropType: row.drop_type || 'normal',
         chancePercent: row.rate != null ? (Math.min(row.rate, 10000) / 100) : null
     }));
+    return attachSpawnSummaries(results);
 }

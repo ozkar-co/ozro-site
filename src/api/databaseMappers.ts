@@ -151,6 +151,9 @@ export interface SearchOptions {
   showBoss: boolean;
   showNormal: boolean;
   showMvp: boolean;
+  hideMobsWithoutSpawn: boolean;
+  includeInstanceSpawns: boolean;
+  hideItemsWithoutNaturalDrop: boolean;
 }
 
 export function buildMobSearchParams(
@@ -192,6 +195,13 @@ export function buildMobSearchParams(
     params.mvp = 'false';
   }
 
+  if (options.hideMobsWithoutSpawn) {
+    params.hasSpawn = 'true';
+    if (options.includeInstanceSpawns) {
+      params.includeInstances = 'true';
+    }
+  }
+
   return params;
 }
 
@@ -212,6 +222,10 @@ export function buildItemSearchParams(
       .map((id) => ITEM_TYPE_TO_API[id])
       .filter(Boolean)
       .join(',');
+  }
+
+  if (options.hideItemsWithoutNaturalDrop) {
+    params.hasNaturalDrop = 'true';
   }
 
   return params;
@@ -262,7 +276,12 @@ export function mapMobToCard(mob: MobSummary | MobDetail, sprite = PLACEHOLDER_M
       : undefined,
     attack2: detail.attack2 ?? undefined,
     sp: detail.sp ?? undefined,
-    walkSpeed: detail.walkSpeed ?? undefined
+    walkSpeed: detail.walkSpeed ?? undefined,
+    spawns: detail.spawns,
+    spawnMaps: mob.spawnMaps,
+    spawnMapCount: mob.spawnMapCount,
+    spawnAmount: mob.spawnAmount,
+    hasWorldSpawn: mob.hasWorldSpawn
   };
 }
 

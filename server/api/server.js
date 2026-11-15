@@ -23,7 +23,7 @@ app.use('/assets', express.static(assetsPath, {
   maxAge: '7d',
   immutable: true,
   setHeaders: (res, filePath) => {
-    if (filePath.endsWith('manifest.json') || filePath.endsWith('build-report.json')) {
+    if (/(?:manifest|build-report|maps|spawns|index)\.json$/.test(filePath)) {
       res.setHeader('Cache-Control', 'no-cache');
     }
   }
