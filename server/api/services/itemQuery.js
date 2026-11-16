@@ -109,18 +109,27 @@ function buildHasDropExists() {
     return `EXISTS (SELECT 1 FROM ${effectiveMobsSql('m')} WHERE ${orConditions.join(' OR ')})`;
 }
 
-function buildHasNaturalDropExists() {
-    const orConditions = mobDropColumns().map(
-        (col) => `(m.${col.item} = i.name_aegis AND m.${col.rate} > 0)`
-    );
-    return `EXISTS (
-        SELECT 1 FROM ${effectiveMobsSql('m')}
-        WHERE (${orConditions.join(' OR ')})
-        AND EXISTS (
+function worldSpawnMobsSql() {
+    return `(
+        SELECT m.* FROM ${effectiveMobsSql('m')}
+        WHERE EXISTS (
             SELECT 1 FROM ${spawnTableSql('s')}
             WHERE s.mob_id = m.id AND s.is_instance = 0
         )
     )`;
+}
+
+function buildHasNaturalDropFilter(hasDrop) {
+    const branches = mobDropColumns().map(
+        (col) => `SELECT w.${col.item} AS aegis
+                  FROM ${worldSpawnMobsSql()} AS w
+                  WHERE w.${col.rate} > 0 AND w.${col.item} IS NOT NULL`
+    );
+    const setSql = `(${branches.join(' UNION ')})`;
+    if (hasDrop) {
+        return `i.name_aegis IN (SELECT d.aegis FROM ${setSql} AS d)`;
+    }
+    return `NOT EXISTS (SELECT 1 FROM ${setSql} AS d WHERE d.aegis = i.name_aegis)`;
 }
 
 function buildItemFilters(params) {
@@ -193,8 +202,7 @@ function buildItemFilters(params) {
 
     const hasNaturalDrop = parseBool(params.hasNaturalDrop);
     if (hasNaturalDrop !== null && isSpawnDataAvailable()) {
-        const exists = buildHasNaturalDropExists();
-        conditions.push(hasNaturalDrop ? exists : `NOT ${exists}`);
+        conditions.push(buildHasNaturalDropFilter(hasNaturalDrop));
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
