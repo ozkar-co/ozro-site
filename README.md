@@ -174,6 +174,16 @@ python3 tools/build_map_images.py --rathena ../rathena --maps assets/spawns/maps
 
 `tools/build_map_images.py` renderiza las vistas desde `db/map_cache.dat`; no necesita los GRF del cliente.
 
+## Farmeo y mapa del mundo
+
+La calculadora de farmeo usa un índice en memoria que se construye al arrancar desde MariaDB. Los datos estáticos de apoyo se regeneran con:
+
+```bash
+python3 tools/build_farming_data.py --rathena ../rathena
+```
+
+Eso escribe `assets/farming/levelPenalty.json` (desde `db/re/level_penalty.yml` + `db/import/level_penalty.yml`) y `assets/world/access.json` (distancias desde los hubs con Kafra usando `assets/world/routes.json`).
+
 Documentación de endpoints: [doc/endpoints.md](doc/endpoints.md).
 
 ---

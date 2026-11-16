@@ -7,6 +7,9 @@ import BountyBoards from './BountyBoards';
 import CustomNpcs from './encyclopedia/CustomNpcs';
 import CustomQuests from './encyclopedia/CustomQuests';
 import NpcMapBrowser from './encyclopedia/NpcMapBrowser';
+import FarmingCalculator from './encyclopedia/FarmingCalculator';
+import WorldMap from './encyclopedia/WorldMap';
+import References from './encyclopedia/References';
 import {
   loadNpcMaps,
   loadNpcSprites,
@@ -53,6 +56,24 @@ const sections: EncyclopediaSection[] = [
     title: 'NPCs por mapa',
     icon: '/icons/stats.png',
     category: 'General',
+  },
+  {
+    id: 'farming',
+    title: 'Calculadora de farmeo',
+    icon: '/icons/drop.png',
+    category: 'Farmeo y mapas',
+  },
+  {
+    id: 'worldmap',
+    title: 'Mapa del mundo',
+    icon: '/icons/feature.png',
+    category: 'Farmeo y mapas',
+  },
+  {
+    id: 'references',
+    title: 'Referencias',
+    icon: '/icons/exp.png',
+    category: 'Farmeo y mapas',
   },
 ];
 
@@ -109,7 +130,7 @@ const Encyclopedia = () => {
           <section className="encyclopedia-hero">
             <h1>Enciclopedia</h1>
             <p>
-              Guía de Rune-Midgard: NPCs personalizados, quests, episodios y mapas.
+              Guía de Rune-Midgard: NPCs personalizados, quests, episodios, mapas y farmeo.
             </p>
             <div className="encyclopedia-stats">
               <span>{maps ? maps.maps.length.toLocaleString('es') : '—'} mapas</span>
@@ -172,6 +193,10 @@ const Encyclopedia = () => {
               {selectedSection === 'maps' && (
                 <NpcMapBrowser maps={maps} sprites={sprites} mapsError={mapsError} />
               )}
+
+              {selectedSection === 'farming' && <FarmingCalculator />}
+              {selectedSection === 'worldmap' && <WorldMap />}
+              {selectedSection === 'references' && <References />}
             </div>
           </div>
         </div>

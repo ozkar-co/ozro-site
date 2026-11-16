@@ -1289,3 +1289,81 @@ a {
     text-align: center;
   }
 }
+
+.mob-farm-section {
+  border-top: 1px solid #f0ece5;
+  padding-top: 0.75rem;
+}
+
+.mob-farm-note {
+  color: #777;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  margin-top: 0.5rem;
+}
+
+.mob-farm-note.is-error {
+  color: #a63a2c;
+}
+
+.mob-farm-result {
+  margin-top: 0.65rem;
+}
+
+.mob-farm-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.mob-farm-metrics div {
+  background: #faf7f2;
+  border: 1px solid #eee7dc;
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+}
+
+.mob-farm-metrics span {
+  display: block;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #888;
+}
+
+.mob-farm-metrics strong {
+  display: block;
+  margin-top: 0.15rem;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.mob-farm-drops {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.6rem;
+  border: 1px solid #eee7dc;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mob-farm-drops div {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 0.45rem;
+  padding: 0.4rem 0.55rem;
+  border-bottom: 1px solid #f2eee8;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.mob-farm-drops div:last-child {
+  border-bottom: 0;
+}
+
+.mob-farm-drops span:first-child {
+  color: #333;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

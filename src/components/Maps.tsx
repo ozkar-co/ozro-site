@@ -9,6 +9,7 @@ import {
   type SpawnMapsIndex,
   type SpawnPoint
 } from '../api/mapData';
+import { fetchFarmingMap, type FarmingMap } from '../api/farming';
 import '../styles/Maps.css';
 
 interface MobSpawnGroup {
@@ -23,6 +24,11 @@ interface MobSpawnGroup {
 }
 
 const DEFAULT_MAP = 'iz_dun00';
+const numberFormat = new Intl.NumberFormat('es');
+
+function formatZeny(value: number): string {
+  return `${numberFormat.format(Math.round(value))} z`;
+}
 
 const Maps = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -34,6 +40,7 @@ const Maps = () => {
   const [query, setQuery] = useState('');
   const [showInstances, setShowInstances] = useState(false);
   const [selectedMob, setSelectedMob] = useState<number | null>(null);
+  const [farmingMap, setFarmingMap] = useState<FarmingMap | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,6 +93,15 @@ const Maps = () => {
   useEffect(() => {
     if (!selectedMap) return;
     let cancelled = false;
+
+    setFarmingMap(null);
+    fetchFarmingMap(selectedMap)
+      .then((data) => {
+        if (!cancelled) setFarmingMap(data);
+      })
+      .catch(() => {
+        if (!cancelled) setFarmingMap(null);
+      });
 
     setLoading(true);
     setSpawns(null);
@@ -170,6 +186,10 @@ const Maps = () => {
   const image = images?.maps[selectedMap] ?? null;
   const totalAmount = groups.reduce((sum, group) => sum + group.amount, 0);
   const totalPoints = groups.reduce((sum, group) => sum + group.points, 0);
+  const farmingMobs = useMemo(
+    () => new Map((farmingMap?.mobs ?? []).map((mob) => [mob.id, mob])),
+    [farmingMap]
+  );
 
   const handleMapChange = (value: string) => {
     setSelectedMob(null);
@@ -246,6 +266,7 @@ const Maps = () => {
                     {groups.length.toLocaleString('es')} especies ·{' '}
                     {totalPoints.toLocaleString('es')} puntos ·{' '}
                     {totalAmount.toLocaleString('es')} mobs
+                    {farmingMap ? ` · MZW ${formatZeny(farmingMap.weightedMzw)} · ${farmingMap.accessLabel}` : ''}
                   </p>
                 </div>
                 <div className="maps-viewer-tags">
@@ -336,6 +357,9 @@ const Maps = () => {
                       </span>
                       <span className="maps-mob-meta">
                         {group.amount.toLocaleString('es')} mobs · {group.points} punto{group.points === 1 ? '' : 's'}
+                        {farmingMobs.get(group.mobId)
+                          ? ` · MZW ${formatZeny(farmingMobs.get(group.mobId)!.mzw)}`
+                          : ''}
                       </span>
                       <Link
                         className="maps-mob-link"

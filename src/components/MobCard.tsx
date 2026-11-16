@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { SpriteRect } from '../api/assets';
 import type { MobSpawnMapSummary, MobSpawnPoint } from '../api/client';
 import AtlasSprite from './AtlasSprite';
+import { fetchFarmingMob, type FarmingMob } from '../api/farming';
 
 interface MobDrop {
   id: number;
@@ -126,6 +128,31 @@ interface MobCardProps {
 }
 
 const MobCard: React.FC<MobCardProps> = ({ result }) => {
+  const [farming, setFarming] = useState<FarmingMob | null>(null);
+  const [farmingOpen, setFarmingOpen] = useState(false);
+  const [farmingLoading, setFarmingLoading] = useState(false);
+  const [farmingError, setFarmingError] = useState<string | null>(null);
+
+  const toggleFarming = async () => {
+    if (farmingOpen) {
+      setFarmingOpen(false);
+      return;
+    }
+    setFarmingOpen(true);
+    if (farming || farmingLoading) return;
+
+    setFarmingLoading(true);
+    setFarmingError(null);
+    try {
+      const data = await fetchFarmingMob(result.id);
+      setFarming(data);
+    } catch (error) {
+      setFarmingError(error instanceof Error ? error.message : 'No se pudo calcular el MZW');
+    } finally {
+      setFarmingLoading(false);
+    }
+  };
+
   return (
     <div className="result-card">
       <div className="result-card-content">
@@ -369,6 +396,53 @@ const MobCard: React.FC<MobCardProps> = ({ result }) => {
               </div>
             </div>
           )}
+          <div className="result-card-section mob-farm-section">
+            <button
+              type="button"
+              className="result-card-toggle"
+              onClick={toggleFarming}
+              aria-expanded={farmingOpen}
+            >
+              {farmingOpen ? 'Ocultar MZW' : 'Calcular MZW'}
+            </button>
+            {farmingOpen && (
+              <>
+                {farmingLoading && <div className="mob-farm-note">Calculando MZW...</div>}
+                {farmingError && <div className="mob-farm-note is-error">{farmingError}</div>}
+                {farming && (
+                  <div className="mob-farm-result">
+                    <div className="mob-farm-metrics">
+                      <div>
+                        <span>MZW</span>
+                        <strong>{Math.round(farming.mzw).toLocaleString('es')} z</strong>
+                      </div>
+                      <div>
+                        <span>Zeny/HP</span>
+                        <strong>{farming.zenyPerHp.toFixed(3)}</strong>
+                      </div>
+                      <div>
+                        <span>Drops</span>
+                        <strong>{farming.dropCount}</strong>
+                      </div>
+                    </div>
+                    <div className="mob-farm-note">
+                      Valor NPC bruto, sin penalización por nivel. Los drops MVP se muestran separados.
+                    </div>
+                    <div className="mob-farm-drops">
+                      {farming.drops.map((drop, index) => (
+                        <div key={`${drop.id}-${drop.type}-${index}`}>
+                          <span>{drop.name}</span>
+                          <span>{drop.type === 'mvp' ? 'MVP' : 'Normal'}</span>
+                          <span>{drop.chancePercent.toFixed(2)}%</span>
+                          <span>{Math.round(drop.expected).toLocaleString('es')} z</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -8,6 +8,7 @@ import os from 'os';
 import mobsRouter from './routes/mobs.js';
 import itemsRouter from './routes/items.js';
 import mvpsRouter from './routes/mvps.js';
+import farmingRouter from './routes/farming.js';
 import { BANK_VAULT_KEY, bankVaultValueSql, excludeInternalAccountsSql, statsPlayerAccountSql, statsPlayerAccountWhereClause } from './services/gameDb.js';
 import { getCardCatalogIndex } from './services/cardCatalog.js';
 
@@ -27,7 +28,7 @@ app.use('/assets', express.static(assetsPath, {
   maxAge: '7d',
   immutable: true,
   setHeaders: (res, filePath) => {
-    if (/(?:manifest|build-report|catalog|maps|spawns|index)\.json$/.test(filePath)) {
+    if (/(?:manifest|build-report|catalog|maps|spawns|index|access|levelPenalty|worldview|routes)\.json$/.test(filePath)) {
       res.setHeader('Cache-Control', 'no-cache');
     }
   }
@@ -36,6 +37,7 @@ app.use('/assets', express.static(assetsPath, {
 api.use('/mobs', mobsRouter);
 api.use('/items', itemsRouter);
 api.use('/mvps', mvpsRouter);
+api.use('/farming', farmingRouter);
 
 app.use('/api', api);
 
