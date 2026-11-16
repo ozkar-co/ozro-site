@@ -263,7 +263,7 @@ export const customNpcGroups: CustomNpcGroup[] = [
         id: 'arena-summoner',
         name: 'Tejedora de Ecos',
         role: 'Tejedora de Ecos',
-        sprite: sprite('4_F_THAISHAMAN'),
+        sprite: sprite('840'),
         summary:
           'Teje ecos de grandes bestias en Sueños Tejidos usando Almas y objetos como catalizadores.',
         description: [
