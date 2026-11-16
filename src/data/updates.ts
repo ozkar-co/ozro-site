@@ -9,20 +9,12 @@ export interface UpdateEntry {
 export const recentUpdates: UpdateEntry[] = [
   {
     date: '16 de noviembre de 2026',
-    title: 'Tejedora de Ecos y Sueños Tejidos',
+    title: 'Almas, ecos y Sueños Tejidos',
     paragraphs: [
-      'La Tejedora de Ecos llega a Prontera. Puede tejer el eco de una gran bestia en Sueños Tejidos.',
-      'El líder paga Almas y catalizadores. Cada miembro de la party habla con la Tejedora para entrar.',
+      'El Guardián de Almas reemplaza al Cronista de Cacerías: lee los fragmentos que dejan las grandes bestias en los cazadores y los cristaliza en Almas de MVP.',
+      'La Tejedora de Ecos abre Sueños Tejidos. El líder paga Almas y catalizadores; cada miembro de la party habla con ella para entrar.',
       'Mientras el sueño siga abierto se puede reingresar. Al caer el eco o terminar el tiempo, todos despiertan junto a la Tejedora.',
-    ],
-  },
-  {
-    date: '16 de noviembre de 2026',
-    title: 'El Guardián de Almas',
-    paragraphs: [
-      'El Cronista de Cacerías pasa a ser El Guardián de Almas. Las almas de las grandes bestias se niegan a abandonar el mundo y dejan fragmentos en los cazadores que las enfrentaron.',
-      'El Guardián limpia esas marcas y las cristaliza en Almas de MVP. El reclamo es repetible y no tiene tope.',
-      'Si quieres volver a enfrentar a una bestia, la Tejedora de Ecos puede llamar a su eco.',
+      'Las cacerías dentro del sueño no suman fragmentos al Guardián. El sistema no muestra tiers: solo los costos en Almas y los objetos.',
     ],
   },
   {
