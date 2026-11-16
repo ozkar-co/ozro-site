@@ -15,6 +15,12 @@ import {
     MOB_RACES,
     MOB_SIZES
 } from './gameDb.js';
+import {
+    applyDropRate,
+    dropMultiplier,
+    mobTier,
+    rateToPercent
+} from './dropRates.js';
 
 function mapMobSummary(row) {
     return {
@@ -74,8 +80,15 @@ function extractDrops(row) {
     return drops;
 }
 
-async function resolveDropItems(drops) {
-    if (drops.length === 0) return [];
+function mobTierFromRow(row) {
+    return mobTier({
+        isMvp: Number(row.mode_mvp) === 1 || Number(row.mvp_exp) > 0,
+        isBoss: String(row.class || row.mob_class || '').toLowerCase() === 'boss'
+    });
+}
+
+async function fetchDropItemInfo(drops) {
+    if (drops.length === 0) return new Map();
 
     const aegisNames = [...new Set(drops.map((d) => d.itemAegis))];
     const placeholders = aegisNames.map(() => '?').join(', ');
@@ -84,20 +97,34 @@ async function resolveDropItems(drops) {
          WHERE name_aegis IN (${placeholders})`,
         aegisNames
     );
-    const itemMap = new Map(items.map((item) => [item.name_aegis, item]));
+    return new Map(items.map((item) => [item.name_aegis, item]));
+}
 
-    return drops.map((drop) => {
-        const item = itemMap.get(drop.itemAegis);
-        return {
-            itemId: item?.id ?? null,
-            itemName: item?.name_english ?? drop.itemAegis,
-            itemAegis: drop.itemAegis,
-            itemType: item?.type ?? null,
-            rate: drop.rate,
-            type: drop.type,
-            chancePercent: drop.rate != null ? (Math.min(drop.rate, 10000) / 100) : null
-        };
-    });
+async function fetchItemTypes(aegisNames) {
+    if (aegisNames.length === 0) return new Map();
+
+    const placeholders = aegisNames.map(() => '?').join(', ');
+    const items = await query(
+        `SELECT name_aegis, type FROM ${effectiveItemsSql('i')}
+         WHERE name_aegis IN (${placeholders})`,
+        aegisNames
+    );
+    return new Map(items.map((item) => [item.name_aegis, item.type]));
+}
+
+function adjustDrop(drop, item, tier) {
+    const multiplier = dropMultiplier(tier, drop.type, item?.type);
+    const rate = applyDropRate(drop.rate, multiplier);
+    return {
+        itemId: item?.id ?? null,
+        itemName: item?.name_english ?? drop.itemAegis,
+        itemAegis: drop.itemAegis,
+        itemType: item?.type ?? null,
+        baseRate: drop.rate,
+        rate,
+        type: drop.type,
+        chancePercent: rateToPercent(rate)
+    };
 }
 
 function mapMobDetailFromRow(row, drops = []) {
@@ -209,14 +236,12 @@ async function attachDropsToMobRows(rows) {
     if (rows.length === 0) return [];
 
     const dropsByMob = rows.map((row) => extractDrops(row));
-    const flatDrops = dropsByMob.flat();
-    const resolvedFlat = await resolveDropItems(flatDrops);
+    const itemInfo = await fetchDropItemInfo(dropsByMob.flat());
 
-    let offset = 0;
     return rows.map((row, index) => {
-        const count = dropsByMob[index].length;
-        const drops = resolvedFlat.slice(offset, offset + count);
-        offset += count;
+        const tier = mobTierFromRow(row);
+        const drops = dropsByMob[index]
+            .map((drop) => adjustDrop(drop, itemInfo.get(drop.itemAegis), tier));
         return mapMobDetailFromRow(row, drops);
     });
 }
@@ -366,8 +391,12 @@ export async function getMobById(id) {
     if (rows.length === 0) return null;
 
     const row = rows[0];
-    const drops = await resolveDropItems(extractDrops(row));
-    const mob = mapMobDetailFromRow(row, drops);
+    const drops = extractDrops(row);
+    const itemInfo = await fetchDropItemInfo(drops);
+    const tier = mobTierFromRow(row);
+    const adjustedDrops = drops
+        .map((drop) => adjustDrop(drop, itemInfo.get(drop.itemAegis), tier));
+    const mob = mapMobDetailFromRow(row, adjustedDrops);
     mob.spawns = await getMobSpawns(id);
     await attachSpawnSummaries([mob]);
     return mob;
@@ -400,6 +429,7 @@ export async function getMobsDroppingItems(itemAegisList) {
     const dropColumns = mobDropColumns();
     const selects = dropColumns.map((col) => `
         SELECT m.id, m.name_english, m.name_aegis, m.level,
+               m.class AS mob_class, m.mode_mvp, m.mvp_exp,
                m.${col.item} AS item_aegis,
                m.${col.rate} AS rate,
                '${col.type}' AS drop_type
@@ -413,6 +443,8 @@ export async function getMobsDroppingItems(itemAegisList) {
          ORDER BY item_aegis ASC, rate DESC, level ASC, name_english ASC`,
         params
     );
+
+    const itemTypes = await fetchItemTypes(aegisNames);
 
     const mobsById = new Map();
     for (const row of rows) {
@@ -432,7 +464,12 @@ export async function getMobsDroppingItems(itemAegisList) {
     for (const row of rows) {
         if (!row.item_aegis) continue;
         const key = `${row.item_aegis}|${row.id}|${row.drop_type || 'normal'}`;
-        const rate = Number(row.rate) || 0;
+        const baseRate = Number(row.rate) || 0;
+        const tier = mobTierFromRow(row);
+        const rate = applyDropRate(
+            baseRate,
+            dropMultiplier(tier, row.drop_type || 'normal', itemTypes.get(row.item_aegis))
+        );
         const previous = seen.get(key);
         if (previous != null && previous >= rate) continue;
         seen.set(key, rate);
@@ -444,9 +481,10 @@ export async function getMobsDroppingItems(itemAegisList) {
             name: mob.name,
             nameAegis: mob.nameAegis,
             level: mob.level,
+            baseRate,
             rate,
             dropType: row.drop_type || 'normal',
-            chancePercent: rate > 0 ? Math.min(rate, 10000) / 100 : 0,
+            chancePercent: rateToPercent(rate),
             spawnMaps: mob.spawnMaps,
             spawnMapCount: mob.spawnMapCount,
             spawnAmount: mob.spawnAmount,
@@ -476,6 +514,7 @@ export async function getMobsDroppingItem(itemAegis) {
 
     const rows = await query(
         `SELECT m.id, m.name_english, m.name_aegis, m.level,
+                m.class AS mob_class, m.mode_mvp, m.mvp_exp,
                 CASE ${rateCase} END AS rate,
                 CASE ${typeCase} END AS drop_type
          FROM ${effectiveMobsSql('m')}
@@ -483,15 +522,23 @@ export async function getMobsDroppingItem(itemAegis) {
          ORDER BY rate DESC, m.level ASC, m.name_english ASC`,
         [...rateParams, ...typeParams, ...whereParams]
     );
-    const results = rows.map((row) => ({
-        id: row.id,
-        name: row.name_english,
-        nameAegis: row.name_aegis,
-        level: row.level,
-        rate: row.rate ?? 0,
-        dropType: row.drop_type || 'normal',
-        chancePercent: row.rate != null ? (Math.min(row.rate, 10000) / 100) : null
-    }));
+    const itemTypes = await fetchItemTypes([itemAegis]);
+    const itemType = itemTypes.get(itemAegis) ?? null;
+    const results = rows.map((row) => {
+        const baseRate = Number(row.rate) || 0;
+        const tier = mobTierFromRow(row);
+        const rate = applyDropRate(baseRate, dropMultiplier(tier, row.drop_type || 'normal', itemType));
+        return {
+            id: row.id,
+            name: row.name_english,
+            nameAegis: row.name_aegis,
+            level: row.level,
+            baseRate,
+            rate,
+            dropType: row.drop_type || 'normal',
+            chancePercent: rateToPercent(rate)
+        };
+    });
     await attachSpawnSummaries(results);
     results.sort((a, b) =>
         Number(b.hasWorldSpawn === true) - Number(a.hasWorldSpawn === true) ||

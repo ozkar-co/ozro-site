@@ -78,10 +78,16 @@ const contentMap: Record<string, ReactNode> = {
           <li>Healing: 10x</li>
           <li>Usable: 10x</li>
           <li>Equipment: 15x</li>
-          <li>Card: 100x</li>
+          <li>Card: 10x</li>
         </ul>
         <h3>Boss (no MVP)</h3>
-        <p>Mismos multiplicadores que mobs normales para common, heal, usable, equip y card.</p>
+        <ul>
+          <li>Common (etc): 5x</li>
+          <li>Healing: 10x</li>
+          <li>Usable: 10x</li>
+          <li>Equipment: 15x</li>
+          <li>Card: 100x</li>
+        </ul>
         <h3>MVP</h3>
         <ul>
           <li>Drops en suelo (common, heal, usable, equip, card): <strong>1x</strong> (default, sin override)</li>

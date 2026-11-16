@@ -8,6 +8,15 @@ export interface UpdateEntry {
 /** Changelog OzRo derivado del git log de rathena (17 ene 2026 – hoy). */
 export const recentUpdates: UpdateEntry[] = [
   {
+    date: '16 de noviembre de 2026',
+    title: 'Ajuste de cartas y tasas reales de drop en la web',
+    paragraphs: [
+      'Cartas de monstruos normales: 10x (antes 100x). Las cartas de monstruos jefe se mantienen en 100x. El resto de tasas (common 5x, healing 10x, usable 10x, equipment 15x, MVP 1x) no cambia.',
+      'La ficha de cada monstruo y de cada objeto ahora aplica los multiplicadores reales del servidor al porcentaje de drop, en lugar de mostrar la tasa base de la base de datos.',
+      'Pendiente: selector de penalización de drop por diferencia de nivel en la web.',
+    ],
+  },
+  {
     date: '15 de noviembre de 2026',
     title: 'Base de datos de spawns y mapas',
     paragraphs: [

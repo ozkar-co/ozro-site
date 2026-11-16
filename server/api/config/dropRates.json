@@ -1,0 +1,24 @@
+{
+  "normal": {
+    "common": 500,
+    "heal": 1000,
+    "use": 1000,
+    "equip": 1500,
+    "card": 1000
+  },
+  "boss": {
+    "common": 500,
+    "heal": 1000,
+    "use": 1000,
+    "equip": 1500,
+    "card": 10000
+  },
+  "mvp": {
+    "common": 100,
+    "heal": 100,
+    "use": 100,
+    "equip": 100,
+    "card": 100
+  },
+  "mvpReward": 500
+}
