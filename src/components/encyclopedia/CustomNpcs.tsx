@@ -32,6 +32,36 @@ const NpcDetails = ({ npc }: { npc: CustomNpc }) => (
         <li key={location}>{location}</li>
       ))}
     </ul>
+    {npc.invocationCosts && (
+      <>
+        <h5>Costos de invocación</h5>
+        <div className="custom-table-wrap">
+          <table className="bounty-table custom-repeatable-table custom-invocation-table">
+            <thead>
+              <tr>
+                <th>Almas</th>
+                <th>MVP</th>
+                <th>Objetos</th>
+              </tr>
+            </thead>
+            <tbody>
+              {npc.invocationCosts.flatMap((group) =>
+                group.mvps.map((mvp) => (
+                  <tr key={`${group.souls}-${mvp.name}`}>
+                    <td>{group.souls}</td>
+                    <td>{mvp.name}</td>
+                    <td>{mvp.keys.join(' + ')}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        <p className="bounty-note">
+          El costo se paga al crear la arena. Reingresar a una arena activa no vuelve a cobrar.
+        </p>
+      </>
+    )}
   </>
 );
 

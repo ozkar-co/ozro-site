@@ -1,3 +1,8 @@
+export interface InvocationCostGroup {
+  souls: number;
+  mvps: { name: string; keys: string[] }[];
+}
+
 export interface CustomNpc {
   id: string;
   name: string;
@@ -7,6 +12,7 @@ export interface CustomNpc {
   description: string[];
   services: string[];
   locations: string[];
+  invocationCosts?: InvocationCostGroup[];
   featured?: boolean;
 }
 
@@ -226,6 +232,104 @@ export const customNpcGroups: CustomNpcGroup[] = [
     ],
   },
   {
+    id: 'mvp',
+    title: 'Cacerías y MVPs',
+    description:
+      'NPCs que registran tus cacerías y te permiten invocar MVPs en una arena privada.',
+    npcs: [
+      {
+        id: 'journal',
+        name: 'Cronista de Cacerías',
+        role: 'Cronista de MVPs',
+        sprite: sprite('4_M_SAGE_C'),
+        summary:
+          'Lee las marcas de tus cacerías y guarda el registro de los MVPs que derrotaste.',
+        description: [
+          'El Cronista asegura que ninguna gran cacería quede en el olvido. Conoce las historias de cada MVP y sabe leer las marcas que dejan en quienes los enfrentan.',
+          'No entrega la gloria: la registra. Golpes finales, asistencias y bestias únicas quedan anotados en su libro para que el cazador pueda ver su recorrido.',
+          'Cada MVP natural deja puntos de Alma según su dificultad: 1, 3, 5, 10 o 20. El golpe final y la party en el mismo mapa suman el total.',
+          'El Cronista convierte esos puntos en Almas de MVP. El reclamo es repetible y no tiene tope; las Almas quedan en el inventario y se usan para invocar MVPs.',
+          'Las cacerías dentro de instancias o arenas no suman puntos al Journal.',
+        ],
+        services: [
+          'Resumen de golpes finales y asistencias',
+          'Lista de MVPs cazados',
+          'Puntos de Alma pendientes',
+          'Reclamo repetible de Almas',
+          'Historial por MVP',
+        ],
+        locations: ['Prontera (150, 180)'],
+      },
+      {
+        id: 'arena-summoner',
+        name: 'Creador de Arena',
+        role: 'Invocador de MVPs',
+        sprite: sprite('4_M_SAGE_C'),
+        summary:
+          'Invoca un MVP en una arena privada pagando Almas de MVP y sus objetos.',
+        description: [
+          'El Creador abre una arena privada en Prontera. Elegís un MVP, pagás el costo en Almas de MVP y entregás los objetos que pide su invocación.',
+          'La arena es individual: al entrar, el MVP aparece en la arena y la instancia dura una hora. Si el MVP muere, todos vuelven a Prontera y la arena se cierra.',
+          'Mientras una arena siga activa podés volver a entrar sin pagar de nuevo. Las cacerías dentro de la arena no suman puntos al Journal.',
+          'El costo en Almas y objetos se consume al crear la arena. Si algo falla después de crearla, el GM lo revisa a mano.',
+        ],
+        services: [
+          'Invocación fija de MVPs',
+          'Costo en Almas + objetos',
+          'Arena privada de 1 hora',
+          'Reingreso sin costo mientras la arena esté activa',
+        ],
+        locations: ['Prontera (173, 152)'],
+        invocationCosts: [
+          {
+            souls: 3,
+            mvps: [
+              { name: "Golden Thief Bug", keys: ["1 Gold"] },
+              { name: "Phreeoni", keys: ["10 Tongue", "5 Ant Jaw"] },
+              { name: "Moonlight Flower", keys: ["20 Nine Tails"] },
+              { name: "Dracula", keys: ["1 3carat Diamond", "100 Wing of Red Bat"] },
+              { name: "Lady Tanee", keys: ["1 Banana Hat"] },
+              { name: "Orc Hero", keys: ["2 Orc Warlord Token"] },
+              { name: "Mistress", keys: ["30 Royal Jelly"] },
+              { name: "Maya", keys: ["30 Round Shell"] },
+              { name: "Doppelganger", keys: ["1 Lance", "2 Broad Sword"] },
+              { name: "Orc Lord", keys: ["1 Heroic Emblem"] },
+            ],
+          },
+          {
+            souls: 5,
+            mvps: [
+              { name: "Stormy Knight", keys: ["5 Old Blue Box"] },
+              { name: "Baphomet", keys: ["2 Evil Horn"] },
+              { name: "White Lady", keys: ["2 White Snake's Tear", "2 Black Hair"] },
+              { name: "Drake", keys: ["1 Pirate Bandana", "10 Skel-Bone"] },
+              { name: "Pharaoh", keys: ["2 Broken Pharaoh Emblem", "1 Masque of Tutankhamen"] },
+              { name: "Eddga", keys: ["5 Tiger Skin", "2 Tiger's Footskin"] },
+              { name: "RSX-0806", keys: ["2 Flashlight", "2 Cogwheel"] },
+              { name: "Amon Ra", keys: ["3 Fragment of Rossata Stone"] },
+              { name: "Evil Snake Lord", keys: ["3 Ba Gua"] },
+              { name: "Osiris", keys: ["10 Rotten Bandage", "1 Memento", "10 Scale Shell"] },
+              { name: "Dark Lord", keys: ["10 Skull", "1 Coif"] },
+              { name: "Tao Gunka", keys: ["1 Gemstone", "3 Stone Fragment"] },
+              { name: "Hatii", keys: ["2 Fang of Hatii"] },
+              { name: "Boitata", keys: ["1 Treasure Box", "10 Sharp Scale"] },
+              { name: "Turtle General", keys: ["10 Broken Shell"] },
+              { name: "Atroce", keys: ["5 Bloody Rune"] },
+            ],
+          },
+          {
+            souls: 10,
+            mvps: [
+              { name: "Scaraba Queen", keys: ["10 Queen Wing Piece"] },
+              { name: "Kiel D-01", keys: ["5 Pocket Watch"] },
+              { name: "Kraken", keys: ["10 Tentacle", "1 Treasure Box"] },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: 'lore',
     title: 'Lore y comunidad',
     description:
@@ -247,27 +351,6 @@ export const customNpcGroups: CustomNpcGroup[] = [
           'Registro de aventureros',
         ],
         locations: ['Geffen (139, 72)'],
-      },
-      {
-        id: 'journal',
-        name: 'Cronista de Cacerías',
-        role: 'Cronista de MVPs',
-        sprite: sprite('4_M_SAGE_C'),
-        summary:
-          'Lee las marcas de tus cacerías y guarda el registro de los MVPs que derrotaste.',
-        description: [
-          'El Cronista asegura que ninguna gran cacería quede en el olvido. Conoce las historias de cada MVP y sabe leer las marcas que dejan en quienes los enfrentan.',
-          'No entrega la gloria: la registra. Golpes finales, asistencias y bestias únicas quedan anotados en su libro para que el cazador pueda ver su recorrido.',
-          'También reconoce los hitos importantes y convierte los puntos de Alma que dejan los MVPs en Almas de MVP. Cada cacería suma, sin límite.',
-        ],
-        services: [
-          'Resumen de golpes finales y asistencias',
-          'Lista de MVPs cazados',
-          'Puntos de Alma pendientes',
-          'Reclamo repetible de Almas',
-          'Historial por MVP',
-        ],
-        locations: ['Prontera (150, 180)'],
       },
       {
         id: 'ludovico',
