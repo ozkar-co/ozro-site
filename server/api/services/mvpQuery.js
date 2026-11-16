@@ -16,15 +16,74 @@ function spawnKey(map, mobId) {
     return `${map}:${mobId}`;
 }
 
-function computeSouls(mvpExp, level) {
-    if (mvpExp > 0) {
-        if (mvpExp < 500000) return 1;
-        if (mvpExp < 1500000) return 5;
-        return 10;
-    }
-    if (level < 120) return 1;
-    if (level < 180) return 5;
-    return 10;
+const SOULS_BY_MOB_ID = new Map([
+    [3505, 1],
+    [1086, 1],
+    [1159, 1],
+    [1150, 1],
+    [1087, 1],
+    [1147, 1],
+    [1389, 1],
+    [1688, 1],
+    [1059, 1],
+    [1046, 1],
+    [1190, 1],
+    [1251, 3],
+    [1039, 3],
+    [1630, 3],
+    [1112, 3],
+    [1157, 3],
+    [1492, 3],
+    [1115, 3],
+    [1623, 3],
+    [1511, 3],
+    [1418, 3],
+    [1885, 3],
+    [1038, 3],
+    [1272, 3],
+    [1583, 3],
+    [2156, 3],
+    [1252, 3],
+    [2068, 3],
+    [1312, 3],
+    [1785, 3],
+    [2441, 5],
+    [2442, 5],
+    [2249, 5],
+    [2087, 5],
+    [2253, 5],
+    [1734, 5],
+    [2255, 5],
+    [2251, 5],
+    [2362, 5],
+    [3633, 5],
+    [1658, 5],
+    [1768, 5],
+    [1685, 5],
+    [2483, 5],
+    [1917, 5],
+    [2202, 5],
+    [20381, 10],
+    [3741, 10],
+    [20648, 10],
+    [3074, 10],
+    [1832, 10],
+    [1751, 10],
+    [2165, 10],
+    [1719, 10],
+    [1871, 10],
+    [20601, 20],
+    [20419, 20],
+    [20422, 20],
+    [20421, 20],
+    [21301, 20],
+    [20934, 20],
+    [20928, 20],
+    [20943, 20],
+]);
+
+function computeSouls(mobId) {
+    return SOULS_BY_MOB_ID.get(Number(mobId)) ?? 0;
 }
 
 async function getLatestKills() {
@@ -170,7 +229,7 @@ export async function getMvpRadar() {
             baseExp: toNumber(row.base_exp),
             jobExp: toNumber(row.job_exp),
             mvpExp: toNumber(row.mvp_exp),
-            souls: computeSouls(toNumber(row.mvp_exp), level),
+            souls: computeSouls(toNumber(row.mob_id)),
             map: row.map,
             amount: toNumber(row.amount),
             delay: toNumber(row.delay),
