@@ -466,3 +466,249 @@
     gap: 0.1rem;
   }
 }
+
+/* Encyclopedia layout with sidebar */
+.encyclopedia-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.encyclopedia-main {
+  min-width: 0;
+}
+
+.encyclopedia-main > .info-content,
+.encyclopedia-main .custom-npcs,
+.encyclopedia-main .custom-quests {
+  max-width: none;
+  background: url('/bg2.webp');
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: overlay;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom NPC sections */
+.custom-section-intro {
+  color: #555;
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+
+.custom-npc-group {
+  margin-bottom: 2rem;
+}
+
+.custom-npc-group > h3 {
+  margin: 0 0 0.35rem;
+  color: #8a6d3b;
+}
+
+.custom-npc-group > p {
+  margin: 0 0 1rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+.custom-npc-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.custom-npc-featured {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 1.5rem;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.custom-npc-featured-body h4 {
+  margin: 0.2rem 0 0.4rem;
+  font-size: 1.3rem;
+  color: #333;
+}
+
+.custom-npc-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.custom-npc-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.custom-npc-card-head h4 {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+  color: #333;
+}
+
+.custom-npc-portrait {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.custom-npc-portrait.is-large {
+  width: 160px;
+  height: 180px;
+}
+
+.custom-npc-portrait img,
+.custom-npc-card .npc-sprite img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.custom-npc-role {
+  display: inline-block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: #f3ead7;
+  color: #8a6d3b;
+  font-weight: 700;
+}
+
+.custom-npc-summary {
+  margin: 0.6rem 0 0.35rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+.custom-npc-location {
+  margin: 0;
+  color: #777;
+  font-size: 0.82rem;
+}
+
+.custom-npc-more {
+  margin-top: 0.65rem;
+}
+
+.custom-npc-more summary {
+  cursor: pointer;
+  color: #b03a2e;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.custom-npc-featured h5,
+.custom-npc-more h5 {
+  margin: 0.9rem 0 0.35rem;
+  color: #8a6d3b;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.custom-npc-featured ul,
+.custom-npc-more ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.custom-npc-featured li,
+.custom-npc-more li {
+  color: #666;
+  line-height: 1.45;
+  margin-bottom: 0.2rem;
+}
+
+.custom-npc-featured p,
+.custom-npc-more p {
+  color: #666;
+  line-height: 1.55;
+  margin: 0.4rem 0;
+}
+
+/* Custom quests */
+.custom-quest-block {
+  margin-bottom: 2rem;
+}
+
+.custom-quest-block > h3 {
+  margin: 0 0 0.5rem;
+  color: #8a6d3b;
+}
+
+.custom-quest-block > p {
+  color: #666;
+  line-height: 1.55;
+}
+
+.bounty-boards > h3 {
+  margin: 0 0 0.5rem;
+  color: #8a6d3b;
+}
+
+.custom-table-wrap {
+  overflow-x: auto;
+}
+
+.custom-repeatable-table {
+  min-width: 760px;
+}
+
+.custom-note-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-left: 4px solid #c9b07a;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+}
+
+.custom-note-card h3 {
+  margin: 0 0 0.5rem;
+  color: #8a6d3b;
+}
+
+.custom-note-card p {
+  margin: 0;
+  color: #666;
+  line-height: 1.55;
+}
+
+@media (max-width: 960px) {
+  .encyclopedia-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .encyclopedia-main > .info-content {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .custom-npc-featured {
+    grid-template-columns: 1fr;
+  }
+
+  .custom-npc-portrait.is-large {
+    width: 120px;
+    height: 140px;
+    margin: 0 auto;
+  }
+}

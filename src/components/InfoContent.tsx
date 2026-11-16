@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import '../styles/Information.css';
 import Stats from './Stats';
-import BountyBoards from './BountyBoards';
 
 interface InfoContentProps {
   selectedSection: string;
@@ -18,15 +18,18 @@ const contentMap: Record<string, ReactNode> = {
           Acceso por VPN con invitación; pincode desactivado.
         </p>
         <ul>
-          <li><strong>Episodio:</strong> 17.1 rev. 2019-06-05</li>
-          <li><strong>Modo:</strong> Renewal</li>
-          <li><strong>Nivel máximo:</strong> 175 / 60</li>
+          <li><strong>Base:</strong> rAthena Renewal (enero 2026)</li>
+          <li><strong>Contenido principal:</strong> hasta Episode 17.1</li>
+          <li><strong>Cliente:</strong> 2019-06-05</li>
+          <li><strong>Nivel máximo:</strong> 175 / 60 (3rd jobs)</li>
+          <li><strong>4th jobs:</strong> deshabilitados por ahora</li>
           <li><strong>Acceso:</strong> VPN privada, solo invitación</li>
           <li><strong>Comunidad:</strong> familiar, sin economía masiva</li>
         </ul>
         <p>
-          Contenido validado contra el cliente 2019-06-05. Instancias y job quests se
-          habilitan a medida que se validan sus mapas.
+          Instancias y job quests se habilitan a medida que se validan sus mapas.
+          Los NPCs y quests custom están documentados en la{' '}
+          <Link to="/encyclopedia">Enciclopedia</Link>.
         </p>
         <p>
           Filosofía: progresión fluida sin carrera competitiva, NPCs y quests custom,
@@ -189,9 +192,11 @@ const contentMap: Record<string, ReactNode> = {
         </ul>
         <h3>Economía y sistemas activos</h3>
         <ul>
-          <li>Bounty Boards en 14 ciudades</li>
-          <li>Quests repetibles de EXP (17 misiones)</li>
-          <li>Garrett el Recolector: oferta diaria de dos items de chatarra con precio elevado</li>
+          <li>Bounty Boards en 26 ciudades</li>
+          <li>18 quests repetibles de EXP (50 kills por tramo)</li>
+          <li>Garrett el Recolector: dos items diarios de chatarra, x10 su valor de venta (500–2.000 zeny), presupuesto de 300.000 zeny/día</li>
+          <li>Monedas OzRo por tiers: bronce, plata, oro y platino; el bronce se obtiene con Garrett cada 10 tratos únicos</li>
+          <li>Card Collector: archivo de cartas por cuenta con progreso y faltantes</li>
           <li>Merchant gana Job EXP al vender (Shop EXP)</li>
           <li>Autoloot mercenario y homúnculo</li>
           <li>Vending sin tax; barter activo; banco activo</li>
@@ -320,80 +325,8 @@ const contentMap: Record<string, ReactNode> = {
     </div>
   ),
 
-  'trade-npcs': (
-    <div className="info-content">
-      <h2>Comercio e Intercambio</h2>
-      <div className="content-section">
-        <p>NPCs activos en el servidor:</p>
-        <ul>
-          <li><strong>Sophie</strong> — Cambio puntos cash ↔ zeny (<code>points2zeny.txt</code>)</li>
-          <li><strong>Garrett el Recolector</strong> — Compra dos tipos de chatarra al dia a buen precio (x10 valor de venta, minimo 500 zeny/unidad); limite de gasto diario. Geffen</li>
-          <li><strong>Monke</strong> — Intercambia bananas por frutas aleatorias</li>
-          <li><strong>Card Collector</strong> — Archivo de cartas por cuenta y progreso de colección</li>
-          <li><strong>Card Remover</strong> — Quita cartas de equipamiento</li>
-        </ul>
-      </div>
-    </div>
-  ),
-
-  'buff-npcs': (
-    <div className="info-content">
-      <h2>Buffs y Soporte</h2>
-      <div className="content-section">
-        <p>NPCs activos en el servidor:</p>
-        <ul>
-          <li><strong>Healer</strong> — Cura y buffs temporales (curación y buffs por separado)</li>
-          <li><strong>Stylist</strong> — Cambio de apariencia</li>
-          <li><strong>Canalizadora Mística</strong> — Reset de stats/skills (birthstone + zeny)</li>
-          <li><strong>Sabio de los Elementos</strong> — Imbuye propiedad elemental al arma (Fuego, Viento, Hielo, Tierra) por zeny y piedra elemental; efecto ~30 min. Izlude, Prontera, Morocc, Geffen</li>
-          <li><strong>Kessinger, Vinculador de Almas</strong> — Soul Link de pago (20.000 zeny, ~20 min); jobs 2-1/2-2 y renewal compatibles. Yuno, Prontera, Morocc, Comodo, Geffen</li>
-        </ul>
-      </div>
-    </div>
-  ),
-
-  'other-npcs': (
-    <div className="info-content">
-      <h2>Otros NPCs</h2>
-      <div className="content-section">
-        <p>NPCs activos en el servidor:</p>
-        <ul>
-          <li><strong>Kaz el Cronista</strong> — Lore del reino y registro de aventureros; conteo de jugadores online. Geffen</li>
-          <li><strong>Ludovico el Sepulturero</strong> — Estadisticas de muertes del personaje y ecos de muerte en todo el reino. Prontera</li>
-          <li><strong>Bounty Boards</strong> — Misiones de caza por ciudad (13 ciudades, 32 tableros)</li>
-          <li><strong>Quests repetibles</strong> — EXP repetible por monstruo (17 quests)</li>
-        </ul>
-      </div>
-    </div>
-  ),
-
-  'bounty-missions': <BountyBoards />,
-
-  'hunting-missions': (
-    <div className="info-content">
-      <h2>Hunting Missions</h2>
-      <div className="content-section">
-        <p>
-          Script presente en repo (<code>hunting_missions.txt</code>) pero <strong>desactivado</strong> en
-          <code>scripts_custom.conf</code>. Candidato a daily loop futuro.
-        </p>
-      </div>
-    </div>
-  ),
-
-  'crimson-weapons': (
-    <div className="info-content">
-      <h2>Crimson Weapons</h2>
-      <div className="content-section">
-        <p>
-          Quest en reformulación. En Renewal de rAthena ya es posible obtener las armas Crimson;
-          el encantador Marcus y la quest custom están pendientes de alinear con el diseño actual.
-        </p>
-      </div>
-    </div>
-  ),
-
 };
+
 
 const InfoContent = ({ selectedSection }: InfoContentProps) => {
   return (

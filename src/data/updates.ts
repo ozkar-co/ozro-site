@@ -9,6 +9,17 @@ export interface UpdateEntry {
 export const recentUpdates: UpdateEntry[] = [
   {
     date: '16 de noviembre de 2026',
+    title: 'Enciclopedia reorganizada',
+    paragraphs: [
+      'Información ahora reúne solo las especificaciones del servidor y los sistemas personalizados. Los NPCs y las quests custom se movieron a la Enciclopedia.',
+      'La Enciclopedia tiene su propio sidebar: NPCs personalizados, Quests personalizadas, Episodios y NPCs por mapa.',
+      'Los NPCs custom tienen ficha con sprite, descripción, servicios y ubicaciones. Garrett el Recolector tiene una página completa; los demás están agrupados por comercio, soporte y lore.',
+      'Las Quests personalizadas incluyen los Bounty Boards y la tabla de las 18 quests repetibles con nivel, mapa, monstruo y recompensas.',
+      'Bounty Boards: nuevo selector por rango de nivel que muestra todos los tableros de ese rango con su ciudad, además del selector por ciudad.',
+    ],
+  },
+  {
+    date: '16 de noviembre de 2026',
     title: 'Radar de MVPs',
     paragraphs: [
       'Nueva sección Radar de MVPs con los 74 MVPs del servidor: sprites, mapa, nivel, rango de respawn y estado de caza.',

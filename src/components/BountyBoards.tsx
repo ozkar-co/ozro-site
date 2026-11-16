@@ -9,7 +9,7 @@ const rangeKey = (minLevel: number, maxLevel: number) => `${minLevel}-${maxLevel
 const rangeLabel = (minLevel: number, maxLevel: number) =>
   maxLevel > 0 ? `Nivel ${minLevel}–${maxLevel}` : `Nivel ${minLevel}+`;
 
-const BountyBoards = () => {
+const BountyBoards = ({ embedded = false }: { embedded?: boolean }) => {
   const [mode, setMode] = useState<ViewMode>('city');
   const [city, setCity] = useState<string>(bountyBoards[0]?.city ?? '');
   const [levelKey, setLevelKey] = useState<string>('');
@@ -81,8 +81,8 @@ const BountyBoards = () => {
   );
 
   return (
-    <div className="info-content">
-      <h2>Bounty Boards</h2>
+    <div className={embedded ? 'bounty-boards' : 'info-content'}>
+      {embedded ? <h3>Bounty Boards</h3> : <h2>Bounty Boards</h2>}
       <div className="content-section">
         <p>
           Tablones de caza por ciudad. Podés verlos agrupados por ciudad o filtrar un
