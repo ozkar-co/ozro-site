@@ -9,13 +9,20 @@ export interface UpdateEntry {
 export const recentUpdates: UpdateEntry[] = [
   {
     date: '16 de noviembre de 2026',
-    title: 'Cronista de Cacerías',
+    title: 'Tejedora de Ecos y Sueños Tejidos',
     paragraphs: [
-      'Nuevo NPC en Prontera: lee el registro de MVPs de cada personaje y muestra golpes finales, asistencias, MVPs únicos y los MVPs que más cazaste.',
-      'El registro conserva las variables históricas de kills y asistencias, así que las cacerías anteriores cuentan desde el primer día.',
-      'Los MVPs naturales entregan puntos de Alma: el killer y la party en el mismo mapa suman los puntos completos. El Cronista convierte esos puntos en Almas y el reclamo es repetible, sin cap.',
-      'El historial viejo de kills y asistencias cuenta desde el primer día, así que no se pierde el progreso anterior.',
-      'El invocador de MVPs queda para una etapa posterior.',
+      'La Tejedora de Ecos llega a Prontera. Puede tejer el eco de una gran bestia en Sueños Tejidos.',
+      'El líder paga Almas y catalizadores. Cada miembro de la party habla con la Tejedora para entrar.',
+      'Mientras el sueño siga abierto se puede reingresar. Al caer el eco o terminar el tiempo, todos despiertan junto a la Tejedora.',
+    ],
+  },
+  {
+    date: '16 de noviembre de 2026',
+    title: 'El Guardián de Almas',
+    paragraphs: [
+      'El Cronista de Cacerías pasa a ser El Guardián de Almas. Las almas de las grandes bestias se niegan a abandonar el mundo y dejan fragmentos en los cazadores que las enfrentaron.',
+      'El Guardián limpia esas marcas y las cristaliza en Almas de MVP. El reclamo es repetible y no tiene tope.',
+      'Si quieres volver a enfrentar a una bestia, la Tejedora de Ecos puede llamar a su eco.',
     ],
   },
   {
