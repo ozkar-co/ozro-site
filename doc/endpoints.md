@@ -456,6 +456,33 @@ Detalle de un objeto con jobs, clases, ubicaciones de equip, scripts y lista `dr
 
 ---
 
+## GET /api/items/:id/description
+
+Descripción del cliente para un objeto, leída desde `data/itemInfo_EN.lua`. El servidor indexa el archivo al arrancar y lee solo el bloque del ID solicitado.
+
+**Respuesta exitosa:**
+```json
+{
+  "id": 35005,
+  "identified": [
+    "Fragmento de la esencia de un MVP derrotado.",
+    "Se usa para invocar monstruos poderosos."
+  ],
+  "unidentified": [
+    "Fragmento de la esencia de un MVP derrotado.",
+    "Se usa para invocar monstruos poderosos."
+  ]
+}
+```
+
+Si el objeto no aparece en `itemInfo_EN.lua`, ambos arrays vienen vacíos.
+
+**400:** ID inválido.
+
+**503:** `data/itemInfo_EN.lua` no existe o no se pudo indexar.
+
+---
+
 ## Códigos de Error
 
 **500 Internal Server Error:**

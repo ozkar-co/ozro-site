@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { SpriteRect } from '../api/assets';
-import type { MobSpawnMapSummary } from '../api/client';
+import { apiClient, type MobSpawnMapSummary } from '../api/client';
 import AtlasSprite from './AtlasSprite';
 import {
   PLACEHOLDER_ITEM_ICON,
@@ -256,6 +257,33 @@ interface ItemCardProps {
 }
 
 const ItemCard: React.FC<ItemCardProps> = ({ result }) => {
+  const [description, setDescription] = useState(result.description);
+  const [descriptionOpen, setDescriptionOpen] = useState(Boolean(result.description));
+  const [descriptionLoading, setDescriptionLoading] = useState(false);
+  const [descriptionError, setDescriptionError] = useState(false);
+
+  const toggleDescription = async () => {
+    if (descriptionOpen) {
+      setDescriptionOpen(false);
+      return;
+    }
+
+    setDescriptionOpen(true);
+    if (description || descriptionLoading) return;
+
+    setDescriptionLoading(true);
+    setDescriptionError(false);
+    try {
+      const response = await apiClient.getItemDescription(result.id);
+      const lines = response.identified.length > 0 ? response.identified : response.unidentified;
+      setDescription(lines.join('\n'));
+    } catch {
+      setDescriptionError(true);
+    } finally {
+      setDescriptionLoading(false);
+    }
+  };
+
   return (
     <div className="result-card">
       <div className="result-card-content">
@@ -436,16 +464,32 @@ const ItemCard: React.FC<ItemCardProps> = ({ result }) => {
               </div>
             </div>
           )}
-          {result.description && (
-            <div className="result-card-section">
-              <div className="result-card-description-header">Descripción:</div>
-              <div className="result-card-description">
-                <div className="result-card-description-content">
-                  {processColoredText(result.description)}
+          <div className="result-card-section">
+            <button
+              type="button"
+              className="result-card-toggle"
+              onClick={toggleDescription}
+              aria-expanded={descriptionOpen}
+            >
+              {descriptionOpen ? 'Ocultar descripción' : 'Ver descripción'}
+            </button>
+            {descriptionOpen && (
+              <>
+                <div className="result-card-description-header">Descripción:</div>
+                <div className="result-card-description">
+                  <div className="result-card-description-content">
+                    {descriptionLoading
+                      ? 'Cargando descripción...'
+                      : descriptionError
+                        ? 'No se pudo cargar la descripción.'
+                        : description
+                          ? processColoredText(description)
+                          : 'Sin descripción disponible.'}
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
+              </>
+            )}
+          </div>
           {result.script && (
             <div className="result-card-section">
               <div className="result-card-script-header">Al usar:</div>

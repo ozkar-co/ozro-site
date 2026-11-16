@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { startAPI } from './api/server.js';
 import { initializeMariaDB } from './services/mariadb.js';
 import { initializeGameDb } from './api/services/gameDb.js';
+import { initializeItemInfoIndex } from './api/services/itemInfo.js';
 import { warmResponseCaches } from './api/services/warmup.js';
 import { initializeBackupTask } from './tasks/backup.js';
 
@@ -11,6 +12,7 @@ async function main() {
     try {
         await initializeMariaDB();
         await initializeGameDb();
+        await initializeItemInfoIndex();
         await warmResponseCaches();
         await initializeBackupTask();
         console.log('Base de datos y tareas iniciadas correctamente');

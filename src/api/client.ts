@@ -217,6 +217,12 @@ export interface ItemDetail extends ItemSummary {
   }[];
 }
 
+export interface ItemDescriptionResponse {
+  id: number;
+  identified: string[];
+  unidentified: string[];
+}
+
 export type MvpState = 'dead' | 'probable' | 'alive' | 'unknown';
 
 export interface MvpLastKill {
@@ -311,5 +317,8 @@ export const apiClient = {
   searchItems: (params: ItemSearchParams) =>
     apiFetch<PaginatedResponse<ItemDetail>>(`/items${buildQuery(params)}`),
 
-  getItem: (id: number | string) => apiFetch<ItemDetail>(`/items/${id}`)
+  getItem: (id: number | string) => apiFetch<ItemDetail>(`/items/${id}`),
+
+  getItemDescription: (id: number | string) =>
+    apiFetch<ItemDescriptionResponse>(`/items/${id}/description`)
 };

@@ -74,6 +74,7 @@ mysql -u USER -p < backups/AAAAMMDD_HHMMSS_full/full_backup.sql
 server/    API Express, servicios MariaDB y tareas
 src/       frontend React
 assets/    atlases WebP, manifest y assets del juego
+data/      itemInfo_EN.lua (descripciones del cliente)
 public/    estáticos del sitio
 dist/      build del frontend (gitignored)
 ```
@@ -145,6 +146,16 @@ for item_id, resource in items.items():
         print(f'{source.name} -> {out_dir}/{item_id}.png')
 PY
 ```
+
+## Descripciones de items
+
+Las descripciones visibles del cliente salen de `data/itemInfo_EN.lua`. La web las lee sin cargar el archivo entero en cada búsqueda:
+
+- Al arrancar, el servidor construye en memoria un índice `ID -> rango de bytes`.
+- `GET /api/items/:id/description` lee solo el bloque de ese item y devuelve `identified` y `unidentified` como arrays de líneas.
+- El frontend no pide descripciones durante la búsqueda: el botón **Ver descripción** de cada item las solicita bajo demanda y luego el navegador mantiene el resultado en caché.
+
+Para actualizar las descripciones, reemplaza `data/itemInfo_EN.lua` y reinicia el sitio. El índice se reconstruye en cada arranque. Si el archivo no existe, el endpoint devuelve `503` con un hint y el resto de la web sigue funcionando.
 
 ## Spawns y mapas
 
