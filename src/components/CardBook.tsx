@@ -12,6 +12,14 @@ import {
   type CardPage
 } from '../api/cards';
 
+type BookCode = 'common' | 'boss';
+
+interface Book {
+  code: BookCode;
+  label: string;
+  cards: CardEntry[];
+}
+
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(() =>
     typeof window !== 'undefined' ? window.matchMedia(query).matches : false
@@ -26,6 +34,12 @@ function useMediaQuery(query: string): boolean {
   }, [query]);
 
   return matches;
+}
+
+function sortCards(cards: CardEntry[]): CardEntry[] {
+  return [...cards].sort(
+    (a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }) || a.id - b.id
+  );
 }
 
 function formatUserid(value: string): string {
@@ -72,7 +86,7 @@ const CardBook = () => {
   const [book, setBook] = useState<CardBookResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeCode, setActiveCode] = useState<string | null>(null);
+  const [activeBook, setActiveBook] = useState<BookCode>('common');
   const [page, setPage] = useState(0);
   const [ownedOnly, setOwnedOnly] = useState(false);
   const bookRef = useRef<HTMLDivElement>(null);
@@ -94,7 +108,7 @@ const CardBook = () => {
         if (cancelled) return;
         setCatalog(catalogData);
         setBook(bookData);
-        setActiveCode(catalogData.categories[0]?.code ?? null);
+        setActiveBook('common');
       })
       .catch((fetchError: Error) => {
         if (cancelled) return;
@@ -111,66 +125,78 @@ const CardBook = () => {
 
   const owned = useMemo(() => new Set(book?.owned ?? []), [book]);
 
-  const stats = useMemo(() => {
-    const result = new Map<string, { owned: number; total: number }>();
-    if (!catalog) return result;
-    for (const category of catalog.categories) {
+  const books = useMemo<Book[]>(() => {
+    if (!catalog) return [];
+    const commonCards = sortCards(
+      catalog.categories
+        .filter((category) => category.code !== 'BOSS' && category.code !== 'MVP')
+        .flatMap((category) => category.cards)
+    );
+    const bossCards = sortCards(
+      catalog.categories
+        .filter((category) => category.code === 'BOSS')
+        .flatMap((category) => category.cards)
+    ).concat(
+      sortCards(
+        catalog.categories
+          .filter((category) => category.code === 'MVP')
+          .flatMap((category) => category.cards)
+      )
+    );
+    return [
+      { code: 'common', label: 'Comunes', cards: commonCards },
+      { code: 'boss', label: 'Boss + MVP', cards: bossCards }
+    ];
+  }, [catalog]);
+
+  const bookStats = useMemo(() => {
+    const result = new Map<BookCode, { owned: number; total: number }>();
+    for (const current of books) {
       let ownedCount = 0;
-      for (const card of category.cards) {
+      for (const card of current.cards) {
         if (owned.has(card.id)) ownedCount += 1;
       }
-      result.set(category.code, { owned: ownedCount, total: category.cards.length });
+      result.set(current.code, { owned: ownedCount, total: current.cards.length });
     }
     return result;
-  }, [catalog, owned]);
+  }, [books, owned]);
 
   const totalOwned = useMemo(() => {
-    if (!catalog) return 0;
     let count = 0;
-    for (const category of catalog.categories) {
-      for (const card of category.cards) {
-        if (owned.has(card.id)) count += 1;
-      }
-    }
+    for (const stat of bookStats.values()) count += stat.owned;
     return count;
-  }, [catalog, owned]);
+  }, [bookStats]);
 
-  const visibleCategories = useMemo(() => {
-    if (!catalog) return [];
-    if (!ownedOnly) return catalog.categories;
-    return catalog.categories.filter((category) =>
-      category.cards.some((card) => owned.has(card.id))
-    );
-  }, [catalog, owned, ownedOnly]);
+  const visibleBooks = useMemo(() => {
+    if (!ownedOnly) return books;
+    return books.filter((current) => current.cards.some((card) => owned.has(card.id)));
+  }, [books, owned, ownedOnly]);
 
   useEffect(() => {
-    if (visibleCategories.length === 0) {
-      setActiveCode(null);
-      return;
+    if (visibleBooks.length === 0) return;
+    if (!visibleBooks.some((current) => current.code === activeBook)) {
+      setActiveBook(visibleBooks[0].code);
     }
-    if (!activeCode || !visibleCategories.some((category) => category.code === activeCode)) {
-      setActiveCode(visibleCategories[0].code);
-    }
-  }, [activeCode, visibleCategories]);
+  }, [activeBook, visibleBooks]);
 
-  const activeCategory = useMemo(
-    () => visibleCategories.find((category) => category.code === activeCode) ?? null,
-    [activeCode, visibleCategories]
+  const activeBookData = useMemo(
+    () => visibleBooks.find((current) => current.code === activeBook) ?? null,
+    [activeBook, visibleBooks]
   );
 
   const cards = useMemo(() => {
-    if (!activeCategory) return [];
+    if (!activeBookData) return [];
     return ownedOnly
-      ? activeCategory.cards.filter((card) => owned.has(card.id))
-      : activeCategory.cards;
-  }, [activeCategory, owned, ownedOnly]);
+      ? activeBookData.cards.filter((card) => owned.has(card.id))
+      : activeBookData.cards;
+  }, [activeBookData, owned, ownedOnly]);
 
   const cardsPerPage = singlePage ? 6 : 12;
   const pageCount = Math.max(1, Math.ceil(cards.length / cardsPerPage));
 
   useEffect(() => {
     setPage(0);
-  }, [activeCode, ownedOnly, singlePage]);
+  }, [activeBook, ownedOnly, singlePage]);
 
   useEffect(() => {
     setPage((current) => Math.min(current, pageCount - 1));
@@ -257,31 +283,31 @@ const CardBook = () => {
               </label>
             </section>
 
-            <nav className="cardbook-tabs" aria-label="Categorías de cartas">
-              {visibleCategories.map((category) => {
-                const categoryStats = stats.get(category.code);
+            <nav className="cardbook-tabs" aria-label="Libros">
+              {visibleBooks.map((current) => {
+                const stat = bookStats.get(current.code);
                 return (
                   <button
-                    key={category.code}
+                    key={current.code}
                     type="button"
-                    className={category.code === activeCategory?.code ? 'active' : ''}
-                    onClick={() => setActiveCode(category.code)}
+                    className={current.code === activeBookData?.code ? 'active' : ''}
+                    onClick={() => setActiveBook(current.code)}
                   >
-                    <span>{category.label}</span>
+                    <span>{current.label}</span>
                     <small>
-                      {categoryStats?.owned ?? 0}/{categoryStats?.total ?? 0}
+                      {stat?.owned ?? 0}/{stat?.total ?? 0}
                     </small>
                   </button>
                 );
               })}
             </nav>
 
-            {activeCategory && cards.length > 0 ? (
+            {activeBookData && cards.length > 0 ? (
               <>
                 <div className="book-spread" ref={bookRef}>
                   <div className="book-page">
                     <div className="book-page-heading">
-                      <span>{activeCategory.label}</span>
+                      <span>{activeBookData.label}</span>
                       <small>
                         {page * cardsPerPage + 1}–
                         {Math.min((page + 1) * cardsPerPage, cards.length)} de {cards.length}
@@ -302,7 +328,7 @@ const CardBook = () => {
                   {!singlePage && (
                     <div className="book-page">
                       <div className="book-page-heading">
-                        <span>{activeCategory.label}</span>
+                        <span>{activeBookData.label}</span>
                         <small>continuación</small>
                       </div>
                       <div className="book-grid">
@@ -327,9 +353,21 @@ const CardBook = () => {
                   >
                     ‹ Anterior
                   </button>
-                  <span>
-                    Página {Math.min(page + 1, pageCount)} de {pageCount}
-                  </span>
+                  <label className="book-page-jump">
+                    Página
+                    <select
+                      value={Math.min(page + 1, pageCount)}
+                      onChange={(event) => goToPage(Number(event.target.value) - 1)}
+                      aria-label="Ir a la página"
+                    >
+                      {Array.from({ length: pageCount }, (_, index) => (
+                        <option key={index + 1} value={index + 1}>
+                          {index + 1}
+                        </option>
+                      ))}
+                    </select>
+                    de {pageCount}
+                  </label>
                   <button
                     type="button"
                     onClick={() => goToPage(Math.min(pageCount - 1, page + 1))}
@@ -344,8 +382,8 @@ const CardBook = () => {
                 {totalOwned === 0
                   ? 'Esta cuenta todavía no registró cartas en el Archivista.'
                   : ownedOnly
-                    ? 'No hay cartas obtenidas en las categorías disponibles.'
-                    : 'No hay cartas en esta categoría.'}
+                    ? 'No hay cartas obtenidas en los libros disponibles.'
+                    : 'No hay cartas en este libro.'}
               </div>
             )}
           </div>
