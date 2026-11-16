@@ -169,7 +169,7 @@ mysql -u USER -p rathena < /tmp/ozro-spawns/mob_spawn.sql
 cd ../ozro-site
 rm -rf assets/spawns && mkdir -p assets/spawns
 cp -r /tmp/ozro-spawns/web/spawns/* assets/spawns/
-python3 tools/build_map_images.py --rathena ../rathena --maps assets/spawns/maps.json --out assets/maps
+python3 tools/build_map_images.py --rathena ../rathena --maps assets/maps/all-maps.json --out assets/maps
 ```
 
 `tools/build_map_images.py` renderiza las vistas desde `db/map_cache.dat`; no necesita los GRF del cliente.
