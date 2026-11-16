@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import InfoSidebar from './InfoSidebar';
+import BountyBoards from './BountyBoards';
 import CustomNpcs from './encyclopedia/CustomNpcs';
 import CustomQuests from './encyclopedia/CustomQuests';
 import NpcMapBrowser from './encyclopedia/NpcMapBrowser';
@@ -27,25 +28,31 @@ const sections: EncyclopediaSection[] = [
     id: 'npcs',
     title: 'NPCs personalizados',
     icon: '/icons/npc.png',
-    category: 'Guía del servidor',
+    category: 'Contenido personalizado',
   },
   {
-    id: 'quests',
-    title: 'Quests personalizadas',
+    id: 'bounty',
+    title: 'Bounty Boards',
     icon: '/icons/bounty.png',
-    category: 'Guía del servidor',
+    category: 'Contenido personalizado',
+  },
+  {
+    id: 'repeatables',
+    title: 'Quests repetibles',
+    icon: '/icons/hunt.png',
+    category: 'Contenido personalizado',
   },
   {
     id: 'episodes',
     title: 'Episodios',
     icon: '/icons/feature.png',
-    category: 'Guía del servidor',
+    category: 'General',
   },
   {
     id: 'maps',
     title: 'NPCs por mapa',
     icon: '/icons/stats.png',
-    category: 'Mapas',
+    category: 'General',
   },
 ];
 
@@ -124,7 +131,12 @@ const Encyclopedia = () => {
 
             <div className="encyclopedia-main">
               {selectedSection === 'npcs' && <CustomNpcs />}
-              {selectedSection === 'quests' && <CustomQuests />}
+              {selectedSection === 'bounty' && (
+                <div className="info-content">
+                  <BountyBoards embedded />
+                </div>
+              )}
+              {selectedSection === 'repeatables' && <CustomQuests />}
 
               {selectedSection === 'episodes' && (
                 <section className="encyclopedia-episodes">

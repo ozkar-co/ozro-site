@@ -712,3 +712,151 @@
     margin: 0 auto;
   }
 }
+
+/* NPC details button and modal */
+.custom-npc-details {
+  margin-top: 0.85rem;
+  padding: 0.5rem 1rem;
+  background: #ff8d7f;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+
+.custom-npc-details:hover {
+  background: #ff7a6a;
+}
+
+.custom-npc-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(20, 22, 28, 0.68);
+  backdrop-filter: blur(3px);
+}
+
+.custom-npc-modal {
+  position: relative;
+  width: min(820px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+.custom-npc-modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: #555;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.custom-npc-modal-close:hover {
+  color: #b03a2e;
+}
+
+.custom-npc-modal-hero {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f7f0e1, #fdfbf5);
+  border-bottom: 1px solid #eee3cc;
+}
+
+.custom-npc-modal .custom-npc-portrait.is-large {
+  width: 220px;
+  height: 260px;
+}
+
+.custom-npc-modal-heading h4 {
+  margin: 0.35rem 0 0.6rem;
+  color: #333;
+  font-size: 1.8rem;
+}
+
+.custom-npc-modal-heading p {
+  margin: 0;
+  color: #555;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.custom-npc-modal-body {
+  padding: 1.75rem 2rem 2rem;
+}
+
+.custom-npc-modal-body p {
+  margin: 0.5rem 0;
+  color: #555;
+  line-height: 1.65;
+}
+
+.custom-npc-modal-body h5 {
+  margin: 1.25rem 0 0.4rem;
+  color: #8a6d3b;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.custom-npc-modal-body ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.custom-npc-modal-body li {
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 0.25rem;
+}
+
+@media (max-width: 640px) {
+  .custom-npc-modal-backdrop {
+    padding: 0.75rem;
+  }
+
+  .custom-npc-modal-hero {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1.25rem;
+    text-align: center;
+  }
+
+  .custom-npc-modal .custom-npc-portrait.is-large {
+    width: 150px;
+    height: 180px;
+    margin: 0 auto;
+  }
+
+  .custom-npc-modal-heading h4 {
+    font-size: 1.4rem;
+  }
+
+  .custom-npc-modal-body {
+    padding: 1.25rem;
+  }
+}

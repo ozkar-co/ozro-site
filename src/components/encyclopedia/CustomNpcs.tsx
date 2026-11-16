@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { customNpcGroups, type CustomNpc } from '../../data/customNpcs';
 import '../../styles/Information.css';
 import '../../styles/Encyclopedia.css';
@@ -34,22 +35,7 @@ const NpcDetails = ({ npc }: { npc: CustomNpc }) => (
   </>
 );
 
-const FeaturedNpc = ({ npc }: { npc: CustomNpc }) => (
-  <article className="custom-npc-featured">
-    <NpcPortrait npc={npc} large />
-    <div className="custom-npc-featured-body">
-      <span className="custom-npc-role">{npc.role}</span>
-      <h4>{npc.name}</h4>
-      <p className="custom-npc-summary">{npc.summary}</p>
-      {npc.description.map((paragraph) => (
-        <p key={paragraph}>{paragraph}</p>
-      ))}
-      <NpcDetails npc={npc} />
-    </div>
-  </article>
-);
-
-const NpcCard = ({ npc }: { npc: CustomNpc }) => (
+const NpcCard = ({ npc, onOpen }: { npc: CustomNpc; onOpen: (npc: CustomNpc) => void }) => (
   <article className="custom-npc-card">
     <div className="custom-npc-card-head">
       <NpcPortrait npc={npc} />
@@ -60,40 +46,95 @@ const NpcCard = ({ npc }: { npc: CustomNpc }) => (
     </div>
     <p className="custom-npc-summary">{npc.summary}</p>
     <p className="custom-npc-location">{npc.locations.join(' · ')}</p>
-    <details className="custom-npc-more">
-      <summary>Ver detalles</summary>
-      {npc.description.map((paragraph) => (
-        <p key={paragraph}>{paragraph}</p>
-      ))}
-      <NpcDetails npc={npc} />
-    </details>
+    <button
+      type="button"
+      className="custom-npc-details"
+      onClick={() => onOpen(npc)}
+    >
+      Ver detalles
+    </button>
   </article>
 );
 
-const CustomNpcs = () => (
-  <div className="info-content custom-npcs">
-    <h2>NPCs personalizados</h2>
-    <p className="custom-section-intro">
-      Habitantes de Rune-Midgard con funciones propias de OzRo: economía, soporte,
-      colecciones y lore. Las descripciones salen de los scripts activos del servidor.
-    </p>
+const NpcModal = ({ npc, onClose }: { npc: CustomNpc; onClose: () => void }) => {
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [onClose]);
 
-    {customNpcGroups.map((group) => (
-      <section className="custom-npc-group" key={group.id}>
-        <h3>{group.title}</h3>
-        <p>{group.description}</p>
-        <div className="custom-npc-list">
-          {group.npcs.map((npc) =>
-            npc.featured ? (
-              <FeaturedNpc key={npc.id} npc={npc} />
-            ) : (
-              <NpcCard key={npc.id} npc={npc} />
-            ),
-          )}
+  return (
+    <div className="custom-npc-modal-backdrop" onClick={onClose} role="presentation">
+      <div
+        className="custom-npc-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label={npc.name}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button
+          type="button"
+          className="custom-npc-modal-close"
+          onClick={onClose}
+          aria-label="Cerrar"
+        >
+          ×
+        </button>
+
+        <div className="custom-npc-modal-hero">
+          <NpcPortrait npc={npc} large />
+          <div className="custom-npc-modal-heading">
+            <span className="custom-npc-role">{npc.role}</span>
+            <h4>{npc.name}</h4>
+            <p>{npc.summary}</p>
+          </div>
         </div>
-      </section>
-    ))}
-  </div>
-);
+
+        <div className="custom-npc-modal-body">
+          {npc.description.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+          <NpcDetails npc={npc} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const CustomNpcs = () => {
+  const [selectedNpc, setSelectedNpc] = useState<CustomNpc | null>(null);
+
+  return (
+    <div className="info-content custom-npcs">
+      <h2>NPCs personalizados</h2>
+      <p className="custom-section-intro">
+        Habitantes de Rune-Midgard con funciones propias de OzRo: economía, soporte,
+        colecciones y lore. Las descripciones salen de los scripts activos del servidor.
+      </p>
+
+      {customNpcGroups.map((group) => (
+        <section className="custom-npc-group" key={group.id}>
+          <h3>{group.title}</h3>
+          <p>{group.description}</p>
+          <div className="custom-npc-list">
+            {group.npcs.map((npc) => (
+              <NpcCard key={npc.id} npc={npc} onOpen={setSelectedNpc} />
+            ))}
+          </div>
+        </section>
+      ))}
+
+      {selectedNpc && (
+        <NpcModal npc={selectedNpc} onClose={() => setSelectedNpc(null)} />
+      )}
+    </div>
+  );
+};
 
 export default CustomNpcs;
