@@ -19,6 +19,13 @@ export const recentUpdates: UpdateEntry[] = [
   },
   {
     date: '16 de noviembre de 2026',
+    title: 'Tablones de bounty reubicados',
+    paragraphs: [
+      'Se movieron y alinearon varios tablones de bounty para que no se superpongan con edificios, warps o caminos. Las recompensas y los rangos de nivel no cambian.',
+    ],
+  },
+  {
+    date: '16 de noviembre de 2026',
     title: 'Enciclopedia reorganizada',
     paragraphs: [
       'Información ahora reúne solo las especificaciones del servidor y los sistemas personalizados. Los NPCs y las quests custom se movieron a la Enciclopedia.',
