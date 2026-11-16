@@ -3,18 +3,6 @@ import fs from 'fs/promises';
 import path from 'path';
 import { query } from '../services/mariadb.js';
 
-async function readBackupConfig() {
-    try {
-        const configContent = await fs.readFile('backup.conf', 'utf-8');
-        return configContent.split('\n')
-            .map(line => line.trim())
-            .filter(line => line && !line.startsWith('#'));
-    } catch (error) {
-        console.error('Error al leer backup.conf:', error);
-        return [];
-    }
-}
-
 async function getAllTables() {
     try {
         const result = await query('SHOW TABLES');
@@ -118,8 +106,11 @@ async function performBackup(isFull = false) {
         await fs.mkdir(sqlDir, { recursive: true });
         await fs.mkdir(schemaDir, { recursive: true });
         
-        // Obtener lista de tablas según el tipo de backup
-        const tables = isFull ? await getAllTables() : await readBackupConfig();
+        // Los backups incluyen todas las tablas de la base de datos, sin listas manuales.
+        const tables = await getAllTables();
+        if (tables.length === 0) {
+            throw new Error('No se encontraron tablas para respaldar; se cancela el backup');
+        }
         let backupCount = 0;
         
         // Archivo SQL combinado autocontenido (estructura + datos)
@@ -198,14 +189,16 @@ async function performBackup(isFull = false) {
         // Metadatos del backup para saber qué contiene
         const metadata = {
             createdAt: new Date().toISOString(),
-            type: isFull ? 'full' : 'partial',
+            type: isFull ? 'full' : 'daily',
+            scope: 'all_tables',
             database: process.env.MARIADB_DATABASE,
-            tables: schemaCount
+            tables: schemaCount,
+            tableNames: tables
         };
         await fs.writeFile(path.join(backupDir, 'metadata.json'), JSON.stringify(metadata, null, 2));
         
-        const backupType = isFull ? 'completo' : 'normal';
-        console.log(`Backup ${backupType} completado en ${backupDir} (${backupCount} tablas)`);
+        const backupType = isFull ? 'completo' : 'diario';
+        console.log(`Backup ${backupType} completado en ${backupDir} (${backupCount}/${tables.length} tablas)`);
         return backupCount;
     } catch (error) {
         console.error('Error al realizar backup:', error);

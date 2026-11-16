@@ -88,6 +88,7 @@ const CardBook = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeBook, setActiveBook] = useState<BookCode>('common');
   const [page, setPage] = useState(0);
+  const [turnDirection, setTurnDirection] = useState<'next' | 'prev'>('next');
   const [ownedOnly, setOwnedOnly] = useState(false);
   const bookRef = useRef<HTMLDivElement>(null);
   const singlePage = useMediaQuery('(max-width: 1100px)');
@@ -208,6 +209,7 @@ const CardBook = () => {
   );
 
   const goToPage = (nextPage: number) => {
+    setTurnDirection(nextPage < page ? 'prev' : 'next');
     setPage(nextPage);
     requestAnimationFrame(() => {
       bookRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -277,7 +279,10 @@ const CardBook = () => {
                 <input
                   type="checkbox"
                   checked={ownedOnly}
-                  onChange={(event) => setOwnedOnly(event.target.checked)}
+                  onChange={(event) => {
+                    setPage(0);
+                    setOwnedOnly(event.target.checked);
+                  }}
                 />
                 <span>Solo obtenidas</span>
               </label>
@@ -291,7 +296,11 @@ const CardBook = () => {
                     key={current.code}
                     type="button"
                     className={current.code === activeBookData?.code ? 'active' : ''}
-                    onClick={() => setActiveBook(current.code)}
+                    onClick={() => {
+                      setTurnDirection('next');
+                      setPage(0);
+                      setActiveBook(current.code);
+                    }}
                   >
                     <span>{current.label}</span>
                     <small>
@@ -304,7 +313,11 @@ const CardBook = () => {
 
             {activeBookData && cards.length > 0 ? (
               <>
-                <div className="book-spread" ref={bookRef}>
+                <div
+                  key={`${activeBook}-${page}`}
+                  className={`book-spread turn-${turnDirection}`}
+                  ref={bookRef}
+                >
                   <div className="book-page">
                     <div className="book-page-heading">
                       <span>{activeBookData.label}</span>
