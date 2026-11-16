@@ -241,7 +241,7 @@ export const customNpcGroups: CustomNpcGroup[] = [
         id: 'journal',
         name: 'El Guardián de Almas',
         role: 'Guardián de Almas',
-        sprite: sprite('4_M_SAGE_C'),
+        sprite: sprite('4_M_SURA'),
         summary:
           'Recoge los fragmentos de alma que dejan las grandes bestias y los cristaliza en Almas de MVP.',
         description: [
