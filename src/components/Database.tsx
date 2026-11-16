@@ -2,6 +2,8 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
+import Maps from './Maps';
+import Mvps from './Mvps';
 import ItemCard, { SearchResult, ITEM_TYPES } from './ItemCard';
 import MobCard, { MobResult, MOB_SIZE, MOB_ELEMENTS, MOB_RACES } from './MobCard';
 import '../styles/Database.css';
@@ -22,7 +24,6 @@ import {
 import {
   buildDatabaseSearchParams,
   getLegacyDeepLinkId,
-  hasSearchCriteria,
   parseDatabaseUrl,
   type DatabaseTab
 } from '../api/databaseUrl';
@@ -209,9 +210,10 @@ const Database = () => {
     setActiveTab(tab);
     setSearchTerm(q);
 
-    if (!hasSearchCriteria(q, options)) {
+    if (tab === 'maps' || tab === 'mvps') {
       setSearchState(emptySearchState());
       setSearchError(null);
+      setIsSearching(false);
       return;
     }
 
@@ -289,8 +291,24 @@ const Database = () => {
           >
             Base de Datos de Monstruos
           </button>
+          <button
+            className={`tab-button ${activeTab === 'maps' ? 'active' : ''}`}
+            onClick={() => handleTabChange('maps')}
+          >
+            Mapas
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'mvps' ? 'active' : ''}`}
+            onClick={() => handleTabChange('mvps')}
+          >
+            MVPs
+          </button>
         </div>
-        <div className="database-container">
+        <div className={`database-container${activeTab === 'maps' || activeTab === 'mvps' ? ' database-embed' : ''}`}>
+          {activeTab === 'maps' || activeTab === 'mvps' ? (
+            activeTab === 'maps' ? <Maps /> : <Mvps />
+          ) : (
+            <>
           <div className="search-section">
             <div className="search-container">
               <form onSubmit={handleSearch} className="search-form">
@@ -511,14 +529,12 @@ const Database = () => {
               </>
             ) : (
               !searchError && !isSearching && (
-                <div className="no-results">
-                  {searchTerm || searchOptions.selectedTypes.length > 0
-                    ? 'No se encontraron resultados'
-                    : 'Ingresa un término para buscar o selecciona un filtro'}
-                </div>
+                <div className="no-results">No se encontraron resultados</div>
               )
             )}
           </div>
+            </>
+          )}
         </div>
       </div>
       <Footer />

@@ -1267,3 +1267,25 @@ a {
   color: #888;
   font-style: italic;
 }
+
+/* Embedded Mapas / MVPs tabs */
+.database-container.database-embed {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+@media (max-width: 900px) {
+  .database-tabs {
+    flex-wrap: wrap;
+    padding: 0 1rem;
+  }
+
+  .tab-button {
+    flex: 1 1 45%;
+    padding: 0.6rem 1rem;
+    font-size: 0.78rem;
+    text-align: center;
+  }
+}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import '../styles/CardBook.css';
@@ -82,11 +82,12 @@ function BookCard({ card, page, owned }: BookCardProps) {
 
 const CardBook = () => {
   const { accountId } = useParams<{ accountId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedBook: BookCode = searchParams.get('tab') === 'boss' ? 'boss' : 'common';
   const [catalog, setCatalog] = useState<CardCatalog | null>(null);
   const [book, setBook] = useState<CardBookResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeBook, setActiveBook] = useState<BookCode>('common');
   const [page, setPage] = useState(0);
   const [turnDirection, setTurnDirection] = useState<'next' | 'prev'>('next');
   const [ownedOnly, setOwnedOnly] = useState(false);
@@ -109,7 +110,6 @@ const CardBook = () => {
         if (cancelled) return;
         setCatalog(catalogData);
         setBook(bookData);
-        setActiveBook('common');
       })
       .catch((fetchError: Error) => {
         if (cancelled) return;
@@ -173,12 +173,9 @@ const CardBook = () => {
     return books.filter((current) => current.cards.some((card) => owned.has(card.id)));
   }, [books, owned, ownedOnly]);
 
-  useEffect(() => {
-    if (visibleBooks.length === 0) return;
-    if (!visibleBooks.some((current) => current.code === activeBook)) {
-      setActiveBook(visibleBooks[0].code);
-    }
-  }, [activeBook, visibleBooks]);
+  const activeBook: BookCode = visibleBooks.some((current) => current.code === requestedBook)
+    ? requestedBook
+    : visibleBooks[0]?.code ?? requestedBook;
 
   const activeBookData = useMemo(
     () => visibleBooks.find((current) => current.code === activeBook) ?? null,
@@ -248,7 +245,7 @@ const CardBook = () => {
         {!loading && error && (
           <div className="cardbook-status cardbook-status-error">
             <p>{error}</p>
-            <Link to="/cards">Volver al libro de cartas</Link>
+            <Link to="/rankings?tab=cards">Volver a rankings</Link>
           </div>
         )}
 
@@ -263,8 +260,7 @@ const CardBook = () => {
                 </p>
               </div>
               <div className="cardbook-hero-actions">
-                <Link to="/rankings">Rankings</Link>
-                <Link to="/cards">Otros coleccionistas</Link>
+                <Link to="/rankings?tab=cards">Rankings</Link>
               </div>
             </section>
 
@@ -299,7 +295,7 @@ const CardBook = () => {
                     onClick={() => {
                       setTurnDirection('next');
                       setPage(0);
-                      setActiveBook(current.code);
+                      setSearchParams({ tab: current.code }, { replace: true });
                     }}
                   >
                     <span>{current.label}</span>

@@ -1,6 +1,8 @@
 import type { SearchOptions } from './databaseMappers';
 
-export type DatabaseTab = 'items' | 'mobs';
+export type DatabaseTab = 'items' | 'mobs' | 'maps' | 'mvps';
+
+const DATABASE_TABS: DatabaseTab[] = ['items', 'mobs', 'maps', 'mvps'];
 
 export interface DatabaseUrlState {
   tab: DatabaseTab;
@@ -21,7 +23,8 @@ export function hasSearchCriteria(q: string, options: SearchOptions): boolean {
 /** Parse /database query string. Supports legacy ?item= / ?mob= via redirect elsewhere. */
 export function parseDatabaseUrl(search: string): DatabaseUrlState {
   const params = new URLSearchParams(search);
-  const tab: DatabaseTab = params.get('tab') === 'mobs' ? 'mobs' : 'items';
+  const tabParam = params.get('tab') as DatabaseTab | null;
+  const tab: DatabaseTab = tabParam && DATABASE_TABS.includes(tabParam) ? tabParam : 'items';
   const q = params.get('q') ?? '';
   const pageRaw = parseInt(params.get('page') ?? '1', 10);
   const page = Number.isNaN(pageRaw) || pageRaw < 1 ? 0 : pageRaw - 1;

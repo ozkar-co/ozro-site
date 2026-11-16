@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import '../styles/Rankings.css';
@@ -189,8 +189,22 @@ const CLASSES = {
   4215: "Rebellion"
 }
 
+const RANKING_TABS = [
+  { id: 'zeny', label: 'Zeny' },
+  { id: 'cards', label: 'Cartas' },
+  { id: 'login', label: 'Conexiones' },
+  { id: 'fame', label: 'Fama' },
+  { id: 'exp', label: 'Experiencia' }
+] as const;
+
+type RankingTab = (typeof RANKING_TABS)[number]['id'];
+
 const Rankings = () => {
-  const [activeTab, setActiveTab] = useState('zeny');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const activeTab: RankingTab = RANKING_TABS.some((tab) => tab.id === tabParam)
+    ? tabParam as RankingTab
+    : 'zeny';
   const [rankingData, setRankingData] = useState<RankingData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -274,13 +288,14 @@ const Rankings = () => {
 
     return (
       <div className="ranking-list">
-        <h3>Total de Cartas</h3>
+        <h3>Cartas</h3>
         {sortedAccounts.map((account, index) => (
           <div key={account.account_id} className="ranking-item">
             <span className="rank">{index + 1}</span>
             <span className="name">{toTitleCase(account.userid)}</span>
             <span className="class">{account.total_cards_distinct} {toPlural('Carta', parseInt(account.total_cards_distinct))} {toPlural('Distinta', parseInt(account.total_cards_distinct))}</span>
             <span className="class">{account.total_cards} {toPlural('Carta', parseInt(account.total_cards))} en Total</span>
+            <span className="class">{account.total_boss_cards} Boss · {account.total_mvp_cards} MVP</span>
             <Link
               to={`/cards/${account.account_id}`}
               className="ranking-book-link"
@@ -289,38 +304,6 @@ const Rankings = () => {
               Libro
             </Link>
           </div>
-        ))}
-      </div>
-    );
-  };
-
-  const renderMvpCardsRanking = () => {
-    if (!rankingData?.accounts) return null;
-    const sortedAccounts = [...rankingData.accounts]
-      .filter(account => !['admin', 'gamemaster'].includes(account.userid.toLowerCase()))
-      .sort((a, b) => (parseInt(b.total_boss_cards) - parseInt(a.total_boss_cards)) + (parseInt(b.total_mvp_cards) - parseInt(a.total_mvp_cards)))
-      .slice(0, 10);
-
-    return (
-      <div className="ranking-list">
-        <h3>Cartas de monstruos Boss</h3>
-        {sortedAccounts.map((account, index) => (
-          <div key={account.account_id} className="ranking-item">
-            <span className="rank">{index + 1}</span>
-            <span className="name">{toTitleCase(account.userid)}</span>
-            <span className="class">{account.total_boss_cards} {toPlural('Carta', parseInt(account.total_boss_cards))} Boss</span>
-            <span className="class">{account.total_mvp_cards} {toPlural('Carta', parseInt(account.total_mvp_cards))} MVP</span>
-            <Link
-              to={`/cards/${account.account_id}`}
-              className="ranking-book-link"
-              aria-label={`Abrir libro de cartas de ${account.userid}`}
-            >
-              Libro
-            </Link>
-          </div>
-
-
-
         ))}
       </div>
     );
@@ -414,42 +397,15 @@ const Rankings = () => {
       <Header />
       <div className="rankings-container">
         <div className="rankings-nav">
-          <button 
-            className={activeTab === 'zeny' ? 'active' : ''} 
-            onClick={() => setActiveTab('zeny')}
-          >
-            Zeny
-          </button>
-          <button 
-            className={activeTab === 'cards' ? 'active' : ''} 
-            onClick={() => setActiveTab('cards')}
-          >
-            Cartas
-          </button>
-          <button 
-            className={activeTab === 'mvp' ? 'active' : ''} 
-            onClick={() => setActiveTab('mvp')}
-          >
-            Cartas Boss
-          </button>
-          <button 
-            className={activeTab === 'login' ? 'active' : ''} 
-            onClick={() => setActiveTab('login')}
-          >
-            Conexiones
-          </button>
-          <button 
-            className={activeTab === 'fame' ? 'active' : ''} 
-            onClick={() => setActiveTab('fame')}
-          >
-            Fama
-          </button>
-          <button 
-            className={activeTab === 'exp' ? 'active' : ''} 
-            onClick={() => setActiveTab('exp')}
-          >
-            Experiencia
-          </button>
+          {RANKING_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              className={activeTab === tab.id ? 'active' : ''}
+              onClick={() => setSearchParams({ tab: tab.id }, { replace: true })}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         <div className="rankings-content">
@@ -459,7 +415,6 @@ const Rankings = () => {
             <>
               {activeTab === 'zeny' && renderZenyRanking()}
               {activeTab === 'cards' && renderCardsRanking()}
-              {activeTab === 'mvp' && renderMvpCardsRanking()}
               {activeTab === 'login' && renderLoginRanking()}
               {activeTab === 'fame' && renderFameRanking()}
               {activeTab === 'exp' && renderBaseExpRanking()}

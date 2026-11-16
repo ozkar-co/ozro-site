@@ -1,5 +1,4 @@
 import { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
 import '../styles/Information.css';
 import Stats from './Stats';
 
@@ -22,15 +21,10 @@ const contentMap: Record<string, ReactNode> = {
           <li><strong>Contenido principal:</strong> hasta Episode 17.1</li>
           <li><strong>Cliente:</strong> 2019-06-05</li>
           <li><strong>Nivel máximo:</strong> 175 / 60 (3rd jobs)</li>
-          <li><strong>4th jobs:</strong> deshabilitados por ahora</li>
+          <li><strong>4th jobs:</strong> deshabilitados</li>
           <li><strong>Acceso:</strong> VPN privada, solo invitación</li>
           <li><strong>Comunidad:</strong> familiar, sin economía masiva</li>
         </ul>
-        <p>
-          Instancias y job quests se habilitan a medida que se validan sus mapas.
-          Los NPCs y quests custom están documentados en la{' '}
-          <Link to="/encyclopedia">Enciclopedia</Link>.
-        </p>
         <p>
           Filosofía: progresión fluida sin carrera competitiva, NPCs y quests custom,
           y mecánicas orientadas a jugar solo o en party pequeña.
@@ -194,8 +188,7 @@ const contentMap: Record<string, ReactNode> = {
         <ul>
           <li>Bounty Boards en 26 ciudades</li>
           <li>18 quests repetibles de EXP (50 kills por tramo)</li>
-          <li>Garrett el Recolector: dos items diarios de chatarra, x10 su valor de venta (500–2.000 zeny), presupuesto de 300.000 zeny/día</li>
-          <li>Monedas OzRo por tiers: bronce, plata, oro y platino; el bronce se obtiene con Garrett cada 10 tratos únicos</li>
+          <li>Garrett el Recolector: compra objetos inútiles (chatarra) a buen precio</li>
           <li>Card Collector: archivo de cartas por cuenta con progreso y faltantes</li>
           <li>Merchant gana Job EXP al vender (Shop EXP)</li>
           <li>Autoloot mercenario y homúnculo</li>

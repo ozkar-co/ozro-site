@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Header from './Header';
-import Footer from './Footer';
 import AtlasSprite from './AtlasSprite';
 import { apiClient, type MvpEntry, type MvpRadarResponse, type MvpState } from '../api/client';
 import { resolveSprite, type SpriteRect } from '../api/assets';
@@ -118,10 +116,6 @@ function computeLiveState(mvp: MvpEntry, now: number, yellowWindowSeconds: numbe
   };
 }
 
-function countLabel(value: number, singular: string, plural: string): string {
-  return `${value} ${value === 1 ? singular : plural}`;
-}
-
 const Mvps = () => {
   const [data, setData] = useState<MvpRadarResponse | null>(null);
   const [sprites, setSprites] = useState<Record<number, SpriteRect | string>>({});
@@ -207,12 +201,6 @@ const Mvps = () => {
     }));
   }, [data, serverNow, yellowWindowSeconds]);
 
-  const counts = useMemo(() => {
-    const result = { alive: 0, dead: 0, probable: 0, unknown: 0 };
-    for (const mvp of mvps) result[mvp.live.state] += 1;
-    return result;
-  }, [mvps]);
-
   const filteredMvps = useMemo(() => {
     const term = query.trim().toLowerCase();
     const level = LEVEL_FILTERS[levelFilter];
@@ -271,21 +259,8 @@ const Mvps = () => {
   const mapImage = (map: string) => `/assets/maps/images/${map}.webp`;
 
   return (
-    <div className="mvps-page">
-      <Header />
-      <main className="mvps-content">
-        <div className="mvps-inner">
-          <section className="mvps-hero">
-            <h1>Radar de MVPs</h1>
-            <div className="mvps-summary">
-              <span className="mvps-summary-pill alive">{countLabel(counts.alive, 'vivo', 'vivos')}</span>
-              <span className="mvps-summary-pill dead">{countLabel(counts.dead, 'derrotado', 'derrotados')}</span>
-              <span className="mvps-summary-pill probable">{countLabel(counts.probable, 'probable', 'probables')}</span>
-              <span className="mvps-summary-pill unknown">{countLabel(counts.unknown, 'sin registro', 'sin registro')}</span>
-            </div>
-          </section>
-
-          {error && <div className="mvps-error">{error}</div>}
+    <>
+      {error && <div className="mvps-error">{error}</div>}
 
           {upcoming.length > 0 && (
             <section className="mvps-radar" aria-label="Próximos respawns">
@@ -420,7 +395,7 @@ const Mvps = () => {
                           <div className="mvp-card-meta">
                             <span className="mvp-level">Nv. {mvp.level}</span>
                             <Link
-                              to={`/maps/${encodeURIComponent(mvp.map)}`}
+                              to={`/database?tab=maps&map=${encodeURIComponent(mvp.map)}`}
                               onClick={(event) => event.stopPropagation()}
                             >
                               {mvp.map}
@@ -452,7 +427,7 @@ const Mvps = () => {
                           Ficha
                         </Link>
                         <Link
-                          to={`/maps/${encodeURIComponent(mvp.map)}`}
+                          to={`/database?tab=maps&map=${encodeURIComponent(mvp.map)}`}
                           onClick={(event) => event.stopPropagation()}
                         >
                           Ver mapa
@@ -464,8 +439,6 @@ const Mvps = () => {
               })}
             </div>
           )}
-        </div>
-      </main>
 
       {selected && (
         <div className="mvp-modal-backdrop" onClick={() => setSelectedId(null)}>
@@ -536,15 +509,13 @@ const Mvps = () => {
 
               <div className="mvp-modal-links">
                 <Link to={`/database?tab=mobs&q=${selected.mobId}`}>Ver ficha del MVP</Link>
-                <Link to={`/maps/${encodeURIComponent(selected.map)}`}>Ver mapa</Link>
+                <Link to={`/database?tab=maps&map=${encodeURIComponent(selected.map)}`}>Ver mapa</Link>
               </div>
             </div>
           </div>
         </div>
       )}
-
-      <Footer />
-    </div>
+    </>
   );
 };
 

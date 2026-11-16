@@ -156,15 +156,14 @@ api.get('/stats', async (req, res) => {
         const totalCharacters = totalCharsResult[0].count;
 
         // Personajes activos en las últimas 24 horas
-        const dayAgo = Math.floor(Date.now() / 1000) - (24 * 60 * 60);
         const activeCharsResult = await query(`
             SELECT COUNT(*) as count 
             FROM \`char\` c
             JOIN login l ON c.account_id = l.account_id
             WHERE c.delete_date = 0 
-            AND c.last_login >= ?
+            AND c.last_login >= NOW() - INTERVAL 1 DAY
             AND ${statsPlayerAccountSql('l')}
-        `, [dayAgo]);
+        `);
         const activeLast24h = activeCharsResult[0].count;
 
         // Nivel más alto

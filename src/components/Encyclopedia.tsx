@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import InfoSidebar from './InfoSidebar';
@@ -49,7 +50,11 @@ const sections: EncyclopediaSection[] = [
 ];
 
 const Encyclopedia = () => {
-  const [selectedSection, setSelectedSection] = useState('npcs');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const selectedSection = sections.some((section) => section.id === tabParam)
+    ? tabParam as string
+    : sections[0].id;
   const [maps, setMaps] = useState<NpcMapsIndex | null>(null);
   const [sprites, setSprites] = useState<NpcSpriteIndex | null>(null);
   const [mapsError, setMapsError] = useState<string | null>(null);
@@ -114,7 +119,7 @@ const Encyclopedia = () => {
             <InfoSidebar
               sections={sections}
               selectedSection={selectedSection}
-              onSectionChange={setSelectedSection}
+              onSectionChange={(sectionId) => setSearchParams({ tab: sectionId }, { replace: true })}
             />
 
             <div className="encyclopedia-main">

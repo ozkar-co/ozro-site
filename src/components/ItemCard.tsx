@@ -420,7 +420,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ result }) => {
                           .map((spawn) => (
                             <Link
                               key={spawn.map}
-                              to={`/maps/${encodeURIComponent(spawn.map)}`}
+                              to={`/database?tab=maps&map=${encodeURIComponent(spawn.map)}`}
                               className="dropped-by-map"
                             >
                               {spawn.map}
