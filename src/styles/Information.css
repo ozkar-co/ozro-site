@@ -181,6 +181,14 @@
 }
 
 /* Bounty Boards */
+.bounty-selectors {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem 1.5rem;
+  margin: 1rem 0 1.25rem;
+}
+
 .bounty-select-label {
   display: flex;
   align-items: center;
@@ -188,6 +196,10 @@
   margin: 1rem 0 1.25rem;
   font-weight: 600;
   color: #333;
+}
+
+.bounty-selectors .bounty-select-label {
+  margin: 0;
 }
 
 .bounty-select {
