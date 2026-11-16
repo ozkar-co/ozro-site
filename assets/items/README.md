@@ -20,7 +20,8 @@ source of truth for future custom NPCs, quests, events and item filters.
 - **Cash shop**: `db/import/item_cash.yml`.
 - **Quests / instances / NPC scripts**: item references in active scripts loaded from
   `npc/re/scripts_main.conf`. `getitem*` marks rewards; `delitem`/`countitem` marks
-  requirements.
+  requirements. Item IDs passed to `callsub S_Make` are treated as NPC/crafting
+  references (e.g. Nightmare Biolab hats).
 - **Skills**: `ItemCost` in `db/re/skill_db.yml` + `db/import/skill_db.yml`.
 - **Crafting**: `produce_db.txt` outputs/materials and Laphine synthesis
   requirements/reward groups.
@@ -32,10 +33,11 @@ source of truth for future custom NPCs, quests, events and item filters.
 
 | Category | Meaning |
 |----------|---------|
-| `junk` | Conservative Garrett pool: `Etc`, sell value ≤ 2,000, droppable, not used by content, not part of a group/package. |
+| `junk` | Conservative Garrett pool: `Etc`, sell value ≤ 2,000, droppable, not used by content, not untradeable, not part of a group/package. |
 | `junk_low` / `junk_mid` / `junk_high` | Sub-tiers of `junk` by sell value (≤500, 501–1,000, 1,001–2,000). |
-| `junk_npc_unused` | Same as `junk` but ignoring group/package membership. Useful to review before filtering by market price. |
-| `garrett_candidates` | Alias of `junk_npc_unused`, for the next Garrett price cross-check. |
+| `junk_npc_unused` | Same as `junk` but ignoring group/package membership and trade restrictions. Useful to review before filtering by market price. |
+| `garrett_candidates` | `junk_npc_unused` minus untradeable items. This is the pool to cross with the ragnabots price list; it keeps group/package members like Spoon Stub or Tattered Clothes. |
+| `untradeable` | Has `NoSell`, `NoTrade` or `NoDrop`; excluded from `garrett_candidates` to avoid buying quest/crafting materials. |
 | `garrett_whitelist` | Items currently listed in `npc/custom/ozro/trasher.txt`. |
 | `quest_referenced` / `instance_referenced` / `npc_referenced` | Item appears in quest, instance or other active NPC scripts. |
 | `quest_only` | Only known source is a quest reward. |
