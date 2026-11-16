@@ -277,7 +277,6 @@ const Mvps = () => {
         <div className="mvps-inner">
           <section className="mvps-hero">
             <h1>Radar de MVPs</h1>
-            <p className="mvps-total">{data ? data.mvps.length : '—'}</p>
             <div className="mvps-summary">
               <span className="mvps-summary-pill alive">{countLabel(counts.alive, 'vivo', 'vivos')}</span>
               <span className="mvps-summary-pill dead">{countLabel(counts.dead, 'derrotado', 'derrotados')}</span>

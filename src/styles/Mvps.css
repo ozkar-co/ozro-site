@@ -57,13 +57,6 @@
   margin: 0 0 0.2rem;
 }
 
-.mvps-total {
-  color: #ff8d7f;
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0 0 1rem;
-}
-
 .mvps-summary {
   display: flex;
   justify-content: center;
