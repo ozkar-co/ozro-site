@@ -265,7 +265,7 @@ export const customNpcGroups: CustomNpcGroup[] = [
           'Lista de MVPs cazados',
           'Puntos de Alma pendientes',
           'Reclamo repetible de Almas',
-          'Progreso de tiers y recompensas por hitos',
+          'Historial por MVP',
         ],
         locations: ['Prontera (150, 180)'],
       },

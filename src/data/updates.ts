@@ -13,8 +13,8 @@ export const recentUpdates: UpdateEntry[] = [
     paragraphs: [
       'Nuevo NPC en Prontera: lee el registro de MVPs de cada personaje y muestra golpes finales, asistencias, MVPs únicos y los MVPs que más cazaste.',
       'El registro conserva las variables históricas de kills y asistencias, así que las cacerías anteriores cuentan desde el primer día.',
-      'El Cronista también entrega recompensas por tiers: zeny y Almas de MVP. Cada tier se reclama una sola vez por personaje.',
-      'Además, los MVPs naturales entregan puntos de Alma: el killer y la party en el mismo mapa suman los puntos completos. El Cronista convierte esos puntos en Almas y el reclamo es repetible, sin cap.',
+      'Los MVPs naturales entregan puntos de Alma: el killer y la party en el mismo mapa suman los puntos completos. El Cronista convierte esos puntos en Almas y el reclamo es repetible, sin cap.',
+      'El historial viejo de kills y asistencias cuenta desde el primer día, así que no se pierde el progreso anterior.',
       'El invocador de MVPs queda para una etapa posterior.',
     ],
   },
