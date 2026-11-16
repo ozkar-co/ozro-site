@@ -9,6 +9,16 @@ export interface UpdateEntry {
 export const recentUpdates: UpdateEntry[] = [
   {
     date: '16 de noviembre de 2026',
+    title: 'Radar de MVPs',
+    paragraphs: [
+      'Nueva sección Radar de MVPs con los 74 MVPs del servidor: sprites, mapa, nivel, rango de respawn y estado de caza.',
+      'Resumen de vivos, derrotados, probables y sin registro. Filtros por nombre, mapa, estado y nivel; orden por próximo respawn, nivel, nombre o respawn más corto.',
+      'Cada MVP muestra ventana estimada y probabilidad de estar vivo cuando corresponde. El radar se actualiza automáticamente cada 30 segundos.',
+      'El historial comienza con las nuevas muertes registradas en mvplog; los MVPs sin datos recientes siguen visibles con su respawn base.',
+    ],
+  },
+  {
+    date: '16 de noviembre de 2026',
     title: 'Ajuste de cartas y tasas reales de drop en la web',
     paragraphs: [
       'Cartas de monstruos normales: 10x (antes 100x). Las cartas de jefe y de MVP quedan en 100x. El resto de tasas (common 5x, healing 10x, usable 10x, equipment 15x) no cambia.',

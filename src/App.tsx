@@ -8,6 +8,7 @@ const Information = lazy(() => import('./components/Information'));
 const Database = lazy(() => import('./components/Database'));
 const Encyclopedia = lazy(() => import('./components/Encyclopedia'));
 const Maps = lazy(() => import('./components/Maps'));
+const Mvps = lazy(() => import('./components/Mvps'));
 const Rankings = lazy(() => import('./components/Rankings'));
 const CardBookIndex = lazy(() => import('./components/CardBookIndex'));
 const CardBook = lazy(() => import('./components/CardBook'));
@@ -31,6 +32,7 @@ const App = () => {
           <Route path="/encyclopedia" element={<Encyclopedia />} />
           <Route path="/maps" element={<Maps />} />
           <Route path="/maps/:map" element={<Maps />} />
+          <Route path="/mvps" element={<Mvps />} />
           <Route path="/rankings" element={<Rankings />} />
           <Route path="/cards" element={<CardBookIndex />} />
           <Route path="/cards/:accountId" element={<CardBook />} />

@@ -51,12 +51,12 @@ const News = () => {
       <h2>Últimas Actualizaciones</h2>
       <div className="news-container">
         {recentUpdates.map((entry) => (
-          <UpdateBlock key={entry.date} entry={entry} />
+          <UpdateBlock key={`${entry.date}-${entry.title ?? ''}`} entry={entry} />
         ))}
         <hr className="news-divider" />
         <p className="news-legacy-label">Historial (era Hercules)</p>
         {legacyUpdates.map((entry) => (
-          <UpdateBlock key={entry.date} entry={entry} />
+          <UpdateBlock key={`${entry.date}-${entry.title ?? ''}`} entry={entry} />
         ))}
       </div>
     </div>

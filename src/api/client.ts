@@ -217,6 +217,56 @@ export interface ItemDetail extends ItemSummary {
   }[];
 }
 
+export type MvpState = 'dead' | 'probable' | 'alive' | 'unknown';
+
+export interface MvpLastKill {
+  at: number;
+  secondsAgo: number;
+  killer: string | null;
+}
+
+export interface MvpEntry {
+  id: string;
+  mobId: number;
+  name: string;
+  nameAegis: string;
+  level: number;
+  hp: number;
+  element: string;
+  elementLevel: number;
+  race: string;
+  size: string;
+  baseExp: number;
+  jobExp: number;
+  mvpExp: number;
+  map: string;
+  amount: number;
+  delay: number;
+  delay2: number;
+  state: MvpState;
+  probabilityAlive: number | null;
+  windowStart: number | null;
+  windowEnd: number | null;
+  respawnMinSeconds: number;
+  respawnMaxSeconds: number;
+  lastKill: MvpLastKill | null;
+}
+
+export interface MvpRecentKill {
+  mobId: number;
+  map: string;
+  at: number;
+  secondsAgo: number;
+  killer: string | null;
+}
+
+export interface MvpRadarResponse {
+  serverTime: number;
+  yellowWindowSeconds: number;
+  mvps: MvpEntry[];
+  recentKills: MvpRecentKill[];
+}
+
 export type MobSearchParams = Record<string, string | number | undefined>;
 export type ItemSearchParams = Record<string, string | number | undefined>;
 
@@ -250,6 +300,7 @@ export const apiClient = {
     apiFetch<CardBookResponse>(`/accounts/${accountId}/card-book`),
   uptime: () => apiFetch<UptimeResponse>('/uptime'),
   status: () => apiFetch<StatusResponse>('/status'),
+  mvpRadar: () => apiFetch<MvpRadarResponse>('/mvps'),
 
   searchMobs: (params: MobSearchParams) =>
     apiFetch<PaginatedResponse<MobDetail>>(`/mobs${buildQuery(params)}`),

@@ -37,6 +37,7 @@ const Header = () => {
             <li><Link to="/cards" onClick={() => handleNavClick('/cards')}>Cartas</Link></li>
             <li><Link to="/encyclopedia" onClick={() => handleNavClick('/encyclopedia')}>Enciclopedia</Link></li>
             <li><Link to="/maps" onClick={() => handleNavClick('/maps')}>Mapas</Link></li>
+            <li><Link to="/mvps" onClick={() => handleNavClick('/mvps')}>MVPs</Link></li>
             <li><Link to="/donate" onClick={() => handleNavClick('/donate')}>Donar</Link></li>
           </ul>
         </nav>

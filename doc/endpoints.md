@@ -267,6 +267,36 @@ Obtiene el ranking de personajes ordenado por nivel y experiencia.
 
 ---
 
+## GET /api/mvps
+
+Radar de MVPs. Combina `mob_spawn` con la última muerte registrada en `mvplog`.
+
+**Respuesta:**
+
+```json
+{
+  "serverTime": 1763251200,
+  "yellowWindowSeconds": 1200,
+  "mvps": [
+    {
+      "id": "1039:prt_maze03",
+      "mobId": 1039,
+      "name": "Baphomet",
+      "level": 81,
+      "map": "prt_maze03",
+      "state": "probable",
+      "probabilityAlive": 0.47,
+      "windowStart": 1763243600,
+      "windowEnd": 1763247800,
+      "lastKill": { "at": 1763240000, "secondsAgo": 11200, "killer": "PunkoFobia" }
+    }
+  ],
+  "recentKills": []
+}
+```
+
+Estados: `dead`, `probable`, `alive`, `unknown`. Requiere `mob_spawn`; si `mvplog` no existe o está vacío, devuelve los MVPs como `unknown`.
+
 ## GET /api/mobs
 
 Búsqueda de monstruos con filtros. Usa tablas renewal (`mob_db_re` + `mob_db2_re`).

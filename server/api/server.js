@@ -6,6 +6,7 @@ import { query } from '../services/mariadb.js';
 import os from 'os';
 import mobsRouter from './routes/mobs.js';
 import itemsRouter from './routes/items.js';
+import mvpsRouter from './routes/mvps.js';
 import { BANK_VAULT_KEY, bankVaultValueSql, cardCollectorDistinctSql, cardCollectorTotalSql, excludeInternalAccountsSql, statsPlayerAccountSql, statsPlayerAccountWhereClause } from './services/gameDb.js';
 
 const app = express();
@@ -31,6 +32,7 @@ app.use('/assets', express.static(assetsPath, {
 
 api.use('/mobs', mobsRouter);
 api.use('/items', itemsRouter);
+api.use('/mvps', mvpsRouter);
 
 app.use('/api', api);
 
