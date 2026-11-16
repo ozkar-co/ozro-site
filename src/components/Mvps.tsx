@@ -282,6 +282,10 @@ const Mvps = () => {
                     <div className="mvps-radar-info">
                       <strong>{mvp.name}</strong>
                       <span>{mvp.map}</span>
+                      <span className="mvp-souls">
+                        <img src="/icons/mvp-soul.png" alt="" />
+                        {mvp.souls} {mvp.souls === 1 ? 'alma' : 'almas'}
+                      </span>
                       <em>
                         {mvp.live.state === 'dead'
                           ? `en ${formatDuration((mvp.live.windowStart ?? serverNow) - serverNow)}`
@@ -394,6 +398,10 @@ const Mvps = () => {
                           <h2>{mvp.name}</h2>
                           <div className="mvp-card-meta">
                             <span className="mvp-level">Nv. {mvp.level}</span>
+                            <span className="mvp-souls" title={`${mvp.souls} Almas por kill`}>
+                              <img src="/icons/mvp-soul.png" alt="" />
+                              {mvp.souls}
+                            </span>
                             <Link
                               to={`/database?tab=maps&map=${encodeURIComponent(mvp.map)}`}
                               onClick={(event) => event.stopPropagation()}
@@ -498,6 +506,13 @@ const Mvps = () => {
                 <div><span>Tamaño</span><strong>{selected.size}</strong></div>
                 <div><span>EXP base</span><strong>{selected.baseExp.toLocaleString('es')}</strong></div>
                 <div><span>EXP job</span><strong>{selected.jobExp.toLocaleString('es')}</strong></div>
+                <div>
+                  <span>Almas por kill</span>
+                  <strong className="mvp-souls">
+                    <img src="/icons/mvp-soul.png" alt="" />
+                    {selected.souls}
+                  </strong>
+                </div>
               </div>
 
               {selected.lastKill && (

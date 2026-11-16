@@ -503,6 +503,47 @@
   font-weight: 700;
 }
 
+.mvp-souls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 700;
+}
+
+.mvp-souls img {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  image-rendering: pixelated;
+}
+
+.mvp-card-meta .mvp-souls {
+  padding: 0.06rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(88, 160, 235, 0.14);
+  color: #2c6fb3;
+  font-size: 0.68rem;
+}
+
+.mvps-radar-info .mvp-souls {
+  color: #9fd0ff;
+  font-size: 0.72rem;
+}
+
+.mvps-radar-info .mvp-souls img {
+  width: 16px;
+  height: 16px;
+}
+
+.mvp-modal-stats strong.mvp-souls {
+  color: #2c6fb3;
+}
+
+.mvp-modal-stats .mvp-souls img {
+  width: 20px;
+  height: 20px;
+}
+
 .mvp-card-meta a {
   color: #4a6fa5;
   font-size: 0.76rem;

@@ -239,6 +239,7 @@ export interface MvpEntry {
   baseExp: number;
   jobExp: number;
   mvpExp: number;
+  souls: number;
   map: string;
   amount: number;
   delay: number;

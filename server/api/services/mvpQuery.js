@@ -16,6 +16,17 @@ function spawnKey(map, mobId) {
     return `${map}:${mobId}`;
 }
 
+function computeSouls(mvpExp, level) {
+    if (mvpExp > 0) {
+        if (mvpExp < 500000) return 1;
+        if (mvpExp < 1500000) return 5;
+        return 10;
+    }
+    if (level < 120) return 1;
+    if (level < 180) return 5;
+    return 10;
+}
+
 async function getLatestKills() {
     try {
         const rows = await query(`
@@ -144,12 +155,13 @@ export async function getMvpRadar() {
         if (byKey.has(key)) continue;
 
         const computed = computeState(row, killsByKey.get(key), now);
+        const level = toNumber(row.level);
         byKey.set(key, {
             id: key,
             mobId: toNumber(row.mob_id),
             name: row.name_english,
             nameAegis: row.name_aegis,
-            level: toNumber(row.level),
+            level,
             hp: toNumber(row.hp),
             element: row.element,
             elementLevel: toNumber(row.element_level),
@@ -158,6 +170,7 @@ export async function getMvpRadar() {
             baseExp: toNumber(row.base_exp),
             jobExp: toNumber(row.job_exp),
             mvpExp: toNumber(row.mvp_exp),
+            souls: computeSouls(toNumber(row.mvp_exp), level),
             map: row.map,
             amount: toNumber(row.amount),
             delay: toNumber(row.delay),
