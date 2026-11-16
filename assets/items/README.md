@@ -56,6 +56,19 @@ source of truth for future custom NPCs, quests, events and item filters.
 | `group_member` / `package_member` | Appears in an item group or selectable package. |
 | `group_or_package_only` | No direct source, but appears in a group/package. Review before treating as unobtainable. |
 | `unobtainable` | No direct source, group or package found. Conservative: it can still be an event/donation item outside the DB. |
+| `unobtainable_no_image` | `unobtainable` items without a client item/collection image. Tracked so they are not used by accident until assets are added. |
+| `obtainable_no_image` | Obtainable items without a client item/collection image. Candidate list for custom artwork. |
+
+Item image coverage (`icon`, `collection`, `sprite`) comes from `assets/items/item-images.json`,
+generated from the active client GRFs and `data/itemInfo_EN.lua`. Unidentified placeholder
+entries are excluded from both `*_no_image` categories.
+
+Regenerate the coverage and append any missing atlas pages with:
+
+```bash
+python3 tools/build_item_atlas_gap.py --client-dir /mnt/games/OzRo
+python3 ../rathena/tools/generate_item_taxonomy.py
+```
 
 ## Notes
 

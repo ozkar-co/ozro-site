@@ -23,6 +23,14 @@
           "count": 7097,
           "width": 2048,
           "height": 2016
+        },
+        {
+          "page": 3,
+          "image": "items/icons/atlas_override_3.webp",
+          "mapping": "items/icons/atlas_override_3.json",
+          "count": 3080,
+          "width": 2048,
+          "height": 888
         }
       ]
     },
@@ -115,6 +123,22 @@
           "count": 604,
           "width": 4027,
           "height": 1211
+        },
+        {
+          "page": 11,
+          "image": "items/illustrations/atlas_override_11.webp",
+          "mapping": "items/illustrations/atlas_override_11.json",
+          "count": 2120,
+          "width": 4027,
+          "height": 4039
+        },
+        {
+          "page": 12,
+          "image": "items/illustrations/atlas_override_12.webp",
+          "mapping": "items/illustrations/atlas_override_12.json",
+          "count": 925,
+          "width": 4027,
+          "height": 1817
         }
       ]
     }
