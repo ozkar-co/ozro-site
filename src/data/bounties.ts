@@ -83,16 +83,6 @@ export const bountyBoards: BountyCity[] = [
       { name: "Uni-Horn Scaraba", mobId: 2083, questId: 62805, baseExp: 587250, jobExp: 451237 },
     ] },
   ] },
-  { city: "Eclage", boards: [
-    { minLevel: 145, maxLevel: 165, monsters: [
-      { name: "Antique Book", mobId: 2366, questId: 70387, baseExp: 1083750, jobExp: 1056600 },
-      { name: "Cenere", mobId: 2365, questId: 70388, baseExp: 1067550, jobExp: 1028100 },
-      { name: "Lichtern Yellow", mobId: 2368, questId: 70389, baseExp: 1060650, jobExp: 1045800 },
-      { name: "Lichtern Blue", mobId: 2367, questId: 70390, baseExp: 1078050, jobExp: 1026150 },
-      { name: "Lichtern Red", mobId: 2369, questId: 70391, baseExp: 1080150, jobExp: 1082250 },
-      { name: "Lichtern Green", mobId: 2370, questId: 70392, baseExp: 1082100, jobExp: 1027800 },
-    ] },
-  ] },
   { city: "Einbroch", boards: [
     { minLevel: 80, maxLevel: 100, monsters: [
       { name: "Holden", mobId: 1628, questId: 70344, baseExp: 198900, jobExp: 203700 },
