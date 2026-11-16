@@ -258,13 +258,14 @@ export const customNpcGroups: CustomNpcGroup[] = [
         description: [
           'El Cronista asegura que ninguna gran cacería quede en el olvido. Conoce las historias de cada MVP y sabe leer las marcas que dejan en quienes los enfrentan.',
           'No entrega la gloria: la registra. Golpes finales, asistencias y bestias únicas quedan anotados en su libro para que el cazador pueda ver su recorrido.',
-          'También reconoce los hitos importantes. A cambio de una vida dedicada a la caza, entrega recompensas y Almas de MVP.',
+          'También reconoce los hitos importantes y convierte los puntos de Alma que dejan los MVPs en Almas de MVP. Cada cacería suma, sin límite.',
         ],
         services: [
           'Resumen de golpes finales y asistencias',
           'Lista de MVPs cazados',
-          'Progreso de tiers',
-          'Reclamo de recompensas por hitos',
+          'Puntos de Alma pendientes',
+          'Reclamo repetible de Almas',
+          'Progreso de tiers y recompensas por hitos',
         ],
         locations: ['Prontera (150, 180)'],
       },
