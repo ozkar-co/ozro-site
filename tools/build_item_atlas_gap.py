@@ -59,6 +59,7 @@ def parse_iteminfo(path: Path) -> dict[int, dict[str, object]]:
                 continue
         entries[item_id] = {
             'resource': resource or '',
+            'patch_name': res.group(1).decode('latin1'),
             'unidentified': bool(
                 name and name.group(1).decode('latin1').lower().startswith('unidentified')
             ),
@@ -189,13 +190,14 @@ def main() -> int:
     need_illustrations = {}
     for item_id in sorted(info):
         base = str(info[item_id]['resource']).rsplit('/', 1)[-1].lower()
-        icon = base + '.bmp' in overlay_icons or has_grf(
+        patch_base = str(info[item_id]['patch_name']).rsplit('/', 1)[-1].lower()
+        icon = patch_base + '.bmp' in overlay_icons or has_grf(
             grfs, f'data/texture/유저인터페이스/item/{base}.bmp'
         )
-        collection = base + '.bmp' in overlay_illustrations or has_grf(
+        collection = patch_base + '.bmp' in overlay_illustrations or has_grf(
             grfs, f'data/texture/유저인터페이스/collection/{base}.bmp'
         )
-        sprite = base + '.spr' in overlay_sprite_files or has_grf(
+        sprite = patch_base + '.spr' in overlay_sprite_files or has_grf(
             grfs, f'data/sprite/아이템/{base}.spr'
         )
         coverage[str(item_id)] = {'icon': icon, 'collection': collection, 'sprite': sprite}
