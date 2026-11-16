@@ -15,6 +15,14 @@
           "image": "items/icons/atlas_1.webp",
           "mapping": "items/icons/atlas_1.json",
           "count": 6776
+        },
+        {
+          "page": 2,
+          "image": "items/icons/atlas_override_2.webp",
+          "mapping": "items/icons/atlas_override_2.json",
+          "count": 7097,
+          "width": 2048,
+          "height": 2016
         }
       ]
     },
@@ -75,6 +83,38 @@
           "count": 1281,
           "width": 3182,
           "height": 3126
+        },
+        {
+          "page": 7,
+          "image": "items/illustrations/atlas_override_7.webp",
+          "mapping": "items/illustrations/atlas_override_7.json",
+          "count": 2120,
+          "width": 4027,
+          "height": 4039
+        },
+        {
+          "page": 8,
+          "image": "items/illustrations/atlas_override_8.webp",
+          "mapping": "items/illustrations/atlas_override_8.json",
+          "count": 2120,
+          "width": 4027,
+          "height": 4039
+        },
+        {
+          "page": 9,
+          "image": "items/illustrations/atlas_override_9.webp",
+          "mapping": "items/illustrations/atlas_override_9.json",
+          "count": 2120,
+          "width": 4027,
+          "height": 4039
+        },
+        {
+          "page": 10,
+          "image": "items/illustrations/atlas_override_10.webp",
+          "mapping": "items/illustrations/atlas_override_10.json",
+          "count": 604,
+          "width": 4027,
+          "height": 1211
         }
       ]
     }

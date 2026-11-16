@@ -92,14 +92,13 @@ async function loadPageMapping(
 
   const merged: Record<string, SpriteRect & { page?: number }> = {};
 
-  await Promise.all(section.pages.map(async (pageInfo) => {
+  const pages = await Promise.all(section.pages.map(async (pageInfo) => {
     const key = categoryKey(category, pageInfo.page);
     if (mappingCache.has(key)) {
-      Object.assign(merged, mappingCache.get(key));
-      return;
+      return mappingCache.get(key)!;
     }
     const response = await fetch(assetUrl(pageInfo.mapping));
-    if (!response.ok) return;
+    if (!response.ok) return {};
     const mapping = await response.json() as Record<string, { x: number; y: number; w: number; h: number; page?: number }>;
     const withUrls: Record<string, SpriteRect & { page?: number }> = {};
     for (const [id, rect] of Object.entries(mapping)) {
@@ -109,8 +108,12 @@ async function loadPageMapping(
       };
     }
     mappingCache.set(key, withUrls);
-    Object.assign(merged, withUrls);
+    return withUrls;
   }));
+
+  for (const pageMapping of pages) {
+    Object.assign(merged, pageMapping);
+  }
 
   return merged;
 }

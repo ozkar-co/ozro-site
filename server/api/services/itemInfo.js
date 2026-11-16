@@ -41,11 +41,10 @@ export async function initializeItemInfoIndex() {
 }
 
 function extractDescription(block, key) {
-    const keyIndex = block.indexOf(`${key} = {`);
-    if (keyIndex === -1) return [];
+    const keyMatch = new RegExp(`(?:^|[\\r\\n])[ \\t]*${key}[ \\t]*=[ \\t]*\\{`).exec(block);
+    if (!keyMatch) return [];
 
-    const open = block.indexOf('{', keyIndex);
-    if (open === -1) return [];
+    const open = keyMatch.index + keyMatch[0].lastIndexOf('{');
 
     let depth = 0;
     let inString = false;
