@@ -217,6 +217,11 @@ const Database = () => {
       return;
     }
 
+    if (!imagesReady) {
+      setIsSearching(true);
+      return;
+    }
+
     let cancelled = false;
     setIsSearching(true);
     setSearchError(null);
@@ -242,7 +247,7 @@ const Database = () => {
     return () => {
       cancelled = true;
     };
-  }, [location.search, fetchSearchResults]);
+  }, [location.search, fetchSearchResults, imagesReady]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

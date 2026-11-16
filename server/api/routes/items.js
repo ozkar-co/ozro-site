@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getItemById, getItemMeta, searchItems } from '../services/itemQuery.js';
+import { responseCache } from '../services/responseCache.js';
 import {
     isItemDataAvailable,
     isMobDataAvailable,
@@ -25,6 +26,8 @@ router.use((req, res, next) => {
 
     next();
 });
+
+router.use(responseCache('items', 30 * 60 * 1000));
 
 router.get('/meta', async (req, res) => {
     try {

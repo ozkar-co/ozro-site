@@ -206,19 +206,20 @@ export async function searchItems(params) {
     const { whereClause, values } = buildItemFilters(params);
     const fromSql = effectiveItemsSql('i');
 
-    const countRows = await query(
-        `SELECT COUNT(*) AS total FROM ${fromSql} ${whereClause}`,
-        values
-    );
+    const [countRows, rows] = await Promise.all([
+        query(
+            `SELECT COUNT(*) AS total FROM ${fromSql} ${whereClause}`,
+            values
+        ),
+        query(
+            `SELECT i.* FROM ${fromSql}
+             ${whereClause}
+             ORDER BY i.name_english ASC
+             LIMIT ? OFFSET ?`,
+            [...values, limit, offset]
+        )
+    ]);
     const total = Number(countRows[0].total);
-
-    const rows = await query(
-        `SELECT i.* FROM ${fromSql}
-         ${whereClause}
-         ORDER BY i.name_english ASC
-         LIMIT ? OFFSET ?`,
-        [...values, limit, offset]
-    );
 
     const results = rows.map(mapItemDetail);
     if (isMobDataAvailable() && results.length > 0) {

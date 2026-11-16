@@ -358,19 +358,20 @@ export async function searchMobs(params) {
     const { whereClause, values } = buildMobFilters(params);
     const fromSql = effectiveMobsSql('m');
 
-    const countRows = await query(
-        `SELECT COUNT(*) AS total FROM ${fromSql} ${whereClause}`,
-        values
-    );
+    const [countRows, rows] = await Promise.all([
+        query(
+            `SELECT COUNT(*) AS total FROM ${fromSql} ${whereClause}`,
+            values
+        ),
+        query(
+            `SELECT m.* FROM ${fromSql}
+             ${whereClause}
+             ORDER BY m.name_english ASC
+             LIMIT ? OFFSET ?`,
+            [...values, limit, offset]
+        )
+    ]);
     const total = Number(countRows[0].total);
-
-    const rows = await query(
-        `SELECT m.* FROM ${fromSql}
-         ${whereClause}
-         ORDER BY m.name_english ASC
-         LIMIT ? OFFSET ?`,
-        [...values, limit, offset]
-    );
 
     const results = await attachDropsToMobRows(rows);
     await attachSpawnSummaries(results);

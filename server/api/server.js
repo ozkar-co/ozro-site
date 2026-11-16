@@ -1,4 +1,5 @@
 import express from 'express';
+import compression from 'compression';
 import net from 'net';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -13,6 +14,7 @@ const app = express();
 const api = express.Router();
 const port = process.env.API_PORT || 3001;
 
+app.use(compression());
 app.use(express.json());
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -574,6 +576,10 @@ app.use('/api', (req, res) => {
 
 // SPA: assets compilados + fallback a index.html
 const distPath = path.resolve(__dirname, '../../dist');
+app.use('/static', express.static(path.join(distPath, 'static'), {
+  maxAge: '1y',
+  immutable: true
+}));
 app.use(express.static(distPath, { index: false }));
 app.use((req, res, next) => {
     if (req.method !== 'GET') {

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { getMobById, getMobMeta, searchMobs } from '../services/mobQuery.js';
 import { isMobDataAvailable, mobUnavailableError } from '../services/gameDb.js';
+import { responseCache } from '../services/responseCache.js';
 
 const router = Router();
 
@@ -11,6 +12,8 @@ router.use((req, res, next) => {
 
     next();
 });
+
+router.use(responseCache('mobs', 30 * 60 * 1000));
 
 router.get('/meta', async (req, res) => {
     try {
