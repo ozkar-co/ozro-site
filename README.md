@@ -47,9 +47,9 @@ git pull
 
 ## Backups
 
-La tarea de backup corre dentro del mismo proceso (diario 3 AM, completo domingos 4 AM). Las tablas se configuran en `backup.conf` y los archivos se guardan en `backups/`.
+La tarea de backup corre dentro del mismo proceso (diario 3 AM, completo domingos 4 AM). **Todos los backups incluyen todas las tablas de la base de datos**, sin listas manuales; los archivos se guardan en `backups/`.
 
-Cada backup incluye la **estructura** (`CREATE TABLE`) y los datos, por lo que es autocontenido:
+Cada backup incluye la **estructura** (`CREATE TABLE`) y los datos de todas las tablas, por lo que es autocontenido:
 
 ```
 backups/AAAAMMDD_HHMMSS_full/
