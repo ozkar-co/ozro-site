@@ -29,8 +29,39 @@ type AssetCategory = 'items/icons' | 'items/illustrations' | 'mobs/sprites';
 
 export const ASSETS_BASE = '/assets';
 
+const CUSTOM_ITEM_DIRS: Partial<Record<AssetCategory, string>> = {
+  'items/icons': 'items/custom/icons',
+  'items/illustrations': 'items/custom/illustrations'
+};
+const CUSTOM_ITEM_EXTENSIONS = ['png', 'webp', 'jpg', 'jpeg'];
+
 let manifestPromise: Promise<AssetManifest | null> | null = null;
 const mappingCache = new Map<string, Record<string, SpriteRect & { page?: number }>>();
+const customAssetCache = new Map<string, Promise<string | null>>();
+
+async function findCustomAsset(category: AssetCategory, id: string): Promise<string | null> {
+  const dir = CUSTOM_ITEM_DIRS[category];
+  if (!dir) return null;
+
+  for (const extension of CUSTOM_ITEM_EXTENSIONS) {
+    const url = assetUrl(`${dir}/${id}.${extension}`);
+    try {
+      const response = await fetch(url, { method: 'HEAD' });
+      if (response.ok) return url;
+    } catch {
+      // Keep trying the next extension.
+    }
+  }
+  return null;
+}
+
+function resolveCustomAsset(category: AssetCategory, id: string): Promise<string | null> {
+  const key = `${category}:${id}`;
+  if (!customAssetCache.has(key)) {
+    customAssetCache.set(key, findCustomAsset(category, id));
+  }
+  return customAssetCache.get(key)!;
+}
 
 export function assetUrl(relativePath: string): string {
   return `${ASSETS_BASE}/${relativePath.replace(/^\//, '')}`;
@@ -89,22 +120,25 @@ const categoryMappings = new Map<AssetCategory, Promise<Record<string, SpriteRec
 export async function resolveSprite(
   id: string,
   category: AssetCategory
-): Promise<SpriteRect | null> {
+): Promise<SpriteRect | string | null> {
   const manifest = await loadManifest();
-  if (!manifest) return null;
+  if (manifest) {
+    if (!categoryMappings.has(category)) {
+      categoryMappings.set(category, loadPageMapping(manifest, category));
+    }
 
-  if (!categoryMappings.has(category)) {
-    categoryMappings.set(category, loadPageMapping(manifest, category));
+    const mapping = await categoryMappings.get(category)!;
+    const rect = mapping[id];
+    if (rect) {
+      return {
+        atlasUrl: rect.atlasUrl,
+        x: rect.x,
+        y: rect.y,
+        w: rect.w,
+        h: rect.h
+      };
+    }
   }
 
-  const mapping = await categoryMappings.get(category)!;
-  const rect = mapping[id];
-  if (!rect) return null;
-  return {
-    atlasUrl: rect.atlasUrl,
-    x: rect.x,
-    y: rect.y,
-    w: rect.w,
-    h: rect.h
-  };
+  return resolveCustomAsset(category, id);
 }
