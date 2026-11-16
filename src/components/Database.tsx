@@ -288,13 +288,13 @@ const Database = () => {
             className={`tab-button ${activeTab === 'items' ? 'active' : ''}`}
             onClick={() => handleTabChange('items')}
           >
-            Base de Datos de Objetos
+            Objetos
           </button>
           <button
             className={`tab-button ${activeTab === 'mobs' ? 'active' : ''}`}
             onClick={() => handleTabChange('mobs')}
           >
-            Base de Datos de Monstruos
+            Monstruos
           </button>
           <button
             className={`tab-button ${activeTab === 'maps' ? 'active' : ''}`}

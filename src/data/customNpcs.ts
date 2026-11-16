@@ -131,13 +131,13 @@ export const customNpcGroups: CustomNpcGroup[] = [
           'Cura y buffs en más de 30 ciudades. Es gratis para personajes de nivel bajo.',
         description: [
           'Angela viaja por Rune-Midgard compartiendo bendiciones. Por debajo de nivel 40 cura gratis y sin costo alguno.',
-          'A partir de nivel 40 ofrece dos servicios: curación por 5.000 zeny, o bendición completa por 10.000 zeny con curación, Blessing e Increase Agi de nivel 10 durante 4 minutos.',
+          'A partir de nivel 40 ofrece dos servicios: curación por 5.000 zeny, o bendición completa por 10.000 zeny con curación, Blessing e Increase Agi de nivel 10 durante 10 minutos.',
         ],
         services: [
           'Curación gratis por debajo de nivel 40',
           'Curación por 5.000 zeny',
           'Curación + Blessing + Increase Agi por 10.000 zeny',
-          'Buffs de 4 minutos',
+          'Buffs de 10 minutos',
         ],
         locations: [
           'Más de 30 ciudades, entre ellas Alberta, Prontera, Geffen, Izlude, Morocc, Payon, Yuno, Rachel, Veins y Malangdo',
