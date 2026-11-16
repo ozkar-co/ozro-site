@@ -9,6 +9,16 @@ export interface UpdateEntry {
 export const recentUpdates: UpdateEntry[] = [
   {
     date: '16 de noviembre de 2026',
+    title: 'Cronista de Cacerías',
+    paragraphs: [
+      'Nuevo NPC en Prontera: lee el registro de MVPs de cada personaje y muestra golpes finales, asistencias, MVPs únicos y los MVPs que más cazaste.',
+      'El registro conserva las variables históricas de kills y asistencias, así que las cacerías anteriores cuentan desde el primer día.',
+      'El Cronista también entrega recompensas por tiers: zeny y Almas de MVP. Cada tier se reclama una sola vez por personaje.',
+      'La entrega de Almas por kill y el invocador de MVPs quedan para una etapa posterior.',
+    ],
+  },
+  {
+    date: '16 de noviembre de 2026',
     title: 'Garrett: ofertas diarias y contratos',
     paragraphs: [
       'Garrett ahora trabaja por cuenta: cinco ofertas diarias con precio unitario y un cap total de 500.000 zeny por cuenta y por día.',

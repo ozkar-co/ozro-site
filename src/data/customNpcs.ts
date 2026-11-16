@@ -249,6 +249,26 @@ export const customNpcGroups: CustomNpcGroup[] = [
         locations: ['Geffen (139, 72)'],
       },
       {
+        id: 'journal',
+        name: 'Cronista de Cacerías',
+        role: 'Cronista de MVPs',
+        sprite: sprite('4_M_SAGE_C'),
+        summary:
+          'Lee las marcas de tus cacerías y guarda el registro de los MVPs que derrotaste.',
+        description: [
+          'El Cronista asegura que ninguna gran cacería quede en el olvido. Conoce las historias de cada MVP y sabe leer las marcas que dejan en quienes los enfrentan.',
+          'No entrega la gloria: la registra. Golpes finales, asistencias y bestias únicas quedan anotados en su libro para que el cazador pueda ver su recorrido.',
+          'También reconoce los hitos importantes. A cambio de una vida dedicada a la caza, entrega recompensas y Almas de MVP.',
+        ],
+        services: [
+          'Resumen de golpes finales y asistencias',
+          'Lista de MVPs cazados',
+          'Progreso de tiers',
+          'Reclamo de recompensas por hitos',
+        ],
+        locations: ['Prontera (150, 180)'],
+      },
+      {
         id: 'ludovico',
         name: 'Ludovico el Sepulturero',
         role: 'Cronista de muertes',
