@@ -18,7 +18,7 @@
     "heal": 100,
     "use": 100,
     "equip": 100,
-    "card": 100
+    "card": 10000
   },
   "mvpReward": 500
 }

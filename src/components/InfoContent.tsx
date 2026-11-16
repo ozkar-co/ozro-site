@@ -90,7 +90,8 @@ const contentMap: Record<string, ReactNode> = {
         </ul>
         <h3>MVP</h3>
         <ul>
-          <li>Drops en suelo (common, heal, usable, equip, card): <strong>1x</strong> (default, sin override)</li>
+          <li>Drops en suelo (common, heal, usable, equip): <strong>1x</strong> (default, sin override)</li>
+          <li>Card: 100x</li>
           <li>Recompensa MVP directa al inventario: 5x</li>
         </ul>
         <h3>Otros</h3>
