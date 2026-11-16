@@ -302,3 +302,21 @@
     display: none;
   }
 } 
+.ranking-book-link {
+  flex: 0 0 auto;
+  margin-left: 0.5rem;
+  padding: 0.3rem 0.65rem;
+  color: #5a3d13;
+  background: #f5e6c8;
+  border: 1px solid #e3c48e;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.ranking-book-link:hover {
+  background: #fff7e8;
+  border-color: #d8b97e;
+}

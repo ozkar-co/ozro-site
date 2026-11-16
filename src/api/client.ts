@@ -64,6 +64,16 @@ export interface RankingsAccountResponse {
   }[];
 }
 
+export interface CardBookResponse {
+  timestamp: string;
+  account: {
+    account_id: number;
+    userid: string;
+  };
+  total_owned: number;
+  owned: number[];
+}
+
 export interface RankingsCharacterResponse {
   timestamp: string;
   rankings: {
@@ -236,6 +246,8 @@ export const apiClient = {
   stats: () => apiFetch<StatsResponse>('/stats'),
   rankingsAccounts: () => apiFetch<RankingsAccountResponse>('/rankings/accounts'),
   rankingsCharacters: () => apiFetch<RankingsCharacterResponse>('/rankings/characters'),
+  getCardBook: (accountId: number | string) =>
+    apiFetch<CardBookResponse>(`/accounts/${accountId}/card-book`),
   uptime: () => apiFetch<UptimeResponse>('/uptime'),
   status: () => apiFetch<StatusResponse>('/status'),
 

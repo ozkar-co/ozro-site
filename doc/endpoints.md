@@ -6,7 +6,7 @@ Base URL: `http://localhost:3001` (producción: `https://ro.ozkr.net`)
 
 ## GET /assets/*
 
-Archivos estáticos de imágenes del juego (atlases WebP + manifest JSON). Generados localmente con `ozro-cli` → `npm run assets`.
+Archivos estáticos de imágenes del juego (atlases WebP + manifest JSON). Generados localmente con las herramientas de `ozro-cli` (por ejemplo `python3 tools/build_card_book.py` para el Libro de Cartas).
 
 - `GET /assets/manifest.json` — índice de atlases (iconos, ilustraciones, sprites)
 - `GET /assets/items/icons/atlas_N.webp` — atlas de iconos
@@ -17,6 +17,8 @@ Archivos estáticos de imágenes del juego (atlases WebP + manifest JSON). Gener
 - `GET /assets/spawns/mobs/<mobId>.json` — mapas de spawn de un monstruo
 - `GET /assets/maps/index.json` — metadatos de las vistas de mapa
 - `GET /assets/maps/images/<map>.webp` — vista simplificada del mapa
+- `GET /assets/cards/catalog.json` — catálogo del Libro de Cartas por cuenta
+- `GET /assets/cards/atlas_N.<hash>.webp` — atlas WebP del Libro de Cartas
 
 Cada atlas tiene un `.json` hermano con coordenadas `{ "itemId": { "x", "y", "w", "h" } }`.
 
@@ -194,6 +196,35 @@ Obtiene el ranking de cuentas ordenado por zeny total.
   - `total_mvp_cards` (string): Total de cartas MVP
   - `total_boss_cards` (string): Total de cartas Boss
   - `total_diamonds` (string): Total de diamantes (item 6024)
+
+---
+
+## GET /api/accounts/:accountId/card-book
+
+Obtiene las cartas registradas por una cuenta en el Archivista (Card Collector).
+
+**Respuesta exitosa:**
+```json
+{
+  "timestamp": "2026-01-13T14:00:00.000Z",
+  "account": {
+    "account_id": 123,
+    "userid": "player1"
+  },
+  "total_owned": 4,
+  "owned": [4001, 4012, 4126, 4140]
+}
+```
+
+**Campos:**
+- `account` (object): Cuenta consultada
+  - `account_id` (number): ID de la cuenta
+  - `userid` (string): Nombre de usuario
+- `total_owned` (number): Cantidad de cartas registradas
+- `owned` (array): IDs de items de las cartas registradas (`#CARD_SEEN_<id> = 1`)
+
+El catálogo visual se sirve desde `GET /assets/cards/catalog.json` y se cruza en el cliente con `owned`.
+No se exponen cuentas admin (`group_id = 99`) ni cuentas internas.
 
 ---
 

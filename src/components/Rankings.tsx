@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import '../styles/Rankings.css';
@@ -280,6 +281,13 @@ const Rankings = () => {
             <span className="name">{toTitleCase(account.userid)}</span>
             <span className="class">{account.total_cards_distinct} {toPlural('Carta', parseInt(account.total_cards_distinct))} {toPlural('Distinta', parseInt(account.total_cards_distinct))}</span>
             <span className="class">{account.total_cards} {toPlural('Carta', parseInt(account.total_cards))} en Total</span>
+            <Link
+              to={`/cards/${account.account_id}`}
+              className="ranking-book-link"
+              aria-label={`Abrir libro de cartas de ${account.userid}`}
+            >
+              Libro
+            </Link>
           </div>
         ))}
       </div>
@@ -302,6 +310,13 @@ const Rankings = () => {
             <span className="name">{toTitleCase(account.userid)}</span>
             <span className="class">{account.total_boss_cards} {toPlural('Carta', parseInt(account.total_boss_cards))} Boss</span>
             <span className="class">{account.total_mvp_cards} {toPlural('Carta', parseInt(account.total_mvp_cards))} MVP</span>
+            <Link
+              to={`/cards/${account.account_id}`}
+              className="ranking-book-link"
+              aria-label={`Abrir libro de cartas de ${account.userid}`}
+            >
+              Libro
+            </Link>
           </div>
 
 

@@ -1,0 +1,542 @@
+.cardbook {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardbook-container {
+  flex: 1;
+  padding: 96px 2rem 3rem;
+  background-image: url('/bg.webp');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  position: relative;
+}
+
+.cardbook-content {
+  max-width: 1160px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.cardbook-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1.6rem 2rem;
+  background: rgba(255, 250, 240, 0.94);
+  border: 1px solid #e2d6bf;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(70, 50, 20, 0.12);
+}
+
+.cardbook-kicker {
+  margin: 0 0 0.35rem;
+  color: #a0702a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cardbook-hero h1 {
+  margin: 0;
+  color: #2e261b;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  line-height: 1.15;
+}
+
+.cardbook-subtitle {
+  margin: 0.45rem 0 0;
+  color: #6f6353;
+  font-size: 0.92rem;
+}
+
+.cardbook-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cardbook-hero-actions a {
+  padding: 0.45rem 0.9rem;
+  color: #5a3d13;
+  background: #f5e6c8;
+  border: 1px solid #e3c48e;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.cardbook-hero-actions a:hover {
+  background: #fff7e8;
+  border-color: #d8b97e;
+}
+
+.cardbook-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1rem 0 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 250, 240, 0.9);
+  border: 1px solid #e2d6bf;
+  border-radius: 14px;
+}
+
+.cardbook-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  max-width: 640px;
+}
+
+.cardbook-progress-track {
+  flex: 1;
+  height: 10px;
+  overflow: hidden;
+  background: #e7dcc8;
+  border-radius: 999px;
+}
+
+.cardbook-progress-track span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #d69a3a, #b46a24);
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+.cardbook-progress strong {
+  color: #7a4f1d;
+  font-size: 0.9rem;
+}
+
+.cardbook-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #4b3d2b;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.cardbook-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: #b46a24;
+  cursor: pointer;
+}
+
+.cardbook-tabs {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding: 0.35rem 0.1rem 0.9rem;
+  scrollbar-width: thin;
+}
+
+.cardbook-tabs button {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  color: #5c4b35;
+  background: rgba(255, 250, 240, 0.86);
+  border: 1px solid #e2d6bf;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.cardbook-tabs button small {
+  color: #9a7a48;
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.cardbook-tabs button:hover {
+  background: #fff7e8;
+  border-color: #d8b97e;
+}
+
+.cardbook-tabs button.active {
+  color: #fff;
+  background: #b46a24;
+  border-color: #b46a24;
+  box-shadow: 0 4px 12px rgba(180, 106, 36, 0.3);
+}
+
+.cardbook-tabs button.active small {
+  color: #ffe8c4;
+}
+
+.book-spread {
+  position: relative;
+  scroll-margin-top: 100px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  overflow: hidden;
+  background: #f7f0df;
+  border: 1px solid #d9c7a3;
+  border-radius: 16px;
+  box-shadow:
+    0 18px 40px rgba(70, 50, 20, 0.2),
+    inset 0 0 60px rgba(120, 85, 30, 0.08);
+}
+
+.book-spread::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 26px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    90deg,
+    rgba(120, 85, 30, 0),
+    rgba(120, 85, 30, 0.18),
+    rgba(120, 85, 30, 0.03)
+  );
+  pointer-events: none;
+}
+
+.book-page {
+  min-height: 540px;
+  padding: 1.2rem 1.4rem 1.5rem;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.7), transparent 45%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.35), rgba(226, 210, 180, 0.18));
+}
+
+.book-page:first-child {
+  border-right: 1px solid rgba(120, 85, 30, 0.15);
+}
+
+.book-page-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+  color: #7a5a2e;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.book-page-heading small {
+  color: #a49072;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 150px);
+  gap: 1rem 0.8rem;
+  justify-content: center;
+  align-content: start;
+}
+
+.book-card {
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+}
+
+.book-card-art {
+  position: relative;
+  background-repeat: no-repeat;
+  background-color: #fff;
+  border: 0;
+  border-radius: 7px;
+  box-shadow:
+    0 0 0 1px rgba(90, 70, 40, 0.3),
+    0 3px 7px rgba(60, 40, 20, 0.2);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.book-card.is-owned:hover .book-card-art {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow:
+    0 0 0 1px rgba(90, 70, 40, 0.35),
+    0 8px 16px rgba(60, 40, 20, 0.28);
+}
+
+.book-card.is-missing .book-card-art {
+  filter: grayscale(1) opacity(0.45);
+}
+
+.book-card-lock {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: #fff;
+  background: rgba(60, 50, 35, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.book-card-name {
+  display: -webkit-box;
+  min-height: 2.4em;
+  margin-top: 0.4rem;
+  overflow: hidden;
+  color: #4a3b29;
+  font-size: 0.68rem;
+  line-height: 1.2;
+  text-align: center;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.book-card.is-missing .book-card-name {
+  color: #9b8d7a;
+}
+
+.book-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.book-controls button {
+  padding: 0.5rem 1rem;
+  color: #5a3d13;
+  background: rgba(255, 250, 240, 0.95);
+  border: 1px solid #d9c7a3;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.book-controls button:hover:not(:disabled) {
+  background: #fff7e8;
+  border-color: #c9a86a;
+}
+
+.book-controls button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.book-controls span {
+  color: #6f6353;
+  font-size: 0.82rem;
+}
+
+.cardbook-status {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 3rem 1rem;
+  color: #5c4b35;
+  text-align: center;
+  background: rgba(255, 250, 240, 0.9);
+  border: 1px solid #e2d6bf;
+  border-radius: 16px;
+}
+
+.cardbook-status-error {
+  flex-direction: column;
+  color: #8a2f1f;
+}
+
+.cardbook-status a {
+  color: #7a4f1d;
+  font-weight: 700;
+}
+
+.cardbook-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #e3c48e;
+  border-top-color: #b46a24;
+  border-radius: 50%;
+  animation: cardbook-spin 0.8s linear infinite;
+}
+
+@keyframes cardbook-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.collector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.collector-card {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1rem;
+  color: inherit;
+  background: rgba(255, 250, 240, 0.95);
+  border: 1px solid #e2d6bf;
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(70, 50, 20, 0.1);
+  text-decoration: none;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.collector-card:hover {
+  transform: translateY(-2px);
+  border-color: #d8b97e;
+  box-shadow: 0 14px 28px rgba(70, 50, 20, 0.18);
+}
+
+.collector-rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  color: #7a4f1d;
+  background: #f5e6c8;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.collector-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.collector-main strong {
+  overflow: hidden;
+  color: #2e261b;
+  font-size: 0.95rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collector-main > span {
+  color: #7a6a55;
+  font-size: 0.75rem;
+}
+
+.collector-progress {
+  height: 7px;
+  overflow: hidden;
+  background: #e7dcc8;
+  border-radius: 999px;
+}
+
+.collector-progress span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #d69a3a, #b46a24);
+  border-radius: 999px;
+}
+
+.collector-percent {
+  color: #7a4f1d;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+@media (max-width: 1100px) {
+  .book-spread {
+    grid-template-columns: 1fr;
+  }
+
+  .book-spread::after {
+    display: none;
+  }
+
+  .book-page:first-child {
+    border-right: none;
+  }
+
+  .book-page {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .cardbook-container {
+    padding: 88px 1rem 2rem;
+  }
+
+  .cardbook-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.2rem 1.25rem;
+  }
+
+  .cardbook-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cardbook-progress {
+    max-width: none;
+  }
+
+  .book-page {
+    padding: 1rem;
+  }
+
+  .book-grid {
+    grid-template-columns: repeat(2, 150px);
+    gap: 0.8rem 0.6rem;
+  }
+
+  .book-controls {
+    gap: 0.5rem;
+  }
+
+  .book-controls button {
+    padding: 0.45rem 0.7rem;
+    font-size: 0.75rem;
+  }
+
+  .collector-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 360px) {
+  .book-grid {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}

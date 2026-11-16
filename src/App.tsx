@@ -9,6 +9,8 @@ const Database = lazy(() => import('./components/Database'));
 const Encyclopedia = lazy(() => import('./components/Encyclopedia'));
 const Maps = lazy(() => import('./components/Maps'));
 const Rankings = lazy(() => import('./components/Rankings'));
+const CardBookIndex = lazy(() => import('./components/CardBookIndex'));
+const CardBook = lazy(() => import('./components/CardBook'));
 const Donate = lazy(() => import('./components/Donate'));
 const Thanks = lazy(() => import('./components/Thanks'));
 const NotFound = lazy(() => import('./components/NotFound'));
@@ -30,6 +32,8 @@ const App = () => {
           <Route path="/maps" element={<Maps />} />
           <Route path="/maps/:map" element={<Maps />} />
           <Route path="/rankings" element={<Rankings />} />
+          <Route path="/cards" element={<CardBookIndex />} />
+          <Route path="/cards/:accountId" element={<CardBook />} />
           <Route path="/donate" element={<Donate />} />
           <Route path="/thanks" element={<Thanks />} />
           <Route path="*" element={<NotFound />} />

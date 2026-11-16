@@ -23,7 +23,7 @@ app.use('/assets', express.static(assetsPath, {
   maxAge: '7d',
   immutable: true,
   setHeaders: (res, filePath) => {
-    if (/(?:manifest|build-report|maps|spawns|index)\.json$/.test(filePath)) {
+    if (/(?:manifest|build-report|catalog|maps|spawns|index)\.json$/.test(filePath)) {
       res.setHeader('Cache-Control', 'no-cache');
     }
   }
@@ -419,6 +419,61 @@ api.get('/rankings/accounts', async (req, res) => {
     } catch (error) {
         console.error('Error al obtener rankings de cuentas:', error);
         res.status(500).json({ error: 'Error al obtener rankings de cuentas' });
+    }
+});
+
+// Get one account's Card Collector book (registered discoveries)
+api.get('/accounts/:accountId/card-book', async (req, res) => {
+    const accountId = Number(req.params.accountId);
+    if (!Number.isInteger(accountId) || accountId <= 0) {
+        return res.status(400).json({ error: 'accountId inválido' });
+    }
+
+    try {
+        const accounts = await query(`
+            SELECT l.account_id, l.userid
+            FROM login l
+            WHERE l.account_id = ?
+            AND l.group_id != 99
+            AND ${excludeInternalAccountsSql('l')}
+            LIMIT 1
+        `, [accountId]);
+
+        if (accounts.length === 0) {
+            return res.status(404).json({ error: 'Cuenta no encontrada' });
+        }
+
+        const rows = await query(`
+            SELECT ar.\`key\` AS card_key
+            FROM acc_reg_num ar
+            WHERE ar.account_id = ?
+            AND ar.\`key\` LIKE '#CARD_SEEN\\_%'
+            AND ar.\`index\` = 0
+            AND ar.value = 1
+        `, [accountId]);
+
+        const owned = Array.from(new Set(
+            rows
+                .map((row) => {
+                    const match = String(row.card_key).match(/^#CARD_SEEN_(\d+)$/);
+                    return match ? Number.parseInt(match[1], 10) : null;
+                })
+                .filter((itemId) => Number.isInteger(itemId))
+        )).sort((a, b) => a - b);
+
+        const account = accounts[0];
+        res.json({
+            timestamp: new Date(),
+            account: {
+                account_id: account.account_id,
+                userid: account.userid
+            },
+            total_owned: owned.length,
+            owned
+        });
+    } catch (error) {
+        console.error('Error al obtener el libro de cartas:', error);
+        res.status(500).json({ error: 'Error al obtener el libro de cartas' });
     }
 });
 
