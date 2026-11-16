@@ -51,12 +51,12 @@ export interface StatsResponse {
 
 export interface RankingsAccountResponse {
   timestamp: string;
+  cardCatalogTotal: number;
   rankings: {
     account_id: number;
     userid: string;
     logincount: number;
     total_zeny: string;
-    total_cards: string;
     total_cards_distinct: string;
     total_mvp_cards: string;
     total_boss_cards: string;

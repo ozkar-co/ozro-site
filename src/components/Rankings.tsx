@@ -9,14 +9,12 @@ import { apiClient } from '../api/client';
 interface Account {
   account_id: number;
   logincount: number;
-  total_cards: string;
   total_cards_distinct: string;
   total_diamonds: string;
   total_mvp_cards: string;
   total_boss_cards: string;
   total_zeny: string;
   userid: string;
-
 }
 
 interface Character {
@@ -33,6 +31,7 @@ interface Character {
 interface RankingData {
   accounts: Account[];
   characters: Character[];
+  cardCatalogTotal: number;
 }
 
 const CLASSES = {
@@ -218,7 +217,8 @@ const Rankings = () => {
         
         setRankingData({
           accounts: accountsRes.rankings,
-          characters: charactersRes.rankings
+          characters: charactersRes.rankings,
+          cardCatalogTotal: accountsRes.cardCatalogTotal
         });
       } catch (error) {
         console.error('Error fetching rankings:', error);
@@ -233,11 +233,6 @@ const Rankings = () => {
   const calculateTotalZeny = (account: Account) => {
     return parseInt(account.total_zeny) + (parseInt(account.total_diamonds) * 500000000);
   };
-
-  const toPlural = (str: string, count: number) => {
-    return count == 1 ? str : str + 's';
-  };
-
 
   const toTitleCase = (str: string) => {
     return str.toLowerCase().split(' ').map(word => 
@@ -280,6 +275,7 @@ const Rankings = () => {
 
   const renderCardsRanking = () => {
     if (!rankingData?.accounts) return null;
+    const totalCatalog = rankingData.cardCatalogTotal;
     const sortedAccounts = [...rankingData.accounts]
       .filter(account => !['admin', 'gamemaster'].includes(account.userid.toLowerCase()))
       .sort((a, b) => parseInt(b.total_cards_distinct) - parseInt(a.total_cards_distinct))
@@ -293,8 +289,7 @@ const Rankings = () => {
           <div key={account.account_id} className="ranking-item">
             <span className="rank">{index + 1}</span>
             <span className="name">{toTitleCase(account.userid)}</span>
-            <span className="class">{account.total_cards_distinct} {toPlural('Carta', parseInt(account.total_cards_distinct))} {toPlural('Distinta', parseInt(account.total_cards_distinct))}</span>
-            <span className="class">{account.total_cards} {toPlural('Carta', parseInt(account.total_cards))} en Total</span>
+            <span className="class">{account.total_cards_distinct} de {totalCatalog} cartas</span>
             <span className="class">{account.total_boss_cards} Boss · {account.total_mvp_cards} MVP</span>
             <Link
               to={`/cards/${account.account_id}`}

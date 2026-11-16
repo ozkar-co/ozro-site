@@ -8,7 +8,8 @@ import os from 'os';
 import mobsRouter from './routes/mobs.js';
 import itemsRouter from './routes/items.js';
 import mvpsRouter from './routes/mvps.js';
-import { BANK_VAULT_KEY, bankVaultValueSql, cardCollectorDistinctSql, cardCollectorTotalSql, excludeInternalAccountsSql, statsPlayerAccountSql, statsPlayerAccountWhereClause } from './services/gameDb.js';
+import { BANK_VAULT_KEY, bankVaultValueSql, excludeInternalAccountsSql, statsPlayerAccountSql, statsPlayerAccountWhereClause } from './services/gameDb.js';
+import { getCardCatalogIndex } from './services/cardCatalog.js';
 
 const app = express();
 const api = express.Router();
@@ -294,27 +295,7 @@ api.get('/stats', async (req, res) => {
 // Get account rankings
 api.get('/rankings/accounts', async (req, res) => {
     try {
-        const mvpCardIds = [
-            4601, 4592, 4578, 4576, 4574, 4525, 4507, 4456, 4441, 4430,
-            4425, 4419, 4408, 4407, 4403, 4399, 4386, 4376, 4374, 4372,
-            4367, 4365, 4363, 4361, 4359, 4357, 4352, 4342, 4330, 4324,
-            4318, 4305, 4302, 4276, 4263, 4236, 4168, 4148, 4147, 4146,
-            4145, 4144, 4143, 4142, 4137, 4135, 4134, 4132, 4131, 4128,
-            4520, 4509, 4565, 4563, 4561, 4562, 4564, 4560, 4566, 4123,
-            4121, 27164
-        ];
-        const mvpCardsStr = mvpCardIds.join(',');
-        
-        const bossCardIds = [
-            4632, 4631, 4610, 4606, 4605, 4591, 4590, 4534, 4533, 4532,
-            4529, 4528, 4527, 4526, 4524, 4463, 4462, 4457, 4451, 4440,
-            4431, 4429, 4428, 4427, 4426, 4423, 4406, 4398, 4397, 4396,
-            4395, 4394, 4393, 4392, 4391, 4384, 4354, 4306, 4300, 4290,
-            4266, 4254, 4250, 4241, 4238, 4237, 4207, 4203, 4198, 4197,
-            4183, 4179, 4174, 4171, 4169, 4163, 4147, 4130, 4111, 4105,
-            4093, 4054, 4047
-        ];
-        const bossCardsStr = bossCardIds.join(',');
+        const cardCatalog = await getCardCatalogIndex();
 
         const rankings = await query(`
             WITH AccountItems AS (
@@ -363,23 +344,6 @@ api.get('/rankings/accounts', async (req, res) => {
                         WHERE c.account_id = l.account_id
                         AND c.delete_date = 0
                     ) + ${bankVaultValueSql('l.account_id')} AS CHAR) as total_zeny,
-                    -- Cartas registradas en el Archivista (Card Collector)
-                    CAST(${cardCollectorTotalSql('l.account_id')} AS CHAR) as total_cards,
-                    CAST(${cardCollectorDistinctSql('l.account_id')} AS CHAR) as total_cards_distinct,
-                    -- Total de cartas MVP
-                    CAST((
-                        SELECT COALESCE(SUM(amount), 0)
-                        FROM AccountItems ai
-                        WHERE ai.account_id = l.account_id
-                        AND ai.item_id IN (${mvpCardsStr})
-                    ) AS CHAR) as total_mvp_cards,
-                    -- Total de cartas Boss
-                    CAST((
-                        SELECT COALESCE(SUM(amount), 0)
-                        FROM AccountItems ai
-                        WHERE ai.account_id = l.account_id
-                        AND ai.item_id IN (${bossCardsStr})
-                    ) AS CHAR) as total_boss_cards,
                     -- Total de diamantes
                     CAST((
                         SELECT COALESCE(SUM(amount), 0)
@@ -396,28 +360,57 @@ api.get('/rankings/accounts', async (req, res) => {
                 userid,
                 logincount,
                 total_zeny,
-                total_cards,
-                total_cards_distinct,
-                total_mvp_cards,
-                total_boss_cards,
                 total_diamonds
             FROM AccountTotals
             ORDER BY CAST(total_zeny AS DECIMAL(20)) DESC
         `);
 
+        const cardRows = await query(`
+            SELECT ar.account_id, ar.\`key\` AS card_key
+            FROM acc_reg_num ar
+            JOIN login l ON l.account_id = ar.account_id
+            WHERE l.group_id != 99
+            AND ${excludeInternalAccountsSql('l')}
+            AND ar.\`key\` LIKE '#CARD_SEEN\\_%'
+            AND ar.\`index\` = 0
+            AND ar.value = 1
+        `);
+
+        const ownedCardsByAccount = new Map();
+        for (const row of cardRows) {
+            const match = String(row.card_key).match(/^#CARD_SEEN_(\d+)$/);
+            if (!match) continue;
+            const cardId = Number.parseInt(match[1], 10);
+            if (!cardCatalog.allIds.has(cardId)) continue;
+            if (!ownedCardsByAccount.has(row.account_id)) {
+                ownedCardsByAccount.set(row.account_id, new Set());
+            }
+            ownedCardsByAccount.get(row.account_id).add(cardId);
+        }
+
         res.json({
             timestamp: new Date(),
-            rankings: rankings.map(row => ({
-                account_id: row.account_id,
-                userid: row.userid,
-                logincount: row.logincount,
-                total_zeny: row.total_zeny,
-                total_cards: row.total_cards,
-                total_cards_distinct: row.total_cards_distinct,
-                total_mvp_cards: row.total_mvp_cards,
-                total_boss_cards: row.total_boss_cards,
-                total_diamonds: row.total_diamonds
-            }))
+            cardCatalogTotal: cardCatalog.total,
+            rankings: rankings.map(row => {
+                const ownedCards = ownedCardsByAccount.get(row.account_id) ?? new Set();
+                let bossCards = 0;
+                let mvpCards = 0;
+                for (const cardId of ownedCards) {
+                    if (cardCatalog.bossIds.has(cardId)) bossCards += 1;
+                    if (cardCatalog.mvpIds.has(cardId)) mvpCards += 1;
+                }
+
+                return {
+                    account_id: row.account_id,
+                    userid: row.userid,
+                    logincount: row.logincount,
+                    total_zeny: row.total_zeny,
+                    total_cards_distinct: String(ownedCards.size),
+                    total_mvp_cards: String(mvpCards),
+                    total_boss_cards: String(bossCards),
+                    total_diamonds: row.total_diamonds
+                };
+            })
         });
     } catch (error) {
         console.error('Error al obtener rankings de cuentas:', error);
