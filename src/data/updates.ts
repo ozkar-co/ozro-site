@@ -9,6 +9,16 @@ export interface UpdateEntry {
 export const recentUpdates: UpdateEntry[] = [
   {
     date: '16 de noviembre de 2026',
+    title: 'Garrett: ofertas diarias y contratos',
+    paragraphs: [
+      'Garrett ahora trabaja por cuenta: cinco ofertas diarias con precio unitario y un cap total de 500.000 zeny por cuenta y por día.',
+      'Además de las ofertas, se puede aceptar una misión diaria de 6 horas entre tres contratos: común, poco común y raro. El pago de la misión queda fuera del cap diario.',
+      'Mientras hay una misión activa, Garrett no compra chatarra: solo informa el tiempo restante y el progreso. La misión se puede cancelar; si se cancela o falla, no habrá otra hasta el día siguiente, pero las ofertas vuelven a quedar abiertas.',
+      'Si ya tienes la cantidad pedida en el inventario, Garrett cierra el contrato y paga al instante. Los ítems muy raros quedan fuera del pool normal y se reservan para eventos o misiones especiales.',
+    ],
+  },
+  {
+    date: '16 de noviembre de 2026',
     title: 'Enciclopedia reorganizada',
     paragraphs: [
       'Información ahora reúne solo las especificaciones del servidor y los sistemas personalizados. Los NPCs y las quests custom se movieron a la Enciclopedia.',

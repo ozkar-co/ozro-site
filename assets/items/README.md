@@ -74,6 +74,9 @@ source of truth for future custom NPCs, quests, events and item filters.
 the item taxonomy, item weights and drop supply. It is a precomputed table so the
 NPC does not calculate quantities or prices at runtime.
 
+`tools/generate_garrett_npc.py` reads this table and writes the Latin-1 NPC script
+at `npc/custom/ozro/trasher.txt`. Run both generators after changing item data.
+
 Current proposal:
 
 - 5 daily offers, total cap 500,000 zeny per account per day.
