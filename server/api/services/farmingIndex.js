@@ -58,10 +58,10 @@ function penaltyRate(type, levelDifference) {
 
 function mapAccess(map) {
     const access = accessData?.maps?.[map];
-    if (!access) return { accessDepth: null, accessLabel: 'Sin ruta' };
+    if (!access) return { accessDepth: null, accessLabel: 'NPC/Quest' };
     return {
         accessDepth: access.depth,
-        accessLabel: access.label || 'Sin ruta'
+        accessLabel: access.label === 'Sin ruta' ? 'NPC/Quest' : (access.label || 'NPC/Quest')
     };
 }
 
@@ -180,7 +180,7 @@ function buildMob(row, itemByAegis, spawnsByMob) {
         spawnAmount: spawnMaps.reduce((sum, spawn) => sum + spawn.amount, 0),
         hasWorldSpawn: spawnMaps.some((spawn) => !spawn.instance),
         accessDepth: bestWorldSpawn?.accessDepth ?? null,
-        accessLabel: bestWorldSpawn?.accessLabel ?? (instanceOnly ? 'Instancia' : 'Sin ruta')
+        accessLabel: bestWorldSpawn?.accessLabel ?? (instanceOnly ? 'Instancia' : 'NPC/Quest')
     };
 }
 
@@ -384,6 +384,7 @@ export function getFarmingMobs(params = {}) {
     const hasSpawn = parseBool(params.hasSpawn);
     const includeInstances = parseBool(params.includeInstances) === true;
     const mvp = parseBool(params.mvp);
+    const minSpawnAmount = parseIntParam(params.minSpawnAmount);
 
     let results = mobs.map((mob) => decorateMob(mob, level, applyPenalty));
 
@@ -401,6 +402,7 @@ export function getFarmingMobs(params = {}) {
         }
         if (mvp === true && !mob.isMvp) return false;
         if (mvp === false && mob.isMvp) return false;
+        if (minSpawnAmount !== null && mob.spawnAmount < minSpawnAmount) return false;
         return true;
     });
 
@@ -419,8 +421,8 @@ export function getFarmingMobs(params = {}) {
     };
 }
 
-function decorateMap(map, level, applyPenalty) {
-    const activeMobs = map.mobs.map((ref) => {
+function decorateMap(map, level, applyPenalty, mvpFilter) {
+    let activeMobs = map.mobs.map((ref) => {
         const mob = mobById.get(ref.id);
         if (!mob) return ref;
         const active = decorateMob(mob, level, applyPenalty);
@@ -431,10 +433,18 @@ function decorateMap(map, level, applyPenalty) {
             penaltyRate: active.penaltyRate
         };
     });
+
+    if (mvpFilter === true) activeMobs = activeMobs.filter((mob) => mob.isMvp);
+    if (mvpFilter === false) activeMobs = activeMobs.filter((mob) => !mob.isMvp);
+
     const totalMobs = activeMobs.reduce((sum, mob) => sum + mob.amount, 0);
     return {
         ...map,
         mobs: activeMobs,
+        mobCount: activeMobs.length,
+        totalAmount: totalMobs,
+        minMobLevel: activeMobs.length > 0 ? Math.min(...activeMobs.map((mob) => mob.level)) : 0,
+        maxMobLevel: activeMobs.length > 0 ? Math.max(...activeMobs.map((mob) => mob.level)) : 0,
         weightedMzw: totalMobs > 0
             ? activeMobs.reduce((sum, mob) => sum + mob.mzw * mob.amount, 0) / totalMobs
             : 0,
@@ -474,9 +484,13 @@ export function getFarmingMaps(params = {}) {
     const levelMax = parseIntParam(params.levelMax);
     const minMzw = parseIntParam(params.minMzw);
     const accessMax = parseIntParam(params.accessMax);
+    const minSpawnAmount = parseIntParam(params.minSpawnAmount);
     const mapFilter = typeof params.map === 'string' ? params.map.trim() : '';
+    const mvp = parseBool(params.mvp);
 
-    let results = maps.map((map) => decorateMap(map, level, applyPenalty));
+    let results = maps
+        .map((map) => decorateMap(map, level, applyPenalty, mvp))
+        .filter((map) => map.mobCount > 0);
 
     results = results.filter((map) => {
         if (mapFilter && map.map !== mapFilter) return false;
@@ -487,6 +501,7 @@ export function getFarmingMaps(params = {}) {
         if (levelMin !== null && map.maxMobLevel < levelMin) return false;
         if (levelMax !== null && map.minMobLevel > levelMax) return false;
         if (minMzw !== null && map.weightedMzw < minMzw) return false;
+        if (minSpawnAmount !== null && map.totalAmount < minSpawnAmount) return false;
         if (accessMax !== null && (map.accessDepth === null || map.accessDepth > accessMax)) return false;
         return true;
     });
@@ -519,5 +534,5 @@ export function getFarmingMapByName(mapName, params = {}) {
     if (!map) return null;
     const level = parseIntParam(params.level);
     const applyPenalty = parseBool(params.penalty) === true;
-    return decorateMap(map, level, applyPenalty);
+    return decorateMap(map, level, applyPenalty, parseBool(params.mvp));
 }

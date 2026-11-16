@@ -102,7 +102,7 @@ def build_world_access(site_dir):
 
     def label(distance):
         if distance is None:
-            return 'Sin ruta'
+            return 'NPC/Quest'
         if distance == 0:
             return 'Hub'
         if distance == 1:

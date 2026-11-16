@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  fetchFarmingMap,
   fetchFarmingMaps,
   fetchFarmingMob,
   fetchFarmingMobs,
@@ -177,6 +176,8 @@ const FarmingCalculator = () => {
   const [minMzw, setMinMzw] = useState('');
   const [minZenyPerHp, setMinZenyPerHp] = useState('');
   const [includeInstances, setIncludeInstances] = useState(false);
+  const [hideMvp, setHideMvp] = useState(false);
+  const [hideLowSpawn, setHideLowSpawn] = useState(false);
   const [useLevelAdjust, setUseLevelAdjust] = useState(false);
   const [playerLevel, setPlayerLevel] = useState('99');
   const [accessMax, setAccessMax] = useState('');
@@ -200,7 +201,7 @@ const FarmingCalculator = () => {
     setSelectedMob(null);
     setSelectedMap(null);
     setMapMobDetail(null);
-  }, [mode, query, levelMin, levelMax, minMzw, minZenyPerHp, includeInstances, useLevelAdjust, playerLevel, accessMax]);
+  }, [mode, query, levelMin, levelMax, minMzw, minZenyPerHp, includeInstances, hideMvp, hideLowSpawn, useLevelAdjust, playerLevel, accessMax]);
 
   useEffect(() => {
     let cancelled = false;
@@ -215,6 +216,8 @@ const FarmingCalculator = () => {
         minMzw,
         level: level ?? undefined,
         penalty: useLevelAdjust && level !== null ? true : undefined,
+        mvp: hideMvp ? false : undefined,
+        minSpawnAmount: hideLowSpawn ? 10 : undefined,
         page: page + 1,
         limit
       };
@@ -263,7 +266,21 @@ const FarmingCalculator = () => {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [mode, query, levelMin, levelMax, minMzw, minZenyPerHp, includeInstances, useLevelAdjust, level, sort, page, limit, accessMax, retryToken]);
+  }, [mode, query, levelMin, levelMax, minMzw, minZenyPerHp, includeInstances, hideMvp, hideLowSpawn, useLevelAdjust, level, sort, page, limit, accessMax, retryToken]);
+
+
+  useEffect(() => {
+    if (!selectedMob && !selectedMap) return;
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSelectedMob(null);
+        setSelectedMap(null);
+        setMapMobDetail(null);
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [selectedMob, selectedMap]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -287,19 +304,6 @@ const FarmingCalculator = () => {
       ['totalAmount', 'Spawn total']
     ];
   }, [mode]);
-
-  const openMap = async (map: string) => {
-    setMapMobDetail(null);
-    try {
-      const data = await fetchFarmingMap(map, {
-        level: level ?? undefined,
-        penalty: useLevelAdjust && level !== null ? true : undefined
-      });
-      setSelectedMap(data);
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'No se pudo cargar el mapa');
-    }
-  };
 
   const openMapMob = async (mobId: number) => {
     try {
@@ -406,6 +410,24 @@ const FarmingCalculator = () => {
           </label>
         )}
 
+        <label className="farm-check">
+          <input
+            type="checkbox"
+            checked={hideMvp}
+            onChange={(event) => setHideMvp(event.target.checked)}
+          />
+          Ocultar MVP
+        </label>
+
+        <label className="farm-check">
+          <input
+            type="checkbox"
+            checked={hideLowSpawn}
+            onChange={(event) => setHideLowSpawn(event.target.checked)}
+          />
+          Ocultar &lt;10 spawn
+        </label>
+
         {mode === 'maps' && (
           <label className="farm-field">
             <span>Acceso máximo</span>
@@ -454,8 +476,7 @@ const FarmingCalculator = () => {
         </div>
       )}
 
-      <div className="farm-layout">
-        <div className="farm-table-wrap">
+      <div className="farm-table-wrap">
           {loading && <div className="farm-loading">Calculando...</div>}
           {!loading && mode === 'mobs' && (
             <table className="farm-table">
@@ -467,7 +488,7 @@ const FarmingCalculator = () => {
                   <th>MZW</th>
                   <th>Zeny/HP</th>
                   <th>Drops</th>
-                  <th>Spawns</th>
+                  <th>Spawn</th>
                   <th>Acceso</th>
                 </tr>
               </thead>
@@ -487,7 +508,10 @@ const FarmingCalculator = () => {
                     <td>{formatZeny(mob.mzw)}</td>
                     <td>{formatZenyPerHp(mob.zenyPerHp)}</td>
                     <td>{mob.dropCount}</td>
-                    <td>{mob.spawnMapCount}</td>
+                    <td title={`${mob.spawnMapCount} mapas`}>
+                      {formatNumber(mob.spawnAmount)}
+                      <span className="farm-muted">{mob.spawnMapCount} mapas</span>
+                    </td>
                     <td><span className={accessClass(mob.accessDepth)}>{mob.accessLabel}</span></td>
                   </tr>
                 ))}
@@ -514,7 +538,10 @@ const FarmingCalculator = () => {
                   <tr
                     key={map.map}
                     className={selectedMap?.map === map.map ? 'selected' : ''}
-                    onClick={() => openMap(map.map)}
+                    onClick={() => {
+                      setMapMobDetail(null);
+                      setSelectedMap(map);
+                    }}
                   >
                     <td>
                       <strong>{map.mapName}</strong>
@@ -546,90 +573,91 @@ const FarmingCalculator = () => {
               <button type="button" disabled={page >= totalPages - 1} onClick={() => setPage(totalPages - 1)}>{'>>'}</button>
             </div>
           )}
-        </div>
+      </div>
 
-        <aside className="farm-side">
-          {!selectedMob && !selectedMap && (
-            <div className="farm-side-empty">
-              Selecciona un mob o un mapa para ver el desglose completo.
-            </div>
-          )}
+      {((selectedMob && mode === 'mobs') || (selectedMap && mode === 'maps')) && (
+        <div
+          className="farm-modal-backdrop"
+          onMouseDown={() => {
+            setSelectedMob(null);
+            setSelectedMap(null);
+            setMapMobDetail(null);
+          }}
+        >
+          <div className="farm-modal" onMouseDown={(event) => event.stopPropagation()}>
+            {selectedMob && mode === 'mobs' && (
+              <MobDetail mob={selectedMob} onClose={() => setSelectedMob(null)} />
+            )}
 
-          {selectedMob && mode === 'mobs' && (
-            <MobDetail
-              mob={selectedMob}
-              onClose={() => setSelectedMob(null)}
-            />
-          )}
-
-          {selectedMap && mode === 'maps' && (
-            <div className="farm-detail">
-              <div className="farm-detail-head">
-                <div>
-                  <h3>{selectedMap.mapName}</h3>
-                  <p>
-                    {selectedMap.map} · {selectedMap.mobCount} especies ·{' '}
-                    {formatNumber(selectedMap.totalAmount)} mobs
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="farm-close"
-                  onClick={() => {
-                    setSelectedMap(null);
-                    setMapMobDetail(null);
-                  }}
-                  aria-label="Cerrar detalle"
-                >
-                  ×
-                </button>
-              </div>
-
-              <div className="farm-detail-metrics">
-                <div>
-                  <span>MZW ponderado</span>
-                  <strong>{formatZeny(selectedMap.weightedMzw)}</strong>
-                </div>
-                <div>
-                  <span>Zeny/HP</span>
-                  <strong>{formatZenyPerHp(selectedMap.weightedZenyPerHp)}</strong>
-                </div>
-                <div>
-                  <span>MZW máximo</span>
-                  <strong>{formatZeny(selectedMap.maxMzw)}</strong>
-                </div>
-                <div>
-                  <span>Acceso</span>
-                  <strong>{selectedMap.accessLabel}</strong>
-                </div>
-              </div>
-
-              <div className="farm-subtitle">Mobs del mapa</div>
-              <div className="farm-map-mobs">
-                {selectedMap.mobs.map((mob) => (
+            {selectedMap && mode === 'maps' && (
+              <div className="farm-detail">
+                <div className="farm-detail-head">
+                  <div>
+                    <h3>{selectedMap.mapName}</h3>
+                    <p>
+                      {selectedMap.map} · {selectedMap.mobCount} especies ·{' '}
+                      {formatNumber(selectedMap.totalAmount)} mobs
+                    </p>
+                  </div>
                   <button
                     type="button"
-                    key={mob.id}
-                    className="farm-map-mob"
-                    onClick={() => openMapMob(mob.id)}
+                    className="farm-close"
+                    onClick={() => {
+                      setSelectedMap(null);
+                      setMapMobDetail(null);
+                    }}
+                    aria-label="Cerrar detalle"
                   >
-                    <span>{mob.name}</span>
-                    <span>Nv. {mob.level}</span>
-                    <span>{formatNumber(mob.amount)}</span>
-                    <span>{formatZeny(mob.mzw)}</span>
+                    ×
                   </button>
-                ))}
-              </div>
-
-              {mapMobDetail && (
-                <div className="farm-map-mob-detail">
-                  <MobDetail mob={mapMobDetail} onClose={() => setMapMobDetail(null)} />
                 </div>
-              )}
-            </div>
-          )}
-        </aside>
-      </div>
+
+                <div className="farm-detail-metrics">
+                  <div>
+                    <span>MZW ponderado</span>
+                    <strong>{formatZeny(selectedMap.weightedMzw)}</strong>
+                  </div>
+                  <div>
+                    <span>Zeny/HP</span>
+                    <strong>{formatZenyPerHp(selectedMap.weightedZenyPerHp)}</strong>
+                  </div>
+                  <div>
+                    <span>MZW máximo</span>
+                    <strong>{formatZeny(selectedMap.maxMzw)}</strong>
+                  </div>
+                  <div>
+                    <span>Acceso</span>
+                    <strong>{selectedMap.accessLabel}</strong>
+                  </div>
+                </div>
+
+                <div className="farm-subtitle">Mobs del mapa</div>
+                <div className="farm-map-mobs">
+                  {selectedMap.mobs.map((mob) => (
+                    <button
+                      type="button"
+                      key={mob.id}
+                      className="farm-map-mob"
+                      onClick={() => openMapMob(mob.id)}
+                    >
+                      <span>{mob.name}</span>
+                      <span>Nv. {mob.level}</span>
+                      <span>{formatNumber(mob.amount)}</span>
+                      <span>{formatZeny(mob.mzw)}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {mapMobDetail && (
+                  <div className="farm-map-mob-detail">
+                    <MobDetail mob={mapMobDetail} onClose={() => setMapMobDetail(null)} />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </section>
   );
 };

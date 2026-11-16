@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import type { MouseEvent as ReactMouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchFarmingMap, type FarmingMap } from '../../api/farming';
 import {
@@ -13,6 +14,7 @@ import {
 import '../../styles/WorldMap.css';
 
 const numberFormat = new Intl.NumberFormat('es');
+const TOOLTIP_WIDTH = 360;
 
 function formatZeny(value: number): string {
   return `${numberFormat.format(Math.round(value))} z`;
@@ -35,11 +37,17 @@ function mapLabel(map: WorldMapEntry): string {
   return map.name || map.map;
 }
 
+interface TooltipPosition {
+  x: number;
+  y: number;
+}
+
 const WorldMap = () => {
   const [worldview, setWorldview] = useState<Worldview | null>(null);
   const [access, setAccess] = useState<WorldAccess | null>(null);
   const [worldId, setWorldId] = useState('midgard');
   const [selectedMap, setSelectedMap] = useState<string | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition | null>(null);
   const [search, setSearch] = useState('');
   const [farmingMap, setFarmingMap] = useState<FarmingMap | null>(null);
   const [loading, setLoading] = useState(true);
@@ -93,6 +101,10 @@ const WorldMap = () => {
     [maps, selectedMap]
   );
   const selectedAccess = selectedMap ? accessEntry(access, selectedMap) : null;
+  const unavailableWorlds = useMemo(
+    () => (worldview?.worlds ?? []).filter((entry) => !entry.image),
+    [worldview]
+  );
 
   useEffect(() => {
     if (!selectedMap) {
@@ -118,9 +130,53 @@ const WorldMap = () => {
     };
   }, [selectedMap]);
 
-  const selectMap = (map: string) => {
+  useEffect(() => {
+    if (!selectedMap) return;
+
+    const handlePointer = (event: MouseEvent) => {
+      const target = event.target as Element | null;
+      if (
+        target?.closest('.world-tooltip') ||
+        target?.closest('.world-map-area') ||
+        target?.closest('.world-search-results')
+      ) {
+        return;
+      }
+      setSelectedMap(null);
+      setTooltipPosition(null);
+    };
+
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSelectedMap(null);
+        setTooltipPosition(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointer);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handlePointer);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [selectedMap]);
+
+  const selectMap = (map: string, event?: ReactMouseEvent) => {
+    const width = Math.min(TOOLTIP_WIDTH, window.innerWidth - 24);
+    const maxHeight = Math.min(window.innerHeight * 0.72, 620);
+    const x = event ? event.clientX + 14 : window.innerWidth / 2;
+    const y = event ? event.clientY + 14 : 120;
+    setTooltipPosition({
+      x: Math.min(Math.max(12, x), Math.max(12, window.innerWidth - width - 12)),
+      y: Math.min(Math.max(12, y), Math.max(12, window.innerHeight - maxHeight - 12))
+    });
     setSelectedMap(map);
     setSearch('');
+  };
+
+  const closeTooltip = () => {
+    setSelectedMap(null);
+    setTooltipPosition(null);
   };
 
   return (
@@ -148,9 +204,10 @@ const WorldMap = () => {
                 type="button"
                 className={entry.id === worldId ? 'active' : ''}
                 disabled={!entry.image}
+                title={!entry.image ? 'Sin imagen de mapa en el cliente actual' : undefined}
                 onClick={() => {
                   setWorldId(entry.id);
-                  setSelectedMap(null);
+                  closeTooltip();
                   setSearch('');
                 }}
               >
@@ -158,6 +215,13 @@ const WorldMap = () => {
               </button>
             ))}
           </div>
+
+          {unavailableWorlds.length > 0 && (
+            <p className="world-worlds-note">
+              Mundos no seleccionables: {unavailableWorlds.map((entry) => entry.name).join(', ')}.
+              No tienen imagen de mapa ni datos de zonas en el cliente actual.
+            </p>
+          )}
 
           <div className="world-controls">
             <label className="world-field world-field-search">
@@ -175,7 +239,7 @@ const WorldMap = () => {
               <span><i className="world-dot is-mid" /> 2 saltos</span>
               <span><i className="world-dot is-far" /> 3 saltos</span>
               <span><i className="world-dot is-deep" /> 4+ saltos</span>
-              <span><i className="world-dot is-unknown" /> Sin ruta</span>
+              <span><i className="world-dot is-unknown" /> NPC/Quest</span>
             </div>
           </div>
 
@@ -184,11 +248,11 @@ const WorldMap = () => {
               {filteredMaps.map((map) => {
                 const mapAccess = accessEntry(access, map.map);
                 return (
-                  <button key={map.map} type="button" onClick={() => selectMap(map.map)}>
+                  <button key={map.map} type="button" onClick={(event) => selectMap(map.map, event)}>
                     <span>{mapLabel(map)}</span>
                     <span>{map.map}</span>
                     <span className={accessClass(mapAccess?.depth ?? null)}>
-                      {mapAccess?.label ?? 'Sin ruta'}
+                      {mapAccess?.label ?? 'NPC/Quest'}
                     </span>
                   </button>
                 );
@@ -196,127 +260,130 @@ const WorldMap = () => {
             </div>
           )}
 
-          <div className="world-layout">
-            <div className="world-viewer">
-              {!world?.image ? (
-                <div className="world-empty">Este mundo no tiene imagen disponible.</div>
-              ) : (
-                <div
-                  className="world-canvas"
-                  style={{ aspectRatio: `${world.imageWidth} / ${world.imageHeight}` }}
-                >
-                  <img
-                    className="world-canvas-image"
-                    src={world.image}
-                    alt={`Mapa de ${world.name}`}
-                    loading="lazy"
-                  />
-                  {maps.map((map) => {
-                    const info = accessEntry(access, map.map);
-                    const width = world.imageWidth || 1;
-                    const height = world.imageHeight || 1;
-                    return (
-                      <button
-                        key={map.map}
-                        type="button"
-                        className={`${accessClass(info?.depth ?? null)}${selectedMap === map.map ? ' is-selected' : ''}`}
-                        style={{
-                          left: `${(map.x1 / width) * 100}%`,
-                          top: `${(map.y1 / height) * 100}%`,
-                          width: `${((map.x2 - map.x1) / width) * 100}%`,
-                          height: `${((map.y2 - map.y1) / height) * 100}%`
-                        }}
-                        title={`${mapLabel(map)} (${map.map}) · ${info?.label ?? 'Sin ruta'}`}
-                        aria-label={`${mapLabel(map)} (${map.map})`}
-                        onClick={() => setSelectedMap(map.map)}
-                      />
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+          <div className="world-viewer">
+            {!world?.image ? (
+              <div className="world-empty">Este mundo no tiene imagen disponible.</div>
+            ) : (
+              <div
+                className="world-canvas"
+                style={{ aspectRatio: `${world.imageWidth} / ${world.imageHeight}` }}
+              >
+                <img
+                  className="world-canvas-image"
+                  src={world.image}
+                  alt={`Mapa de ${world.name}`}
+                  loading="lazy"
+                />
+                {maps.map((map) => {
+                  const info = accessEntry(access, map.map);
+                  const width = world.imageWidth || 1;
+                  const height = world.imageHeight || 1;
+                  return (
+                    <button
+                      key={map.map}
+                      type="button"
+                      className={`${accessClass(info?.depth ?? null)}${selectedMap === map.map ? ' is-selected' : ''}`}
+                      style={{
+                        left: `${(map.x1 / width) * 100}%`,
+                        top: `${(map.y1 / height) * 100}%`,
+                        width: `${((map.x2 - map.x1) / width) * 100}%`,
+                        height: `${((map.y2 - map.y1) / height) * 100}%`
+                      }}
+                      title={`${mapLabel(map)} (${map.map}) · ${info?.label ?? 'NPC/Quest'}`}
+                      aria-label={`${mapLabel(map)} (${map.map})`}
+                      onClick={(event) => selectMap(map.map, event)}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
-            <aside className="world-side">
-              {!selectedEntry && (
-                <div className="world-side-empty">
-                  Selecciona un mapa en la imagen o búscalo por nombre.
-                </div>
-              )}
-
-              {selectedEntry && (
-                <div className="world-detail">
+          {selectedEntry && tooltipPosition && (
+            <div
+              className="world-tooltip"
+              style={{ left: tooltipPosition.x, top: tooltipPosition.y }}
+            >
+              <div className="world-tooltip-head">
+                <div>
                   <h3>{mapLabel(selectedEntry)}</h3>
                   <p className="world-detail-id">
                     {selectedEntry.map}
                     {selectedEntry.level ? ` · Nivel ${selectedEntry.level}` : ''}
                   </p>
+                </div>
+                <button type="button" className="world-close" onClick={closeTooltip} aria-label="Cerrar">
+                  ×
+                </button>
+              </div>
 
+              <div className="world-detail-metrics">
+                <div>
+                  <span>Acceso</span>
+                  <strong>{selectedAccess?.label ?? 'NPC/Quest'}</strong>
+                </div>
+                <div>
+                  <span>Transiciones</span>
+                  <strong>{selectedAccess?.depth ?? '—'}</strong>
+                </div>
+              </div>
+
+              {selectedAccess?.path && selectedAccess.path.length > 0 && (
+                <>
+                  <div className="world-subtitle">Ruta desde el hub</div>
+                  <ol className="world-path">
+                    {selectedAccess.path.map((step, index) => (
+                      <li key={`${step.from}-${step.to}-${index}`}>
+                        <strong>{step.from}</strong>
+                        <span> → </span>
+                        <strong>{step.to}</strong>
+                        <span className="world-step-kind">
+                          {step.kind}{step.name ? ` · ${step.name}` : ''}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                </>
+              )}
+
+              <div className="world-subtitle">Farmeo</div>
+              {detailLoading && <p className="world-note">Calculando MZW...</p>}
+              {!detailLoading && farmingMap && (
+                <>
                   <div className="world-detail-metrics">
                     <div>
-                      <span>Acceso</span>
-                      <strong>{selectedAccess?.label ?? 'Sin ruta'}</strong>
+                      <span>MZW ponderado</span>
+                      <strong>{formatZeny(farmingMap.weightedMzw)}</strong>
                     </div>
                     <div>
-                      <span>Transiciones</span>
-                      <strong>{selectedAccess?.depth ?? '—'}</strong>
+                      <span>Mobs</span>
+                      <strong>{farmingMap.mobCount}</strong>
                     </div>
                   </div>
-
-                  {selectedAccess?.path && selectedAccess.path.length > 0 && (
-                    <>
-                      <div className="world-subtitle">Ruta desde el hub</div>
-                      <ol className="world-path">
-                        {selectedAccess.path.map((step, index) => (
-                          <li key={`${step.from}-${step.to}-${index}`}>
-                            <strong>{step.from}</strong>
-                            <span> → </span>
-                            <strong>{step.to}</strong>
-                            <span className="world-step-kind">
-                              {step.kind}{step.name ? ` · ${step.name}` : ''}
-                            </span>
-                          </li>
-                        ))}
-                      </ol>
-                    </>
-                  )}
-
-                  <div className="world-subtitle">Farmeo</div>
-                  {detailLoading && <p className="world-note">Calculando MZW...</p>}
-                  {!detailLoading && farmingMap && (
-                    <>
-                      <div className="world-detail-metrics">
-                        <div>
-                          <span>MZW ponderado</span>
-                          <strong>{formatZeny(farmingMap.weightedMzw)}</strong>
-                        </div>
-                        <div>
-                          <span>Mobs</span>
-                          <strong>{farmingMap.mobCount}</strong>
-                        </div>
+                  <div className="world-farm-mobs">
+                    {farmingMap.mobs.map((mob) => (
+                      <div key={mob.id}>
+                        <span>{mob.name}</span>
+                        <span>Nv. {mob.level}</span>
+                        <span>{numberFormat.format(mob.amount)}</span>
+                        <span>{formatZeny(mob.mzw)}</span>
                       </div>
-                      <div className="world-farm-mobs">
-                        {farmingMap.mobs.map((mob) => (
-                          <div key={mob.id}>
-                            <span>{mob.name}</span>
-                            <span>Nv. {mob.level}</span>
-                            <span>{numberFormat.format(mob.amount)}</span>
-                            <span>{formatZeny(mob.mzw)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                  {!detailLoading && !farmingMap && (
-                    <p className="world-note">Sin datos de farmeo para este mapa.</p>
-                  )}
-
-                  <Link className="world-link" to={`/database?tab=maps&map=${encodeURIComponent(selectedEntry.map)}`}>
-                    Ver spawns en la base de datos
-                  </Link>
-                </div>
+                    ))}
+                  </div>
+                </>
               )}
-            </aside>
-          </div>
+              {!detailLoading && !farmingMap && (
+                <p className="world-note">
+                  Sin spawns registrados en la base de datos para este mapa.
+                  Puede ser una zona de instancia/evento o faltar información de spawn.
+                </p>
+              )}
+
+              <Link className="world-link" to={`/database?tab=maps&map=${encodeURIComponent(selectedEntry.map)}`}>
+                Ver spawns en la base de datos
+              </Link>
+            </div>
+          )}
         </>
       )}
     </section>

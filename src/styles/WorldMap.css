@@ -177,13 +177,6 @@
   font-size: 0.72rem;
 }
 
-.world-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 1rem;
-  align-items: start;
-}
-
 .world-viewer {
   border: 1px solid #e6e0d8;
   border-radius: 10px;
@@ -236,22 +229,6 @@
 .world-map-area.is-far { background: rgba(217, 128, 58, 0.4); }
 .world-map-area.is-deep { background: rgba(196, 81, 69, 0.4); }
 .world-map-area.is-unknown { background: rgba(160, 160, 160, 0.35); }
-
-.world-side {
-  position: sticky;
-  top: 90px;
-  max-height: calc(100vh - 120px);
-  overflow-y: auto;
-}
-
-.world-side-empty {
-  border: 1px dashed #ddd5c8;
-  border-radius: 10px;
-  padding: 1.2rem;
-  color: #888;
-  font-size: 0.88rem;
-  background: #fcfaf6;
-}
 
 .world-detail {
   background: white;
@@ -375,17 +352,6 @@
   text-decoration: underline;
 }
 
-@media (max-width: 1000px) {
-  .world-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .world-side {
-    position: static;
-    max-height: none;
-  }
-}
-
 .world-intro a {
   color: #b85a4b;
   font-weight: 600;
@@ -394,4 +360,55 @@
 
 .world-intro a:hover {
   text-decoration: underline;
+}
+
+.world-worlds-note {
+  margin: -0.25rem 0 0.85rem;
+  color: #888;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.world-tooltip {
+  position: fixed;
+  z-index: 60;
+  width: 360px;
+  max-width: calc(100vw - 24px);
+  max-height: min(72vh, 620px);
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #e0d8cc;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+}
+
+.world-tooltip-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.world-close {
+  border: 0;
+  background: #f2ede6;
+  color: #666;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.world-viewer {
+  max-width: 100%;
+}
+
+.world-tooltip h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.15rem;
 }
