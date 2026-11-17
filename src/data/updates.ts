@@ -9,10 +9,28 @@ export interface UpdateEntry {
 export const recentUpdates: UpdateEntry[] = [
   {
     date: '17 de noviembre de 2026',
+    title: 'Warps personalizados por ciudad',
+    paragraphs: [
+      'El nuevo servicio de warp reemplaza la antigua votación: cada ciudad tiene un NPC con teleport y otro que informa qué corporación quedó a cargo.',
+      'Cada viaje cuesta 4.000 zeny y 1 Blue Gemstone. Los destinos incluyen dungeons y entradas de las ciudades principales.',
+    ],
+  },
+  {
+    date: '17 de noviembre de 2026',
     title: 'Endless Tower diaria',
     paragraphs: [
       'El acceso a Endless Tower pasa de semanal a diario: el cooldown de la instancia ahora es de 24 horas.',
       'El reingreso a una torre ya generada mantiene su límite de 4 horas.',
+    ],
+  },
+  {
+    date: '16 de noviembre de 2026',
+    title: 'Correcciones de scripts y balance',
+    paragraphs: [
+      'Se corrigió la cancelación de menús y selects en NPCs e instancias: al cancelar, el script se cierra correctamente.',
+      'Se deshabilitaron mobs, drops y scripts no utilizados que podían romper el juego.',
+      'Se ampliaron los diálogos de Garrett y del estilista.',
+      'Se quitó la reducción de daño de los MVPs: ahora reciben daño completo.',
     ],
   },
   {
