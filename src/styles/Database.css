@@ -245,17 +245,17 @@ a {
   z-index: 10;
   opacity: 0;
   transform: translateY(-10px);
-  animation: slideDown 0.3s ease forwards;
+  animation: database-slide-down 0.3s ease forwards;
   gap: 0.5rem;
   display: flex;
   flex-direction: column;
 }
 
 .search-options-panel.closing {
-  animation: slideUp 0.3s ease forwards;
+  animation: database-slide-up 0.3s ease forwards;
 }
 
-@keyframes slideDown {
+@keyframes database-slide-down {
   from {
     opacity: 0;
     transform: translateY(-10px);
@@ -266,7 +266,7 @@ a {
   }
 }
 
-@keyframes slideUp {
+@keyframes database-slide-up {
   from {
     opacity: 1;
     transform: translateY(0);
