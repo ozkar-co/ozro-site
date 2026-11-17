@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import '../styles/Information.css';
 import Stats from './Stats';
+import InfoTechSheet from './InfoTechSheet';
 
 interface InfoContentProps {
   selectedSection: string;
@@ -8,6 +9,7 @@ interface InfoContentProps {
 
 const contentMap: Record<string, ReactNode> = {
   'stats': <Stats />,
+  'tech-sheet': <InfoTechSheet />,
   'features': (
     <div className="info-content">
       <h2>Especificaciones</h2>
@@ -98,7 +100,7 @@ const contentMap: Record<string, ReactNode> = {
           <li>Drops logaritmicos: no (lineales)</li>
           <li>Anuncio de drops raros: ≤ 1%</li>
           <li>Autoloot mercenario y homúnculo: sí</li>
-          <li>Items van al suelo (no auto-get)</li>
+          <li>Items al inventario (auto-get activo)</li>
           <li>Duración de item en suelo: 60 s</li>
           <li>Bonus de prioridad de loot (first attack): +30%</li>
           <li>Los summons de Alchemist: si dropean loot</li>
@@ -186,11 +188,11 @@ const contentMap: Record<string, ReactNode> = {
         </ul>
         <h3>Instancias</h3>
         <ul>
-          <li>Endless Tower: acceso diario (cooldown de 24 horas)</li>
+          <li>Endless Tower: reingreso cada 20 horas; límite interno de 4 horas</li>
         </ul>
         <h3>Economía y sistemas activos</h3>
         <ul>
-          <li>Bounty Boards en 26 ciudades</li>
+          <li>Bounty Boards en 25 ciudades (Eclage deshabilitado)</li>
           <li>18 quests repetibles de EXP (50 kills por tramo)</li>
           <li>Garrett el Recolector: compra objetos inútiles (chatarra) a buen precio</li>
           <li>Card Collector: archivo de cartas por cuenta con progreso y faltantes</li>

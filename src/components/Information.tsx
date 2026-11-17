@@ -24,6 +24,9 @@ const sections: InfoSection[] = [
   { id: 'unique-features', title: 'Mecanicas\nÚnicas', icon: '/icons/unique.png', category: 'Sistemas Personalizados' },
   { id: 'cash-shop', title: 'Cash Shop', icon: '/icons/cash.png', category: 'Sistemas Personalizados' },
   { id: 'restrictions', title: 'Restricciones y penalizaciones', icon: '/icons/restriction.png', category: 'Sistemas Personalizados' },
+
+  // Técnico
+  { id: 'tech-sheet', title: 'Ficha técnica', icon: '/icons/server.gif', category: 'Técnico' },
 ];
 
 const Information = () => {

@@ -250,6 +250,45 @@
   font-size: 0.9rem;
 }
 
+/* Ficha técnica */
+.tech-table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.tech-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.tech-table th,
+.tech-table td {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.tech-table th {
+  color: #8a6d3b;
+  font-weight: 600;
+  width: 42%;
+}
+
+.tech-table td {
+  color: #666;
+}
+
+.tech-table thead th,
+.tech-table-drops th {
+  width: auto;
+}
+
+.tech-table-drops td:not(:first-child) {
+  text-align: right;
+}
+
 /* Responsive Design */
 @media (max-width: 825px) {
   .info-container {
