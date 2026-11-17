@@ -405,12 +405,12 @@ const Rankings = () => {
     if (!rankingData?.mvps) return null;
     const sortedCharacters = rankingData.mvps
       .filter(char => !['admin', 'gamemaster'].includes(char.userid.toLowerCase()))
-      .slice(0, 10)
-      .filter(char => char.kills > 0);
+      .filter(char => char.kills > 0 || char.assistances > 0)
+      .slice(0, 10);
 
     return (
       <div className="ranking-list">
-        <h3>MVPs cazados · El Guardián de Almas</h3>
+        <h3>MVPs cazados</h3>
         {sortedCharacters.map((char, index) => (
           <div key={char.char_id} className="ranking-item">
             <span className="rank">{index + 1}</span>
