@@ -9,6 +9,7 @@ import CustomQuests from './encyclopedia/CustomQuests';
 import NpcMapBrowser from './encyclopedia/NpcMapBrowser';
 import FarmingCalculator from './encyclopedia/FarmingCalculator';
 import WorldMap from './encyclopedia/WorldMap';
+import TransportMap from './encyclopedia/TransportMap';
 import References from './encyclopedia/References';
 import {
   loadNpcMaps,
@@ -66,6 +67,12 @@ const sections: EncyclopediaSection[] = [
   {
     id: 'worldmap',
     title: 'Mapa del mundo',
+    icon: '/icons/feature.png',
+    category: 'Farmeo y mapas',
+  },
+  {
+    id: 'transport',
+    title: 'Transporte',
     icon: '/icons/feature.png',
     category: 'Farmeo y mapas',
   },
@@ -196,6 +203,7 @@ const Encyclopedia = () => {
 
               {selectedSection === 'farming' && <FarmingCalculator />}
               {selectedSection === 'worldmap' && <WorldMap />}
+              {selectedSection === 'transport' && <TransportMap />}
               {selectedSection === 'references' && <References />}
             </div>
           </div>
