@@ -30,7 +30,7 @@ export const customNpcGroups: CustomNpcGroup[] = [
     id: 'commerce',
     title: 'Comercio y colección',
     description:
-      'NPCs que mueven la economía del servidor: compran chatarra, cambian puntos y administran el archivo de cartas.',
+      'NPCs que mueven la economía del servidor: compran chatarra, venden gemas, cambian puntos y administran el archivo de cartas.',
     npcs: [
       {
         id: 'garrett',
@@ -113,6 +113,25 @@ export const customNpcGroups: CustomNpcGroup[] = [
           'Riesgo de destrucción total o parcial',
         ],
         locations: ['Prontera, interior (28, 73)'],
+      },
+      {
+        id: 'birthstone-merchant',
+        name: 'Mercader de birthstones',
+        role: 'Venta de gemas de reset',
+        sprite: sprite('1_M_MERCHANT'),
+        summary:
+          'Vende las birthstones que pide la Canalizadora Mística para cada ciclo de reset.',
+        description: [
+          'El mercader reúne las gemas que la Canalizadora Mística acepta como birthstones. La gema requerida cambia según la cantidad de resets del personaje.',
+          'Su stock y su oferta se renuevan cada día, así que conviene revisar qué tiene disponible antes de planear un reset.',
+        ],
+        services: [
+          'Venta de birthstones',
+          'Gemas usadas por la Canalizadora Mística',
+          'Stock diario',
+          'Pago en zeny',
+        ],
+        locations: ['Morroc'],
       },
     ],
   },

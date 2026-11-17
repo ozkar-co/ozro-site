@@ -8,6 +8,14 @@ export interface UpdateEntry {
 /** Changelog OzRo derivado del git log de rathena (17 ene 2026 – hoy). */
 export const recentUpdates: UpdateEntry[] = [
   {
+    date: '17 de noviembre de 2026',
+    title: 'Endless Tower diaria',
+    paragraphs: [
+      'El acceso a Endless Tower pasa de semanal a diario: el cooldown de la instancia ahora es de 24 horas.',
+      'El reingreso a una torre ya generada mantiene su límite de 4 horas.',
+    ],
+  },
+  {
     date: '16 de noviembre de 2026',
     title: 'Almas, ecos y Sueños Tejidos',
     paragraphs: [

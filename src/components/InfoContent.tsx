@@ -184,6 +184,10 @@ const contentMap: Record<string, ReactNode> = {
           <li>Falcon y Warg simultaneos: permitido</li>
           <li>Boss: Heal/Full Heal sobre mobs cura solo 1 HP</li>
         </ul>
+        <h3>Instancias</h3>
+        <ul>
+          <li>Endless Tower: acceso diario (cooldown de 24 horas)</li>
+        </ul>
         <h3>Economía y sistemas activos</h3>
         <ul>
           <li>Bounty Boards en 26 ciudades</li>
