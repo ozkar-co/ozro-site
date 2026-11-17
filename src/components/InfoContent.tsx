@@ -198,6 +198,7 @@ const contentMap: Record<string, ReactNode> = {
           <li>Autoloot mercenario y homúnculo</li>
           <li>Vending sin tax; barter activo; banco activo</li>
           <li>Reconexion a instancias: sí</li>
+          <li>El servicio de warp a dungeons reemplazó la votación; el resultado de la elección quedó definido de forma permanente</li>
         </ul>
         <h3>Mascotas</h3>
         <ul>

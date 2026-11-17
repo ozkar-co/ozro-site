@@ -139,7 +139,7 @@ export const customNpcGroups: CustomNpcGroup[] = [
     id: 'support',
     title: 'Soporte y utilidades',
     description:
-      'Servicios de curación, apariencia, reset, endow y soul link para el día a día.',
+      'Servicios de curación, apariencia, reset, endow, soul link y warp para el día a día.',
     npcs: [
       {
         id: 'angela',
@@ -247,6 +247,28 @@ export const customNpcGroups: CustomNpcGroup[] = [
           'Comodo (182, 155)',
           'Geffen (125, 72)',
         ],
+      },
+      {
+        id: 'dungeon-warper',
+        name: 'Cool Event & Kafra Corp',
+        role: 'Dungeon Warper',
+        sprite: sprite('874'),
+        summary:
+          'Servicio de teleportación a dungeons operado por Cool Event Corp y Kafra Corp.',
+        description: [
+          'Tras largas votaciones, Cool Event Corp y Kafra Corp se repartieron la operación del servicio de warp: cada ciudad quedó a cargo de una de las dos corporaciones.',
+        ],
+        services: [
+          'Prontera: Monk Village, Culvert, Labyrinth Forest',
+          'Morroc: Pyramid, Pyramid Basement, Sphinx',
+          'Geffen: Dead Pit, Glast Heim, Geffen Dungeon',
+          'Payon: Payon Cave, Anthell, Niflheim Field',
+          'Alberta: Byalan Dungeon, Turtle Cave, Shrine of Gonryun, Louyang Royal Tomb',
+          'Aldebaran: Clock Tower, Clock Tower Basement, Mjolnir Field',
+          'Yuno: Magma, Thanatos Tower',
+          'Lighthalzen: Ice Cave, Thor Volcano',
+        ],
+        locations: ['8 ciudades principales'],
       },
     ],
   },
