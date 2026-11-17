@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   loadMapImages,
@@ -119,7 +119,6 @@ const Maps = () => {
   const selectMap = useCallback((value: string, replace = false) => {
     setSearchParams((prev) => {
       const params = new URLSearchParams(prev);
-      params.set('tab', 'maps');
       params.set('map', value);
       params.delete('arrive');
       return params;
@@ -144,6 +143,10 @@ const Maps = () => {
     });
   }, [setSearchParams]);
 
+  const selectMapRef = useRef(selectMap);
+  selectMapRef.current = selectMap;
+  const initialUrlMapRef = useRef(urlMap);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -162,7 +165,7 @@ const Maps = () => {
         setImages(imageIndex);
         setNpcMaps(npcIndex);
         setWorldRoutes(routeIndex);
-        if (!urlMap) {
+        if (!initialUrlMapRef.current) {
           const catalog = buildMapCatalog(mapIndex, imageIndex, npcIndex);
           const initial =
             catalog.find((item) => item.map === DEFAULT_MAP) ??
@@ -171,7 +174,7 @@ const Maps = () => {
             catalog[0];
           if (initial) {
             setSelectedMap(initial.map);
-            selectMap(initial.map, true);
+            selectMapRef.current(initial.map, true);
           }
         }
       })
@@ -184,7 +187,7 @@ const Maps = () => {
     return () => {
       cancelled = true;
     };
-  }, [selectMap, urlMap]);
+  }, []);
 
   useEffect(() => {
     if (urlMap && urlMap !== selectedMap) {

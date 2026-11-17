@@ -276,6 +276,7 @@ const Database = () => {
   const handleTabChange = (tab: TabType) => {
     setSearchOptions(defaultSearchOptions());
     setSearchError(null);
+    setActiveTab(tab);
     navigate({ pathname: '/database', search: `tab=${tab}` });
   };
 
