@@ -8,8 +8,10 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "transport-map": "node tools/build_transport_map.mjs",
+    "transport-layers": "node tools/build_transport_layers.mjs",
     "preview": "vite preview",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "transport-regenerate": "npm run transport-map && npm run transport-layers"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.4",

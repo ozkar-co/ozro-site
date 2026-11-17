@@ -52,15 +52,13 @@ function buildDot(graph) {
     out.push(`    ${id} [label=${dotQuote(label)}, color=${dotQuote(color)}]`);
   }
   out.push('  }');
-  out.push('  node [width=1.8, height=0.4, fontsize=11]');
+  out.push('  node [width=0.4, height=0.4]');
 
   for (const node of graph.nodes) {
     const point = positions[node.id];
     if (!point) continue;
-    const label = node.id === 'alberta' ? '' : node.name;
-    const extra = node.id === 'alberta' ? ', width=0.4, height=1.2' : '';
     out.push(
-      `  ${node.id} [label=${dotQuote(label)}, pos=${dotQuote(`${point[0]},${point[1]}`)}${extra}]`,
+      `  ${node.id} [label="", pos=${dotQuote(`${point[0]},${point[1]}`)}]`,
     );
   }
 

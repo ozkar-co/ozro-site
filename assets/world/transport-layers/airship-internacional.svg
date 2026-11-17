@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="185.5 45.5 989 1099" width="989" height="1099" class="linemap lm-root lm-theme-minimal" data-theme="minimal" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" fill="#1d2530">
+<style>
+.lm-root{font-family:Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif;fill:#1d2530}
+.lm-bg{fill:#f1f3f6}
+.lm-group-box{fill:#e4e8ee;stroke:#d3d9e1;stroke-width:1}
+.lm-group-title{fill:#3d4855;font-weight:700}
+.lm-shape{fill:#ffffff;stroke:#d5dbe3;stroke-width:1.25;stroke-linejoin:round}
+.lm-shape-line{fill:none;stroke:#d5dbe3;stroke-width:1.25}
+.lm-sheen{stroke:none;pointer-events:none}
+.lm-group-tab{fill:#3d4855;stroke:none}
+.lm-group-title-tab{fill:#f1f3f6;font-weight:600}
+.lm-person{fill:#4f5b69;stroke:none}
+.lm-label{fill:#1d2530;font-weight:500}
+.lm-halo{stroke:#f1f3f6}
+.lm-halo-in{stroke:#ffffff}
+.lm-note-box{fill:#fafbfc;stroke:#e1e6ec;stroke-width:1}
+.lm-note-text{fill:#6b7683;font-style:italic}
+.lm-note-link{fill:none;stroke:#b4bcc6;stroke-width:1.2;stroke-dasharray:5 4}
+.lm-casing{fill:none;stroke:#f1f3f6;stroke-linejoin:round}
+.lm-casing-in{stroke:#ffffff}
+.lm-strand{fill:none;stroke-linejoin:round}
+.lm-edge-label-box{fill:#ffffff;stroke:#d5dbe3;stroke-width:1}
+.lm-edge-label{fill:#1d2530;font-weight:600}
+.lm-legend-box{fill:#ffffff;stroke:#d5dbe3;stroke-width:1}
+.lm-legend-title{fill:#6b7683;font-weight:700;letter-spacing:0.12em}
+.lm-legend-text{fill:#1d2530}
+</style>
+<style>
+      polygon { display: none; }
+      .node .lm-shape { fill: #ffffff; stroke: #374151; stroke-width: 2; }
+      .node .lm-sheen { display: none; }
+      .node .lm-label { font-weight: 700; }
+      .edge[data-lines="KO"] .lm-casing,
+      .edge[data-lines="KO"] .lm-strand { stroke-dasharray: 10 8; }
+      .legend-row[data-line="KO"] line { stroke-dasharray: 10 8; }
+    </style>
+<defs><linearGradient id="lm-sheen-minimal-60" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f4f8" stop-opacity="1"/><stop offset="0.6" stop-color="#f1f4f8" stop-opacity="0"/></linearGradient></defs>
+<g class="edge" data-from="izlude" data-to="yuno" data-lines="AI">
+<path d="M1105.5,700.7 L965.5,700.7 Q933.5,700.7 933.5,668.7 L933.5,500.8 Q933.5,468.8 901.5,468.8 L790.5,468.8 Q758.5,468.8 758.5,436.8 L758.5,179.6 Q758.5,147.6 726.5,147.6 L494.5,147.6" class="lm-casing" stroke-width="14"/>
+<path d="M1105.5,700.7 L965.5,700.7 Q933.5,700.7 933.5,668.7 L933.5,500.8 Q933.5,468.8 901.5,468.8 L790.5,468.8 Q758.5,468.8 758.5,436.8 L758.5,179.6 Q758.5,147.6 726.5,147.6 L494.5,147.6" class="lm-strand" stroke="#7b5fb0" stroke-width="9" data-line="AI"><title>Airship internacional</title></path>
+
+</g>
+<g class="edge" data-from="yuno" data-to="rachel" data-lines="AI">
+<path d="M494.5,142.3 L936.5,142.3 Q968.5,142.3 968.5,174.3 L968.5,268 Q968.5,300 1000.5,300 L1105.5,300" class="lm-casing" stroke-width="14"/>
+<path d="M494.5,142.3 L936.5,142.3 Q968.5,142.3 968.5,174.3 L968.5,268 Q968.5,300 1000.5,300 L1105.5,300" class="lm-strand" stroke="#7b5fb0" stroke-width="9" data-line="AI"><title>Airship internacional</title></path>
+
+</g>
+<g class="edge" data-from="rachel" data-to="izlude" data-lines="AI">
+<path d="M1120,314.5 L1120,695.5" class="lm-casing" stroke-width="14"/>
+<path d="M1120,314.5 L1120,695.5" class="lm-strand" stroke="#7b5fb0" stroke-width="9" data-line="AI"><title>Airship internacional</title></path>
+
+</g>
+</svg>

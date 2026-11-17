@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="185.5 45.5 989 1099" width="989" height="1099" class="linemap lm-root lm-theme-minimal" data-theme="minimal" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" fill="#1d2530">
+<style>
+.lm-root{font-family:Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif;fill:#1d2530}
+.lm-bg{fill:#f1f3f6}
+.lm-group-box{fill:#e4e8ee;stroke:#d3d9e1;stroke-width:1}
+.lm-group-title{fill:#3d4855;font-weight:700}
+.lm-shape{fill:#ffffff;stroke:#d5dbe3;stroke-width:1.25;stroke-linejoin:round}
+.lm-shape-line{fill:none;stroke:#d5dbe3;stroke-width:1.25}
+.lm-sheen{stroke:none;pointer-events:none}
+.lm-group-tab{fill:#3d4855;stroke:none}
+.lm-group-title-tab{fill:#f1f3f6;font-weight:600}
+.lm-person{fill:#4f5b69;stroke:none}
+.lm-label{fill:#1d2530;font-weight:500}
+.lm-halo{stroke:#f1f3f6}
+.lm-halo-in{stroke:#ffffff}
+.lm-note-box{fill:#fafbfc;stroke:#e1e6ec;stroke-width:1}
+.lm-note-text{fill:#6b7683;font-style:italic}
+.lm-note-link{fill:none;stroke:#b4bcc6;stroke-width:1.2;stroke-dasharray:5 4}
+.lm-casing{fill:none;stroke:#f1f3f6;stroke-linejoin:round}
+.lm-casing-in{stroke:#ffffff}
+.lm-strand{fill:none;stroke-linejoin:round}
+.lm-edge-label-box{fill:#ffffff;stroke:#d5dbe3;stroke-width:1}
+.lm-edge-label{fill:#1d2530;font-weight:600}
+.lm-legend-box{fill:#ffffff;stroke:#d5dbe3;stroke-width:1}
+.lm-legend-title{fill:#6b7683;font-weight:700;letter-spacing:0.12em}
+.lm-legend-text{fill:#1d2530}
+</style>
+<style>
+      polygon { display: none; }
+      .node .lm-shape { fill: #ffffff; stroke: #374151; stroke-width: 2; }
+      .node .lm-sheen { display: none; }
+      .node .lm-label { font-weight: 700; }
+      .edge[data-lines="KO"] .lm-casing,
+      .edge[data-lines="KO"] .lm-strand { stroke-dasharray: 10 8; }
+      .legend-row[data-line="KO"] line { stroke-dasharray: 10 8; }
+    </style>
+<defs><linearGradient id="lm-sheen-minimal-60" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f4f8" stop-opacity="1"/><stop offset="0.6" stop-color="#f1f4f8" stop-opacity="0"/></linearGradient></defs>
+<g class="edge" data-from="yuno" data-to="einbroch" data-lines="AD">
+<path d="M465.5,135.1 L250.3,135.1 Q240,135.1 240,124.8 L240,114.5" class="lm-casing" stroke-width="14"/>
+<path d="M465.5,135.1 L250.3,135.1 Q240,135.1 240,124.8 L240,114.5" class="lm-strand" stroke="#2f6fae" stroke-width="9" data-line="AD"><title>Airship doméstico</title></path>
+</g>
+<g class="edge" data-from="einbroch" data-to="lighthalzen" data-lines="AD">
+<path d="M254.5,100 L915.5,100" class="lm-casing" stroke-width="14"/>
+<path d="M254.5,100 L915.5,100" class="lm-strand" stroke="#2f6fae" stroke-width="9" data-line="AD"><title>Airship doméstico</title></path>
+
+</g>
+<g class="edge" data-from="yuno" data-to="hugel" data-lines="AD">
+<path d="M494.5,140 L1105.5,140" class="lm-casing" stroke-width="14"/>
+<path d="M494.5,140 L1105.5,140" class="lm-strand" stroke="#2f6fae" stroke-width="9" data-line="AD"><title>Airship doméstico</title></path>
+
+</g>
+</svg>
