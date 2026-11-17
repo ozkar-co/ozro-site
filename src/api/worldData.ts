@@ -57,6 +57,25 @@ export interface Worldview {
   worlds: World[];
 }
 
+export interface WorldRoute {
+  kind: string;
+  from: string;
+  to: string;
+  fromX?: number | null;
+  fromY?: number | null;
+  toX?: number | null;
+  toY?: number | null;
+  name?: string | null;
+  sprite?: string | null;
+  id?: number;
+}
+
+export interface WorldRoutesIndex {
+  schemaVersion: number;
+  generatedAt: string;
+  routes: WorldRoute[];
+}
+
 async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url);
   if (!response.ok) {
@@ -67,6 +86,7 @@ async function fetchJson<T>(url: string): Promise<T> {
 
 let worldviewPromise: Promise<Worldview> | null = null;
 let worldAccessPromise: Promise<WorldAccess> | null = null;
+let worldRoutesPromise: Promise<WorldRoutesIndex> | null = null;
 
 export function loadWorldview(): Promise<Worldview> {
   if (!worldviewPromise) {
@@ -86,4 +106,14 @@ export function loadWorldAccess(): Promise<WorldAccess> {
     });
   }
   return worldAccessPromise;
+}
+
+export function loadWorldRoutes(): Promise<WorldRoutesIndex> {
+  if (!worldRoutesPromise) {
+    worldRoutesPromise = fetchJson<WorldRoutesIndex>('/assets/world/routes.json').catch((error) => {
+      worldRoutesPromise = null;
+      throw error;
+    });
+  }
+  return worldRoutesPromise;
 }

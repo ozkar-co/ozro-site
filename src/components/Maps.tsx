@@ -9,6 +9,7 @@ import {
   type SpawnPoint
 } from '../api/mapData';
 import { fetchFarmingMap, type FarmingMap } from '../api/farming';
+import { loadWorldRoutes, type WorldRoute, type WorldRoutesIndex } from '../api/worldData';
 import {
   loadNpcMap,
   loadNpcMaps,
@@ -86,12 +87,21 @@ function formatZeny(value: number): string {
   return `${numberFormat.format(Math.round(value))} z`;
 }
 
+function parseArrival(value: string | null): { x: number; y: number } | null {
+  if (!value) return null;
+  const [x, y] = value.split(',').map(Number);
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+  return { x, y };
+}
+
 const Maps = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlMap = searchParams.get('map') ?? '';
+  const arrival = parseArrival(searchParams.get('arrive'));
   const [maps, setMaps] = useState<SpawnMapsIndex | null>(null);
   const [images, setImages] = useState<MapImagesIndex | null>(null);
   const [npcMaps, setNpcMaps] = useState<NpcMapsIndex | null>(null);
+  const [worldRoutes, setWorldRoutes] = useState<WorldRoutesIndex | null>(null);
   const [selectedMap, setSelectedMap] = useState(urlMap);
   const [spawns, setSpawns] = useState<SpawnPoint[] | null>(null);
   const [npcs, setNpcs] = useState<NpcEntry[] | null>(null);
@@ -99,6 +109,7 @@ const Maps = () => {
   const [showInstances, setShowInstances] = useState(false);
   const [showNpcs, setShowNpcs] = useState(true);
   const [showHiddenNpcs, setShowHiddenNpcs] = useState(false);
+  const [showWarps, setShowWarps] = useState(true);
   const [selectedMob, setSelectedMob] = useState<number | null>(null);
   const [farmingMap, setFarmingMap] = useState<FarmingMap | null>(null);
   const [loading, setLoading] = useState(false);
@@ -110,8 +121,27 @@ const Maps = () => {
       const params = new URLSearchParams(prev);
       params.set('tab', 'maps');
       params.set('map', value);
+      params.delete('arrive');
       return params;
     }, { replace });
+  }, [setSearchParams]);
+
+  const goToWarp = useCallback((warp: WorldRoute) => {
+    const hasArrival = Number.isFinite(warp.toX) && Number.isFinite(warp.toY);
+    setSelectedMob(null);
+    setQuery('');
+    setSelectedMap(warp.to);
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+      params.set('tab', 'maps');
+      params.set('map', warp.to);
+      if (hasArrival) {
+        params.set('arrive', `${warp.toX},${warp.toY}`);
+      } else {
+        params.delete('arrive');
+      }
+      return params;
+    });
   }, [setSearchParams]);
 
   useEffect(() => {
@@ -120,9 +150,10 @@ const Maps = () => {
     Promise.all([
       loadSpawnMaps().catch(() => null),
       loadMapImages().catch(() => null),
-      loadNpcMaps().catch(() => null)
+      loadNpcMaps().catch(() => null),
+      loadWorldRoutes().catch(() => null)
     ])
-      .then(([mapIndex, imageIndex, npcIndex]) => {
+      .then(([mapIndex, imageIndex, npcIndex, routeIndex]) => {
         if (cancelled) return;
         if (!mapIndex && !imageIndex && !npcIndex) {
           throw new Error('No se pudieron cargar los mapas');
@@ -130,6 +161,7 @@ const Maps = () => {
         setMaps(mapIndex);
         setImages(imageIndex);
         setNpcMaps(npcIndex);
+        setWorldRoutes(routeIndex);
         if (!urlMap) {
           const catalog = buildMapCatalog(mapIndex, imageIndex, npcIndex);
           const initial =
@@ -173,6 +205,22 @@ const Maps = () => {
     () => buildMapCatalog(maps, images, npcMaps),
     [maps, images, npcMaps]
   );
+  const mapNames = useMemo(
+    () => new Map(mapCatalog.map((item) => [item.map, item.mapName])),
+    [mapCatalog]
+  );
+  const mapWarps = useMemo(
+    () => (worldRoutes?.routes ?? []).filter((route) => route.kind === 'warp' && route.from === selectedMap),
+    [worldRoutes, selectedMap]
+  );
+  const filteredWarps = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    if (!term) return mapWarps;
+    return mapWarps.filter((warp) => {
+      const destination = mapNames.get(warp.to) ?? warp.to;
+      return `${warp.name ?? ''} ${warp.to} ${destination}`.toLowerCase().includes(term);
+    });
+  }, [mapWarps, query, mapNames]);
 
   useEffect(() => {
     if (!selectedMap) return;
@@ -359,12 +407,12 @@ const Maps = () => {
             </label>
 
             <label className="maps-field maps-field-search">
-              <span>Buscar monstruo o NPC</span>
+              <span>Buscar monstruo, NPC o warp</span>
               <input
                 type="search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Nombre del monstruo o NPC..."
+                placeholder="Nombre del monstruo, NPC o destino del warp..."
               />
             </label>
 
@@ -396,6 +444,15 @@ const Maps = () => {
                 Incluir NPCs ocultos
               </label>
             )}
+
+            <label className="maps-check">
+              <input
+                type="checkbox"
+                checked={showWarps}
+                onChange={(event) => setShowWarps(event.target.checked)}
+              />
+              Mostrar warps
+            </label>
           </div>
 
           <div className="maps-layout">
@@ -408,6 +465,7 @@ const Maps = () => {
                     {totalPoints.toLocaleString('es')} puntos ·{' '}
                     {totalAmount.toLocaleString('es')} mobs
                     {` · ${filteredNpcs.length.toLocaleString('es')} NPCs`}
+                    {showWarps ? ` · ${filteredWarps.length.toLocaleString('es')} warps` : ''}
                     {farmingMap ? ` · MZW ${formatZeny(farmingMap.weightedMzw)} · ${farmingMap.accessLabel}` : ''}
                   </p>
                 </div>
@@ -451,6 +509,37 @@ const Maps = () => {
                     ))}
 
                 {image &&
+                  showWarps &&
+                  filteredWarps
+                    .filter((warp) => warp.fromX != null && warp.fromY != null)
+                    .map((warp, index) => (
+                      <button
+                        type="button"
+                        key={`warp-${warp.id ?? index}-${warp.to}`}
+                        className="maps-pin is-warp"
+                        style={{
+                          left: `${((warp.fromX ?? 0) / image.mapWidth) * 100}%`,
+                          top: `${(1 - (warp.fromY ?? 0) / image.mapHeight) * 100}%`
+                        }}
+                        title={`Warp a ${mapNames.get(warp.to) ?? warp.to} · ${warp.fromX}, ${warp.fromY}`}
+                        onClick={() => goToWarp(warp)}
+                      />
+                    ))}
+
+                {image && arrival && (
+                  <span
+                    className="maps-arrival"
+                    style={{
+                      left: `${(arrival.x / image.mapWidth) * 100}%`,
+                      top: `${(1 - arrival.y / image.mapHeight) * 100}%`
+                    }}
+                    title={`Punto de llegada · ${arrival.x}, ${arrival.y}`}
+                  >
+                    <span className="maps-arrival-label">Llegada</span>
+                  </span>
+                )}
+
+                {image &&
                   filteredNpcs.map((npc) => (
                     <button
                       type="button"
@@ -471,6 +560,8 @@ const Maps = () => {
                 <span><i className="legend-dot is-instance" /> Instancia</span>
                 {showNpcs && <span><i className="legend-dot is-npc" /> NPC</span>}
                 {showNpcs && showHiddenNpcs && <span><i className="legend-dot is-npc-hidden" /> NPC oculto</span>}
+                {showWarps && <span><i className="legend-dot is-warp" /> Warp</span>}
+                {arrival && <span><i className="legend-dot is-arrival" /> Llegada</span>}
                 {visibleSpawns.some((spawn) => spawn.x === 0 && spawn.y === 0) && (
                   <span className="maps-random-note">Los spawns aleatorios se muestran en la lista.</span>
                 )}
@@ -552,6 +643,32 @@ const Maps = () => {
                           <span>{npc.function}</span>
                           <span>{npc.x}, {npc.y}</span>
                         </div>
+                      ))}
+                    </div>
+                  )}
+                </details>
+              )}
+
+              {showWarps && (
+                <details className="maps-npcs">
+                  <summary>Warps ({filteredWarps.length.toLocaleString('es')})</summary>
+                  {filteredWarps.length === 0 && (
+                    <div className="maps-empty">No hay warps con esos filtros.</div>
+                  )}
+                  {filteredWarps.length > 0 && (
+                    <div className="maps-npc-list">
+                      {filteredWarps.map((warp, index) => (
+                        <button
+                          type="button"
+                          key={`${warp.id ?? index}-${warp.to}`}
+                          className="maps-warp-row"
+                          onClick={() => goToWarp(warp)}
+                          title={warp.name ?? undefined}
+                        >
+                          <span>{mapNames.get(warp.to) ?? warp.to}</span>
+                          <span>{warp.to}</span>
+                          <span>{warp.toX ?? '—'}, {warp.toY ?? '—'}</span>
+                        </button>
                       ))}
                     </div>
                   )}
