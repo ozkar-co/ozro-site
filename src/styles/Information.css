@@ -58,8 +58,6 @@
 }
 
 .scrollable-content {
-  max-height: calc(100vh - 200px);
-  overflow-y: auto;
   padding-right: 0.75rem;
 }
 
@@ -260,9 +258,5 @@
 
   .info-sidebar, .info-content-container {
     padding: 1.5rem;
-  }
-
-  .scrollable-content {
-    max-height: 300px;
   }
 } 
