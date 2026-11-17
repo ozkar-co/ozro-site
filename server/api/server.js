@@ -9,7 +9,7 @@ import mobsRouter from './routes/mobs.js';
 import itemsRouter from './routes/items.js';
 import mvpsRouter from './routes/mvps.js';
 import farmingRouter from './routes/farming.js';
-import { BANK_VAULT_KEY, bankVaultValueSql, excludeInternalAccountsSql, statsPlayerAccountSql, statsPlayerAccountWhereClause } from './services/gameDb.js';
+import { BANK_VAULT_KEY, bankVaultValueSql, effectiveMobsSql, excludeInternalAccountsSql, isMobDataAvailable, statsPlayerAccountSql, statsPlayerAccountWhereClause } from './services/gameDb.js';
 import { getCardCatalogIndex } from './services/cardCatalog.js';
 
 const app = express();
@@ -605,6 +605,71 @@ api.get('/rankings/mvps', async (req, res) => {
     } catch (error) {
         console.error('Error al obtener rankings de MVPs:', error);
         res.status(500).json({ error: 'Error al obtener rankings de MVPs' });
+    }
+});
+
+// Detalle de MVPs cazados/asistidos por un personaje
+api.get('/rankings/mvps/:charId', async (req, res) => {
+    const charId = Number.parseInt(req.params.charId, 10);
+    if (!Number.isInteger(charId) || charId <= 0) {
+        return res.status(400).json({ error: 'char_id inválido' });
+    }
+
+    try {
+        const charRows = await query(
+            'SELECT name FROM `char` WHERE char_id = ? AND delete_date = 0',
+            [charId]
+        );
+        if (charRows.length === 0) {
+            return res.status(404).json({ error: 'Personaje no encontrado' });
+        }
+
+        const rows = await query(`
+            SELECT SUBSTRING(r.\`key\`, 10) AS mob_id,
+                   SUM(CASE WHEN r.\`key\` LIKE 'MVP_KILL\\_%' THEN r.value ELSE 0 END) AS kills,
+                   SUM(CASE WHEN r.\`key\` LIKE 'MVP_SUPP\\_%' THEN r.value ELSE 0 END) AS assistances
+            FROM char_reg_num r
+            WHERE r.char_id = ?
+              AND r.\`index\` = 0
+              AND (r.\`key\` LIKE 'MVP_KILL\\_%' OR r.\`key\` LIKE 'MVP_SUPP\\_%')
+            GROUP BY mob_id
+            ORDER BY kills DESC, assistances DESC
+        `, [charId]);
+
+        const mobIds = [...new Set(rows.map((row) => Number(row.mob_id)).filter((id) => id > 0))];
+        let mobNames = new Map();
+        if (mobIds.length > 0 && isMobDataAvailable()) {
+            const placeholders = mobIds.map(() => '?').join(', ');
+            const mobRows = await query(
+                `SELECT m.id, m.name_english, m.name_aegis FROM ${effectiveMobsSql('m')} WHERE m.id IN (${placeholders})`,
+                mobIds
+            );
+            mobNames = new Map(mobRows.map((mob) => [Number(mob.id), mob]));
+        }
+
+        const entries = rows.map((row) => {
+            const mobId = Number(row.mob_id);
+            const mob = mobNames.get(mobId);
+            return {
+                mobId,
+                name: mob?.name_english || `MVP ${mobId}`,
+                nameAegis: mob?.name_aegis || null,
+                kills: Number(row.kills) || 0,
+                assistances: Number(row.assistances) || 0
+            };
+        });
+
+        res.json({
+            timestamp: new Date(),
+            char_id: charId,
+            name: charRows[0].name,
+            kills: entries.reduce((sum, entry) => sum + entry.kills, 0),
+            assistances: entries.reduce((sum, entry) => sum + entry.assistances, 0),
+            entries
+        });
+    } catch (error) {
+        console.error('Error al obtener el detalle de MVPs:', error);
+        res.status(500).json({ error: 'Error al obtener el detalle de MVPs' });
     }
 });
 

@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import '../styles/Rankings.css';
-import { apiClient } from '../api/client';
+import { apiClient, type RankingsMvpDetailResponse } from '../api/client';
 
 // Tipos de datos
 interface Account {
@@ -218,6 +218,10 @@ const Rankings = () => {
     : 'zeny';
   const [rankingData, setRankingData] = useState<RankingData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mvpDetailChar, setMvpDetailChar] = useState<MvpCharacter | null>(null);
+  const [mvpDetail, setMvpDetail] = useState<RankingsMvpDetailResponse | null>(null);
+  const [mvpDetailLoading, setMvpDetailLoading] = useState(false);
+  const [mvpDetailError, setMvpDetailError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchRankings = async () => {
@@ -408,11 +412,37 @@ const Rankings = () => {
       .filter(char => char.kills > 0 || char.assistances > 0)
       .slice(0, 10);
 
+    const openMvpDetail = async (char: MvpCharacter) => {
+      setMvpDetailChar(char);
+      setMvpDetail(null);
+      setMvpDetailError(null);
+      setMvpDetailLoading(true);
+      try {
+        setMvpDetail(await apiClient.rankingsMvpDetail(char.char_id));
+      } catch (error) {
+        setMvpDetailError(error instanceof Error ? error.message : 'Error al cargar el registro');
+      } finally {
+        setMvpDetailLoading(false);
+      }
+    };
+
     return (
       <div className="ranking-list">
         <h3>MVPs cazados</h3>
         {sortedCharacters.map((char, index) => (
-          <div key={char.char_id} className="ranking-item">
+          <div
+            key={char.char_id}
+            className="ranking-item is-clickable"
+            role="button"
+            tabIndex={0}
+            onClick={() => openMvpDetail(char)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                openMvpDetail(char);
+              }
+            }}
+          >
             <span className="rank">{index + 1}</span>
             <span className="name">{toTitleCase(char.name)} ({toTitleCase(char.userid)})</span>
             <span className="class">{formatClassName(char.class || -1)}</span>
@@ -422,6 +452,13 @@ const Rankings = () => {
         ))}
       </div>
     );
+  };
+
+  const closeMvpDetail = () => {
+    setMvpDetailChar(null);
+    setMvpDetail(null);
+    setMvpDetailError(null);
+    setMvpDetailLoading(false);
   };
 
   return (
@@ -456,6 +493,48 @@ const Rankings = () => {
         </div>
       </div>
       <Footer />
+
+      {mvpDetailChar && (
+        <div className="mvp-detail-backdrop" onClick={closeMvpDetail}>
+          <div
+            className="mvp-detail-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Registro de MVPs de ${toTitleCase(mvpDetailChar.name)}`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="mvp-detail-close"
+              onClick={closeMvpDetail}
+              aria-label="Cerrar"
+            >
+              ×
+            </button>
+            <h3>{toTitleCase(mvpDetailChar.name)}</h3>
+            <p className="mvp-detail-subtitle">Registro de MVPs cazados</p>
+
+            {mvpDetailLoading && <div className="mvp-detail-state">Cargando registro...</div>}
+            {mvpDetailError && <div className="mvp-detail-state">{mvpDetailError}</div>}
+
+            {!mvpDetailLoading && !mvpDetailError && mvpDetail && mvpDetail.entries.length === 0 && (
+              <div className="mvp-detail-state">Sin registros de MVPs.</div>
+            )}
+
+            {!mvpDetailLoading && !mvpDetailError && mvpDetail && mvpDetail.entries.length > 0 && (
+              <div className="mvp-detail-list">
+                {mvpDetail.entries.map((entry) => (
+                  <div key={entry.mobId} className="mvp-detail-item">
+                    <span className="mvp-detail-name">{entry.name}</span>
+                    <span className="mvp-detail-value">{formatNumber(entry.kills)} golpes</span>
+                    <span className="mvp-detail-supp">{formatNumber(entry.assistances)} asistencias</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
