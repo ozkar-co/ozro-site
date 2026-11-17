@@ -19,7 +19,7 @@ export const recentUpdates: UpdateEntry[] = [
     date: '17 de noviembre de 2026',
     title: 'Endless Tower diaria',
     paragraphs: [
-      'El acceso a Endless Tower pasa de semanal a diario: el cooldown de la instancia ahora es de 24 horas.',
+      'El acceso a Endless Tower pasa de semanal a diario: el cooldown de la instancia ahora es de 20 horas.',
       'El reingreso a una torre ya generada mantiene su límite de 4 horas.',
     ],
   },
