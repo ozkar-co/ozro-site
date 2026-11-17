@@ -14,7 +14,7 @@ import {
     parsePagination,
     spawnTableSql
 } from './gameDb.js';
-import { applyDropRate, dropMultiplier, mobTier, rateToPercent } from './dropRates.js';
+import { applyDropRate, dropMultiplier, effectiveMvpRates, mobTier, rateToPercent } from './dropRates.js';
 import { bestItemValue } from './itemValue.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -93,6 +93,26 @@ function buildDrop(column, rate, item, tier) {
     };
 }
 
+function applyEffectiveMvpDrops(drops) {
+    const mvpDrops = drops.filter((drop) => drop.type === 'mvp');
+    if (mvpDrops.length === 0) return drops;
+
+    const rates = effectiveMvpRates(mvpDrops.map((drop) => drop.rate));
+    let mvpIndex = 0;
+    return drops.map((drop) => {
+        if (drop.type !== 'mvp') return drop;
+        const rate = rates[mvpIndex++];
+        const expected = (rate / 10000) * drop.sell;
+        return {
+            ...drop,
+            rate,
+            chancePercent: rateToPercent(rate),
+            expected,
+            expectedBase: expected
+        };
+    });
+}
+
 function decorateMob(mob, level, applyPenalty) {
     if (!applyPenalty || !level || !Number.isFinite(level)) {
         return {
@@ -121,7 +141,7 @@ function decorateMob(mob, level, applyPenalty) {
 
 function buildMob(row, itemByAegis, spawnsByMob) {
     const tier = rowTier(row);
-    const drops = [];
+    let drops = [];
 
     for (const column of mobDropColumns()) {
         const aegis = row[column.item];
@@ -130,6 +150,7 @@ function buildMob(row, itemByAegis, spawnsByMob) {
         if (drop) drops.push(drop);
     }
 
+    drops = applyEffectiveMvpDrops(drops).filter((drop) => drop.expected > 0);
     drops.sort((a, b) => b.expected - a.expected);
 
     const mzwNormal = drops

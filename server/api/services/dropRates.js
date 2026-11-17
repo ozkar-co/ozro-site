@@ -13,7 +13,8 @@ const DEFAULT_CONFIG = {
     normal: { common: 500, heal: 1000, use: 1000, equip: 1500, card: 1000 },
     boss: { common: 500, heal: 1000, use: 1000, equip: 1500, card: 10000 },
     mvp: { common: 100, heal: 100, use: 100, equip: 100, card: 100 },
-    mvpReward: 500
+    mvpReward: 500,
+    mvpDropMode: 0
 };
 
 function loadConfig() {
@@ -22,7 +23,8 @@ function loadConfig() {
         normal: { ...DEFAULT_CONFIG.normal, ...(raw.normal || {}) },
         boss: { ...DEFAULT_CONFIG.boss, ...(raw.boss || {}) },
         mvp: { ...DEFAULT_CONFIG.mvp, ...(raw.mvp || {}) },
-        mvpReward: Number.isFinite(raw.mvpReward) ? raw.mvpReward : DEFAULT_CONFIG.mvpReward
+        mvpReward: Number.isFinite(raw.mvpReward) ? raw.mvpReward : DEFAULT_CONFIG.mvpReward,
+        mvpDropMode: Number.isFinite(raw.mvpDropMode) ? raw.mvpDropMode : DEFAULT_CONFIG.mvpDropMode
     };
 }
 
@@ -36,6 +38,9 @@ export const DROP_RATE_CONFIG = {
 
 /** Recompensa MVP directa (item_rate_mvp). */
 export const MVP_REWARD_RATE = config.mvpReward;
+
+/** Modo de reparto de drops MVP (item_drop_mvp_mode). */
+export const MVP_DROP_MODE = config.mvpDropMode;
 
 /** Tope efectivo de drop (item_drop_*_max / drop_rate_cap): 90%. */
 export const DROP_RATE_MAX = 10000;
@@ -100,4 +105,18 @@ export function applyDropRate(baseRate, multiplier) {
 export function rateToPercent(rate) {
     if (!Number.isFinite(rate) || rate <= 0) return 0;
     return Math.min(rate, DROP_RATE_MAX) / 100;
+}
+
+/**
+ * Probabilidades efectivas de los slots MVP en orden oficial
+ * (item_drop_mvp_mode 0), igual que @mi en rAthena.
+ */
+export function effectiveMvpRates(rates) {
+    if (MVP_DROP_MODE !== 0) return rates.map((rate) => rate);
+    let remaining = 100;
+    return rates.map((rate) => {
+        const chance = (rate * remaining) / 10000;
+        remaining = Math.max(0, remaining - chance);
+        return Math.round(chance * 100);
+    });
 }

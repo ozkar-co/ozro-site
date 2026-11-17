@@ -20,5 +20,6 @@
     "equip": 100,
     "card": 10000
   },
-  "mvpReward": 500
+  "mvpReward": 500,
+  "mvpDropMode": 0
 }

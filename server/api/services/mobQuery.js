@@ -18,8 +18,10 @@ import {
 import {
     applyDropRate,
     dropMultiplier,
+    effectiveMvpRates,
     mobTier,
-    rateToPercent
+    rateToPercent,
+    MVP_REWARD_RATE
 } from './dropRates.js';
 
 function mapMobSummary(row) {
@@ -125,6 +127,41 @@ function adjustDrop(drop, item, tier) {
         type: drop.type,
         chancePercent: rateToPercent(rate)
     };
+}
+
+function applyEffectiveMvpRates(drops) {
+    const mvpDrops = drops.filter((drop) => drop.type === 'mvp');
+    if (mvpDrops.length === 0) return drops;
+
+    const rates = effectiveMvpRates(mvpDrops.map((drop) => drop.rate));
+    let mvpIndex = 0;
+    return drops.map((drop) => {
+        if (drop.type !== 'mvp') return drop;
+        const rate = rates[mvpIndex++];
+        return { ...drop, rate, chancePercent: rateToPercent(rate) };
+    });
+}
+
+function mvpSiblingColumnsSql(alias = 'm') {
+    return mobDropColumns()
+        .filter((column) => column.type === 'mvp')
+        .map((column) => `, ${alias}.${column.item} AS ${column.item}_sibling, ${alias}.${column.rate} AS ${column.rate}_sibling`)
+        .join('');
+}
+
+function effectiveMvpRatesForRow(row) {
+    const mvpColumns = mobDropColumns().filter((column) => column.type === 'mvp');
+    const items = mvpColumns.map((column) => row[`${column.item}_sibling`]);
+    const rates = mvpColumns.map((column) =>
+        applyDropRate(Number(row[`${column.rate}_sibling`]) || 0, MVP_REWARD_RATE)
+    );
+    const effective = effectiveMvpRates(rates);
+    const byItem = new Map();
+    items.forEach((item, index) => {
+        if (!item || effective[index] <= 0) return;
+        byItem.set(item, Math.max(byItem.get(item) ?? 0, effective[index]));
+    });
+    return byItem;
 }
 
 function mapMobDetailFromRow(row, drops = []) {
@@ -240,8 +277,10 @@ async function attachDropsToMobRows(rows) {
 
     return rows.map((row, index) => {
         const tier = mobTierFromRow(row);
-        const drops = dropsByMob[index]
-            .map((drop) => adjustDrop(drop, itemInfo.get(drop.itemAegis), tier));
+        const drops = applyEffectiveMvpRates(
+            dropsByMob[index]
+                .map((drop) => adjustDrop(drop, itemInfo.get(drop.itemAegis), tier))
+        );
         return mapMobDetailFromRow(row, drops);
     });
 }
@@ -395,8 +434,9 @@ export async function getMobById(id) {
     const drops = extractDrops(row);
     const itemInfo = await fetchDropItemInfo(drops);
     const tier = mobTierFromRow(row);
-    const adjustedDrops = drops
-        .map((drop) => adjustDrop(drop, itemInfo.get(drop.itemAegis), tier));
+    const adjustedDrops = applyEffectiveMvpRates(
+        drops.map((drop) => adjustDrop(drop, itemInfo.get(drop.itemAegis), tier))
+    );
     const mob = mapMobDetailFromRow(row, adjustedDrops);
     mob.spawns = await getMobSpawns(id);
     await attachSpawnSummaries([mob]);
@@ -434,6 +474,7 @@ export async function getMobsDroppingItems(itemAegisList) {
                m.${col.item} AS item_aegis,
                m.${col.rate} AS rate,
                '${col.type}' AS drop_type
+               ${mvpSiblingColumnsSql('m')}
         FROM ${effectiveMobsSql('m')}
         WHERE m.${col.item} IN (${placeholders})
     `);
@@ -464,13 +505,17 @@ export async function getMobsDroppingItems(itemAegisList) {
     const seen = new Map();
     for (const row of rows) {
         if (!row.item_aegis) continue;
-        const key = `${row.item_aegis}|${row.id}|${row.drop_type || 'normal'}`;
+        const dropType = row.drop_type || 'normal';
+        const key = `${row.item_aegis}|${row.id}|${dropType}`;
         const baseRate = Number(row.rate) || 0;
         const tier = mobTierFromRow(row);
-        const rate = applyDropRate(
-            baseRate,
-            dropMultiplier(tier, row.drop_type || 'normal', itemTypes.get(row.item_aegis))
-        );
+        const rate = dropType === 'mvp'
+            ? (effectiveMvpRatesForRow(row).get(row.item_aegis) ?? 0)
+            : applyDropRate(
+                baseRate,
+                dropMultiplier(tier, dropType, itemTypes.get(row.item_aegis))
+            );
+        if (rate <= 0) continue;
         const previous = seen.get(key);
         if (previous != null && previous >= rate) continue;
         seen.set(key, rate);
@@ -484,7 +529,7 @@ export async function getMobsDroppingItems(itemAegisList) {
             level: mob.level,
             baseRate,
             rate,
-            dropType: row.drop_type || 'normal',
+            dropType,
             chancePercent: rateToPercent(rate),
             spawnMaps: mob.spawnMaps,
             spawnMapCount: mob.spawnMapCount,
@@ -518,6 +563,7 @@ export async function getMobsDroppingItem(itemAegis) {
                 m.class AS mob_class, m.mode_mvp, m.mvp_exp,
                 CASE ${rateCase} END AS rate,
                 CASE ${typeCase} END AS drop_type
+                ${mvpSiblingColumnsSql('m')}
          FROM ${effectiveMobsSql('m')}
          WHERE ${mobDropMatchSql('m')}
          ORDER BY rate DESC, m.level ASC, m.name_english ASC`,
@@ -526,9 +572,13 @@ export async function getMobsDroppingItem(itemAegis) {
     const itemTypes = await fetchItemTypes([itemAegis]);
     const itemType = itemTypes.get(itemAegis) ?? null;
     const results = rows.map((row) => {
+        const dropType = row.drop_type || 'normal';
         const baseRate = Number(row.rate) || 0;
         const tier = mobTierFromRow(row);
-        const rate = applyDropRate(baseRate, dropMultiplier(tier, row.drop_type || 'normal', itemType));
+        const rate = dropType === 'mvp'
+            ? (effectiveMvpRatesForRow(row).get(itemAegis) ?? 0)
+            : applyDropRate(baseRate, dropMultiplier(tier, dropType, itemType));
+        if (rate <= 0) return null;
         return {
             id: row.id,
             name: row.name_english,
@@ -536,10 +586,10 @@ export async function getMobsDroppingItem(itemAegis) {
             level: row.level,
             baseRate,
             rate,
-            dropType: row.drop_type || 'normal',
+            dropType,
             chancePercent: rateToPercent(rate)
         };
-    });
+    }).filter(Boolean);
     await attachSpawnSummaries(results);
     results.sort((a, b) =>
         Number(b.hasWorldSpawn === true) - Number(a.hasWorldSpawn === true) ||
