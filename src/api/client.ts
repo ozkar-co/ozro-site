@@ -89,6 +89,19 @@ export interface RankingsCharacterResponse {
   }[];
 }
 
+export interface RankingsMvpResponse {
+  timestamp: string;
+  rankings: {
+    char_id: number;
+    account_id: number;
+    userid: string;
+    name: string;
+    class: number;
+    kills: number;
+    assistances: number;
+  }[];
+}
+
 export interface PaginatedResponse<T> {
   total: number;
   page: number;
@@ -303,6 +316,7 @@ export const apiClient = {
   stats: () => apiFetch<StatsResponse>('/stats'),
   rankingsAccounts: () => apiFetch<RankingsAccountResponse>('/rankings/accounts'),
   rankingsCharacters: () => apiFetch<RankingsCharacterResponse>('/rankings/characters'),
+  rankingsMvps: () => apiFetch<RankingsMvpResponse>('/rankings/mvps'),
   getCardBook: (accountId: number | string) =>
     apiFetch<CardBookResponse>(`/accounts/${accountId}/card-book`),
   uptime: () => apiFetch<UptimeResponse>('/uptime'),

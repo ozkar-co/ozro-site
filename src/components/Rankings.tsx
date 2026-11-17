@@ -28,9 +28,20 @@ interface Character {
   userid: string;
 }
 
+interface MvpCharacter {
+  char_id: number;
+  account_id: number;
+  userid: string;
+  name: string;
+  class: number;
+  kills: number;
+  assistances: number;
+}
+
 interface RankingData {
   accounts: Account[];
   characters: Character[];
+  mvps: MvpCharacter[];
   cardCatalogTotal: number;
 }
 
@@ -193,7 +204,8 @@ const RANKING_TABS = [
   { id: 'cards', label: 'Cartas' },
   { id: 'login', label: 'Conexiones' },
   { id: 'fame', label: 'Fama' },
-  { id: 'exp', label: 'Experiencia' }
+  { id: 'exp', label: 'Experiencia' },
+  { id: 'mvp', label: 'MVPs' }
 ] as const;
 
 type RankingTab = (typeof RANKING_TABS)[number]['id'];
@@ -210,14 +222,16 @@ const Rankings = () => {
   useEffect(() => {
     const fetchRankings = async () => {
       try {
-        const [accountsRes, charactersRes] = await Promise.all([
+        const [accountsRes, charactersRes, mvpsRes] = await Promise.all([
           apiClient.rankingsAccounts(),
-          apiClient.rankingsCharacters()
+          apiClient.rankingsCharacters(),
+          apiClient.rankingsMvps()
         ]);
         
         setRankingData({
           accounts: accountsRes.rankings,
           characters: charactersRes.rankings,
+          mvps: mvpsRes.rankings,
           cardCatalogTotal: accountsRes.cardCatalogTotal
         });
       } catch (error) {
@@ -387,6 +401,29 @@ const Rankings = () => {
     );
   };
 
+  const renderMvpRanking = () => {
+    if (!rankingData?.mvps) return null;
+    const sortedCharacters = rankingData.mvps
+      .filter(char => !['admin', 'gamemaster'].includes(char.userid.toLowerCase()))
+      .slice(0, 10)
+      .filter(char => char.kills > 0);
+
+    return (
+      <div className="ranking-list">
+        <h3>MVPs cazados · El Guardián de Almas</h3>
+        {sortedCharacters.map((char, index) => (
+          <div key={char.char_id} className="ranking-item">
+            <span className="rank">{index + 1}</span>
+            <span className="name">{toTitleCase(char.name)} ({toTitleCase(char.userid)})</span>
+            <span className="class">{formatClassName(char.class || -1)}</span>
+            <span className="value">{formatNumber(char.kills)} golpes</span>
+            <span className="class">{formatNumber(char.assistances)} asistencias</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="rankings">
       <Header />
@@ -413,6 +450,7 @@ const Rankings = () => {
               {activeTab === 'login' && renderLoginRanking()}
               {activeTab === 'fame' && renderFameRanking()}
               {activeTab === 'exp' && renderBaseExpRanking()}
+              {activeTab === 'mvp' && renderMvpRanking()}
             </>
           )}
         </div>

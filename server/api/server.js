@@ -564,6 +564,50 @@ api.get('/rankings/characters', async (req, res) => {
     }
 });
 
+// Get MVP kill rankings recorded by El Guardián de Almas (MVP_KILL_* / MVP_SUPP_*)
+api.get('/rankings/mvps', async (req, res) => {
+    try {
+        const rankings = await query(`
+            SELECT
+                c.char_id,
+                c.account_id,
+                l.userid,
+                c.name,
+                c.class,
+                SUM(CASE WHEN r.\`key\` LIKE 'MVP_KILL\\_%' THEN r.value ELSE 0 END) AS kills,
+                SUM(CASE WHEN r.\`key\` LIKE 'MVP_SUPP\\_%' THEN r.value ELSE 0 END) AS assistances
+            FROM char_reg_num r
+            JOIN \`char\` c ON c.char_id = r.char_id
+            JOIN login l ON l.account_id = c.account_id
+            WHERE c.delete_date = 0
+            AND l.group_id != 99
+            AND ${excludeInternalAccountsSql('l')}
+            AND r.\`index\` = 0
+            AND (r.\`key\` LIKE 'MVP_KILL\\_%' OR r.\`key\` LIKE 'MVP_SUPP\\_%')
+            GROUP BY c.char_id, c.account_id, l.userid, c.name, c.class
+            HAVING kills > 0 OR assistances > 0
+            ORDER BY kills DESC, assistances DESC
+            LIMIT 50
+        `);
+
+        res.json({
+            timestamp: new Date(),
+            rankings: rankings.map(row => ({
+                char_id: row.char_id,
+                account_id: row.account_id,
+                userid: row.userid,
+                name: row.name,
+                class: row.class,
+                kills: Number(row.kills) || 0,
+                assistances: Number(row.assistances) || 0
+            }))
+        });
+    } catch (error) {
+        console.error('Error al obtener rankings de MVPs:', error);
+        res.status(500).json({ error: 'Error al obtener rankings de MVPs' });
+    }
+});
+
 // 404 JSON para endpoints de API inexistentes (evita que caigan en el SPA)
 app.use('/api', (req, res) => {
     res.status(404).json({ error: 'Endpoint no encontrado' });
