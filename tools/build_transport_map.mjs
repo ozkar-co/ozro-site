@@ -11,25 +11,25 @@ const outputPath = resolve(root, 'assets/world/transport-map.svg');
 const positions = {
   einbroch: [260, 100],
   yuno: [560, 140],
-  lighthalzen: [840, 80],
+  lighthalzen: [840, 100],
   hugel: [1120, 140],
-  rachel: [1180, 300],
-  aldebaran: [240, 280],
+  rachel: [1120, 280],
+  aldebaran: [240, 300],
   geffen: [480, 300],
-  prontera: [720, 380],
-  payon: [980, 340],
-  cmd_fild07: [1200, 500],
-  izlude: [1080, 660],
-  alberta: [760, 820],
+  prontera: [720, 460],
+  payon: [930, 340],
+  cmd_fild07: [520, 710],
+  izlude: [1080, 690],
+  alberta: [880, 860],
   morocc: [520, 620],
-  comodo: [680, 680],
-  umbala: [880, 860],
+  comodo: [680, 710],
+  umbala: [760, 820],
 };
 
 const vias = {
-  'aldebaran-izlude': [200, 700],
+  'aldebaran-izlude': [200, 760],
   'izlude-geffen': [420, 560],
-  'izlude-morocc': [520, 740],
+  'izlude-morocc': [400, 740],
   'morocc-payon': [520, 340],
 };
 
@@ -76,7 +76,11 @@ function buildDot(graph) {
       const id = line.group === 'airship-domestic' ? 'AD' : 'AI';
       const stops = line.stops.map((stop) => stop.station);
       for (let index = 0; index < stops.length - 1; index += 1) {
-        out.push(`  ${stops[index]} -> ${stops[index + 1]} [lines=${id}]`);
+        const from = stops[index];
+        const to = stops[index + 1];
+        const via = vias[`${from}-${to}`];
+        const viaAttr = via ? `, via=${dotQuote(`${via[0]},${via[1]}`)}` : '';
+        out.push(`  ${from} -> ${to} [lines=${id}${viaAttr}]`);
       }
       if (line.loop && stops.length > 1) {
         out.push(`  ${stops[stops.length - 1]} -> ${stops[0]} [lines=${id}]`);
