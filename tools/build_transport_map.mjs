@@ -9,18 +9,18 @@ const dataPath = resolve(root, 'assets/world/transport.json');
 const outputPath = resolve(root, 'assets/world/transport-map.svg');
 
 const positions = {
-  einbroch: [260, 100],
-  yuno: [560, 140],
-  lighthalzen: [840, 100],
+  einbroch: [240, 100],
+  yuno: [480, 140],
+  lighthalzen: [930, 100],
   hugel: [1120, 140],
-  rachel: [1120, 280],
+  rachel: [1120, 300],
   aldebaran: [240, 300],
   geffen: [480, 300],
   prontera: [720, 460],
-  payon: [930, 340],
+  payon: [930, 300],
   cmd_fild07: [520, 710],
-  izlude: [1080, 690],
-  alberta: [880, 860],
+  izlude: [1120, 710],
+  alberta: [930, 860],
   morocc: [520, 620],
   comodo: [680, 710],
   umbala: [760, 820],
@@ -57,9 +57,10 @@ function buildDot(graph) {
   for (const node of graph.nodes) {
     const point = positions[node.id];
     if (!point) continue;
-    const extra = node.id === 'alberta' ? ', width=0.7, height=1.2, fontsize=9' : '';
+    const label = node.id === 'alberta' ? '' : node.name;
+    const extra = node.id === 'alberta' ? ', width=0.4, height=1.2' : '';
     out.push(
-      `  ${node.id} [label=${dotQuote(node.name)}, pos=${dotQuote(`${point[0]},${point[1]}`)}${extra}]`,
+      `  ${node.id} [label=${dotQuote(label)}, pos=${dotQuote(`${point[0]},${point[1]}`)}${extra}]`,
     );
   }
 
