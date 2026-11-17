@@ -196,6 +196,7 @@ const contentMap: Record<string, ReactNode> = {
           <li>Los iconos del minimapa ya no generan flechas ni rutas</li>
           <li>Login simplificado: solo usuario, contraseña, Save ID y el botón Login</li>
           <li>El selector de tipo de cuenta y los botones de registro quedaron ocultos</li>
+          <li>RoDex deshabilitado en dungeons e instancias; el correo sigue disponible en ciudades y campos</li>
         </ul>
         <h3>Economía y sistemas activos</h3>
         <ul>

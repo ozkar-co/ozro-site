@@ -9,6 +9,14 @@ export interface UpdateEntry {
 export const recentUpdates: UpdateEntry[] = [
   {
     date: '17 de noviembre de 2026',
+    title: 'RoDex deshabilitado en dungeons e instancias',
+    paragraphs: [
+      'RoDex ya no está disponible en dungeons ni instancias. El correo sigue funcionando en ciudades y campos.',
+      'Al intentar abrirlo en una zona bloqueada, el cliente muestra un mensaje genérico y no permite operar el correo.',
+    ],
+  },
+  {
+    date: '17 de noviembre de 2026',
     title: 'Navegación desactivada',
     paragraphs: [
       'Se eliminó la navegación del cliente: el botón de la ventana básica, la ventana del world map y los iconos del minimapa ya no abren ni generan rutas.',
