@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "transport-map": "node tools/build_transport_map.mjs",
     "preview": "vite preview",
     "start": "node server/index.js"
   },
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@linemap/core": "^0.2.1",
     "@types/js-cookie": "^3.0.6",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",

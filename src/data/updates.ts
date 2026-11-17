@@ -9,6 +9,13 @@ export interface UpdateEntry {
 export const recentUpdates: UpdateEntry[] = [
   {
     date: '17 de noviembre de 2026',
+    title: 'Retirados los iconos de las cabezas de los NPCs',
+    paragraphs: [
+      'Se quitaron los iconos que aparecían sobre las cabezas de los NPCs para dejar el mapa más limpio.',
+    ],
+  },
+  {
+    date: '17 de noviembre de 2026',
     title: 'RoDex deshabilitado en dungeons e instancias',
     paragraphs: [
       'RoDex ya no está disponible en dungeons ni instancias. El correo sigue funcionando en ciudades y campos.',

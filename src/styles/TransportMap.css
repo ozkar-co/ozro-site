@@ -28,304 +28,54 @@
   max-width: 560px;
 }
 
-.transport-legend {
-  display: flex;
-  flex-wrap: wrap;
+.transport-open {
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  justify-content: flex-end;
-}
-
-.transport-toggle {
+  justify-content: center;
   border: 1px solid #d8d8d8;
   background: #fff;
   color: #555;
   border-radius: 999px;
-  padding: 0.35rem 0.8rem;
-  font: inherit;
+  padding: 0.4rem 0.9rem;
   font-size: 0.8rem;
   font-weight: 600;
-  cursor: pointer;
+  text-decoration: none;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-.transport-toggle:hover {
-  border-color: #ff8d7f;
-}
-
-.transport-toggle.is-active {
+.transport-open:hover {
   background: #fff1ee;
   border-color: #ff8d7f;
   color: #9b3e32;
 }
 
-.transport-legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  color: #666;
-  font-size: 0.75rem;
-}
-
-.transport-swatch {
-  width: 18px;
-  height: 4px;
-  border-radius: 999px;
-  background: #888;
-  display: inline-block;
-}
-
-.transport-swatch.is-kafra {
-  background: #2f7d5b;
-}
-
-.transport-swatch.is-airship-domestic {
-  background: #2f6fae;
-}
-
-.transport-swatch.is-airship-international {
-  background: #7b5fb0;
-}
-
-.transport-swatch.is-oneway {
-  background: repeating-linear-gradient(
-    90deg,
-    #2f7d5b 0 5px,
-    transparent 5px 9px
-  );
-}
-
-.transport-message {
-  color: #666;
-  padding: 2rem 0;
-  text-align: center;
-}
-
-.transport-message.is-error {
-  color: #a33;
-}
-
-.transport-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 1rem;
-  align-items: start;
-}
-
-.transport-canvas {
+.transport-map-link {
+  display: block;
   background: #f8f8f4;
   border: 1px solid #e6e6e0;
   border-radius: 0.85rem;
   padding: 0.75rem;
-  overflow-x: auto;
+  overflow: hidden;
 }
 
-.transport-canvas svg {
+.transport-map-link img {
   display: block;
   width: 100%;
-  min-width: 720px;
   height: auto;
 }
 
-.transport-edge {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0.82;
+.transport-caption {
+  margin: 0.75rem 0 0;
+  color: #777;
+  font-size: 0.8rem;
 }
 
-.transport-edge.is-kafra {
-  stroke: #2f7d5b;
-  stroke-width: 3;
-}
-
-.transport-edge.is-kafra.is-oneway {
-  stroke-dasharray: 7 6;
-}
-
-.transport-edge.is-airship-domestic {
-  stroke: #2f6fae;
-  stroke-width: 4;
-}
-
-.transport-edge.is-airship-international {
-  stroke: #7b5fb0;
-  stroke-width: 4;
-  stroke-dasharray: 11 7;
-}
-
-.transport-node {
-  cursor: pointer;
-  outline: none;
-}
-
-.transport-hit {
-  fill: transparent;
-}
-
-.transport-node-shape {
-  fill: #fff;
-  stroke: #3f3f3f;
-  stroke-width: 2;
-  transition: fill 0.2s ease, stroke 0.2s ease;
-}
-
-.transport-node-dot {
-  fill: #3f3f3f;
-}
-
-.transport-node:hover .transport-node-shape,
-.transport-node:focus-visible .transport-node-shape {
-  fill: #fff1ee;
-  stroke: #ff8d7f;
-}
-
-.transport-node.is-selected .transport-node-shape {
-  fill: #ffe3dd;
-  stroke: #e0604f;
-  stroke-width: 3;
-}
-
-.transport-node-label {
-  fill: #2e2e2e;
-  stroke: #f8f8f4;
-  stroke-width: 4;
-  paint-order: stroke;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  pointer-events: none;
-}
-
-.transport-node.is-selected .transport-node-label {
-  fill: #9b3e32;
-}
-
-.transport-detail {
-  background: #fff;
-  border: 1px solid #e6e6e6;
-  border-radius: 0.85rem;
-  padding: 1rem;
-  min-height: 180px;
-  max-height: 640px;
-  overflow: auto;
-}
-
-.transport-detail-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 0.85rem;
-}
-
-.transport-detail-head h3 {
-  margin: 0.15rem 0 0;
-  color: #333;
-  font-size: 1.2rem;
-}
-
-.transport-kicker {
-  display: inline-block;
-  color: #8a8a8a;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.transport-close {
-  border: 0;
-  background: transparent;
-  color: #888;
-  font-size: 1.4rem;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0 0.2rem;
-}
-
-.transport-close:hover {
-  color: #333;
-}
-
-.transport-empty,
-.transport-detail-placeholder p {
-  color: #666;
-  font-size: 0.9rem;
-  margin: 0.4rem 0 0;
-}
-
-.transport-group {
-  border-top: 1px solid #eee;
-  padding-top: 0.75rem;
-  margin-top: 0.75rem;
-}
-
-.transport-group-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
-  color: #333;
-  font-size: 0.85rem;
-  font-weight: 700;
-  margin-bottom: 0.45rem;
-}
-
-.transport-group-head span:last-child {
-  color: #aaa;
-  font-weight: 600;
-}
-
-.transport-group ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-
-.transport-group li {
-  background: #f4f4f2;
-  border: 1px solid #e6e6e6;
-  border-radius: 999px;
-  padding: 0.25rem 0.55rem;
-  color: #444;
-  font-size: 0.78rem;
-  line-height: 1.2;
-}
-
-.transport-group.is-kafra_tp .transport-group-head span:first-child {
-  color: #6b4fa8;
-}
-
-.transport-group.is-dungeon_warper .transport-group-head span:first-child {
-  color: #b3651f;
-}
-
-.transport-group.is-port .transport-group-head span:first-child,
-.transport-group.is-ships .transport-group-head span:first-child {
-  color: #236b91;
-}
-
-.transport-group.is-kafra_fields .transport-group-head span:first-child {
-  color: #2f7d5b;
-}
-
-.transport-group.is-special .transport-group-head span:first-child {
-  color: #9b3e32;
-}
-
-@media (max-width: 900px) {
-  .transport-layout {
-    grid-template-columns: 1fr;
+@media (max-width: 600px) {
+  .transport-view {
+    padding: 1rem;
   }
 
-  .transport-detail {
-    max-height: none;
-  }
-
-  .transport-legend {
-    justify-content: flex-start;
+  .transport-map-link {
+    padding: 0.35rem;
   }
 }
