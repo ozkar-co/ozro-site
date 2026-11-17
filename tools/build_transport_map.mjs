@@ -1,7 +1,9 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { layout, parseFlow, render } from '@linemap/core';
+import { layout, parseFlow, render, STYLE } from '@linemap/core';
+
+STYLE.linePitch = 17;
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
@@ -9,29 +11,24 @@ const dataPath = resolve(root, 'assets/world/transport.json');
 const outputPath = resolve(root, 'assets/world/transport-map.svg');
 
 const positions = {
-  einbroch: [240, 100],
-  yuno: [480, 140],
+  einbroch: [360, 100],
+  yuno: [550, 200],
   lighthalzen: [930, 100],
-  hugel: [1120, 140],
+  hugel: [1120, 200],
   rachel: [1120, 300],
-  aldebaran: [240, 300],
-  geffen: [480, 300],
-  prontera: [720, 460],
+  aldebaran: [360, 300],
+  geffen: [550, 300],
+  prontera: [740, 500],
   payon: [930, 300],
-  cmd_fild07: [520, 710],
-  izlude: [1120, 710],
-  alberta: [930, 860],
-  morocc: [520, 620],
-  comodo: [680, 710],
-  umbala: [760, 820],
+  cmd_fild07: [360, 800],
+  izlude: [1120, 800],
+  alberta: [930, 900],
+  morocc: [360, 700],
+  comodo: [550, 800],
+  umbala: [550, 900],
 };
 
-const vias = {
-  'aldebaran-izlude': [200, 760],
-  'izlude-geffen': [420, 560],
-  'izlude-morocc': [400, 740],
-  'morocc-payon': [520, 340],
-};
+const vias = {};
 
 const lines = [
   ['K', 'Kafra', '#2f7d5b'],
@@ -52,7 +49,7 @@ function buildDot(graph) {
     out.push(`    ${id} [label=${dotQuote(label)}, color=${dotQuote(color)}]`);
   }
   out.push('  }');
-  out.push('  node [width=0.4, height=0.4]');
+  out.push('  node [width=0.6, height=0.6]');
 
   for (const node of graph.nodes) {
     const point = positions[node.id];
@@ -93,6 +90,16 @@ function buildDot(graph) {
 
 function decorate(svg) {
   let next = svg;
+
+  next = next.replace(
+    /<rect ([^>]*class="lm-shape"[^>]*)>/g,
+    (match, attrs) => {
+      const width = attrs.match(/width="([\d.]+)"/)?.[1];
+      if (!width) return match;
+      const round = attrs.replace(/rx="[^"]*"/, `rx="${Number(width) / 2}"`);
+      return `<rect ${round}>`;
+    },
+  );
 
   next = next.replace('>LINES</text>', '>LÍNEAS</text>');
 
