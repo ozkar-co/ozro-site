@@ -9,6 +9,23 @@ export interface UpdateEntry {
 export const recentUpdates: UpdateEntry[] = [
   {
     date: '17 de noviembre de 2026',
+    title: 'Navegación desactivada',
+    paragraphs: [
+      'Se eliminó la navegación del cliente: el botón de la ventana básica, la ventana del world map y los iconos del minimapa ya no abren ni generan rutas.',
+      'Las flechas de ruta desaparecieron; la exploración vuelve a ser manual.',
+    ],
+  },
+  {
+    date: '17 de noviembre de 2026',
+    title: 'Login limpio y parches empaquetados',
+    paragraphs: [
+      'El login quedó solo con usuario, contraseña, Save ID y el botón Login. Se ocultaron el selector de tipo de cuenta y los botones inferiores de registro.',
+      'El fondo del login se corrigió para quitar el desplegable vacío que quedaba en la imagen.',
+      'Los parches del cliente ahora se empaquetan en tres GRFs: UI (fondo de login), mapas y fixes (clientinfo/etcinfo). gefenia.grf queda aparte. El exe actualizado incluye navegación y login.',
+    ],
+  },
+  {
+    date: '17 de noviembre de 2026',
     title: 'Warps personalizados por ciudad',
     paragraphs: [
       'El nuevo servicio de warp reemplaza la antigua votación: cada ciudad tiene un NPC con teleport y otro que informa qué corporación quedó a cargo.',

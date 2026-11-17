@@ -1,0 +1,352 @@
+{
+  "schemaVersion": 1,
+  "kind": "transport-graph",
+  "notes": [
+    "Grafo esquematico de transporte. Los fields y dungeons no son nodos: viven en tooltips por ciudad.",
+    "Kafra Employee/Kafra Staff se unifican como una sola linea de ciudad.",
+    "Doram Kafra (Kafra gato/oscuro) es siempre unidireccional y solo aparece en tooltip.",
+    "Doram Kafra y Dungeon Warper pueden solaparse en destinos; se mantienen como grupos separados.",
+    "Rudus y Rebellion Crew fueron eliminados por completo.",
+    "Endless Tower queda como grupo del tooltip de Alberta.",
+    "Los barcos no son lineas: se listan por puerto en el tooltip de Alberta e Izlude.",
+    "Los tooltips solo muestran destino; no incluyen requisitos, costos ni horarios."
+  ],
+  "nodes": [
+    { "id": "prontera", "name": "Prontera", "kind": "city", "region": "center" },
+    { "id": "izlude", "name": "Izlude", "kind": "city", "region": "center" },
+    { "id": "alberta", "name": "Alberta", "kind": "city", "region": "center" },
+    { "id": "geffen", "name": "Geffen", "kind": "city", "region": "center" },
+    { "id": "payon", "name": "Payon", "kind": "city", "region": "center" },
+    { "id": "morocc", "name": "Morocc", "kind": "city", "region": "center" },
+    { "id": "comodo", "name": "Comodo", "kind": "city", "region": "center" },
+    { "id": "umbala", "name": "Umbala", "kind": "city", "region": "center" },
+    { "id": "aldebaran", "name": "Aldebaran", "kind": "city", "region": "center" },
+    { "id": "cmd_fild07", "name": "Pharos Beacon", "kind": "port", "region": "center" },
+    { "id": "yuno", "name": "Yuno", "kind": "city", "region": "north" },
+    { "id": "einbroch", "name": "Einbroch", "kind": "city", "region": "north" },
+    { "id": "lighthalzen", "name": "Lighthalzen", "kind": "city", "region": "north" },
+    { "id": "hugel", "name": "Hugel", "kind": "city", "region": "north" },
+    { "id": "rachel", "name": "Rachel", "kind": "city", "region": "north" },
+    { "id": "veins", "name": "Veins", "kind": "city", "region": "north" },
+    { "id": "niflheim", "name": "Niflheim", "kind": "city", "region": "north" }
+  ],
+  "lines": [
+    { "id": "kafra:prontera-geffen", "type": "kafra", "bidirectional": true, "from": "prontera", "to": "geffen" },
+    { "id": "kafra:prontera-payon", "type": "kafra", "bidirectional": true, "from": "prontera", "to": "payon" },
+    { "id": "kafra:prontera-morocc", "type": "kafra", "bidirectional": true, "from": "prontera", "to": "morocc" },
+    { "id": "kafra:prontera-alberta", "type": "kafra", "bidirectional": true, "from": "prontera", "to": "alberta" },
+    { "id": "kafra:alberta-payon", "type": "kafra", "bidirectional": true, "from": "alberta", "to": "payon" },
+    { "id": "kafra:alberta-morocc", "type": "kafra", "bidirectional": true, "from": "alberta", "to": "morocc" },
+    { "id": "kafra:geffen-aldebaran", "type": "kafra", "bidirectional": true, "from": "geffen", "to": "aldebaran" },
+    { "id": "kafra:aldebaran-izlude", "type": "kafra", "bidirectional": true, "from": "aldebaran", "to": "izlude" },
+    { "id": "kafra:aldebaran-yuno", "type": "kafra", "bidirectional": true, "from": "aldebaran", "to": "yuno" },
+    { "id": "kafra:comodo-morocc", "type": "kafra", "bidirectional": true, "from": "comodo", "to": "morocc" },
+    { "id": "kafra:comodo-umbala", "type": "kafra", "bidirectional": true, "from": "comodo", "to": "umbala" },
+    { "id": "kafra:morocc-payon", "type": "kafra", "bidirectional": true, "from": "morocc", "to": "payon" },
+    { "id": "kafra:comodo-cmd_fild07", "type": "kafra", "bidirectional": true, "from": "comodo", "to": "cmd_fild07" },
+    { "id": "kafra:morocc-cmd_fild07", "type": "kafra", "bidirectional": true, "from": "morocc", "to": "cmd_fild07" },
+    { "id": "kafra:prontera-izlude", "type": "kafra", "bidirectional": false, "from": "prontera", "to": "izlude" },
+    { "id": "kafra:izlude-geffen", "type": "kafra", "bidirectional": false, "from": "izlude", "to": "geffen" },
+    { "id": "kafra:izlude-payon", "type": "kafra", "bidirectional": false, "from": "izlude", "to": "payon" },
+    { "id": "kafra:izlude-morocc", "type": "kafra", "bidirectional": false, "from": "izlude", "to": "morocc" },
+    {
+      "id": "airship:domestic-main",
+      "type": "airship",
+      "name": "Airship domestico",
+      "group": "airship-domestic",
+      "bidirectional": true,
+      "stops": [
+        { "station": "yuno", "map": "yuno" },
+        { "station": "einbroch", "map": "einbroch" },
+        { "station": "lighthalzen", "map": "lighthalzen" }
+      ]
+    },
+    {
+      "id": "airship:domestic-hugel",
+      "type": "airship",
+      "name": "Airship domestico (ramal Hugel)",
+      "group": "airship-domestic",
+      "bidirectional": true,
+      "stops": [
+        { "station": "yuno", "map": "yuno" },
+        { "station": "hugel", "map": "hugel" }
+      ]
+    },
+    {
+      "id": "airship:international",
+      "type": "airship",
+      "name": "Airship internacional",
+      "loop": true,
+      "stops": [
+        { "station": "izlude", "map": "izlude" },
+        { "station": "yuno", "map": "yuno" },
+        { "station": "rachel", "map": "ra_fild12" }
+      ]
+    }
+  ],
+  "tooltips": {
+    "prontera": [
+      {
+        "type": "kafra_fields",
+        "label": "Kafra",
+        "destinations": [
+          { "name": "Orc Dungeon", "map": "gef_fild10" }
+        ]
+      },
+      {
+        "type": "kafra_tp",
+        "label": "Doram Kafra",
+        "destinations": [
+          { "name": "Southwestern Prontera Field", "map": "prt_fild07" },
+          { "name": "Prontera North Field", "map": "prt_fild01" },
+          { "name": "Byalan Island", "map": "izlu2dun" },
+          { "name": "Prontera South Field", "map": "moc_fild02" }
+        ]
+      },
+      {
+        "type": "dungeon_warper",
+        "label": "Dungeon Warper",
+        "destinations": [
+          { "name": "Monk Village", "map": "prt_fild03" },
+          { "name": "Culvert", "map": "prt_sewb3" },
+          { "name": "Labyrinth Forest", "map": "prt_fild01" }
+        ]
+      }
+    ],
+    "izlude": [
+      {
+        "type": "ships",
+        "label": "Barcos",
+        "destinations": [
+          { "name": "Byalan Island", "map": "izlu2dun" },
+          { "name": "Alberta", "map": "alberta" },
+          { "name": "Jawaii", "map": "jawaii" }
+        ]
+      }
+    ],
+    "alberta": [
+      {
+        "type": "kafra_tp",
+        "label": "Doram Kafra",
+        "destinations": [
+          { "name": "Southeast Field of Payon", "map": "pay_fild06" },
+          { "name": "Sunken Ship", "map": "alb2trea" }
+        ]
+      },
+      {
+        "type": "dungeon_warper",
+        "label": "Dungeon Warper",
+        "destinations": [
+          { "name": "Byalan Dungeon", "map": "iz_dun02" },
+          { "name": "Turtle Cave", "map": "tur_dun02" },
+          { "name": "Shrine of Gonryun", "map": "gon_dun02" },
+          { "name": "Louyang Royal Tomb", "map": "lou_dun02" }
+        ]
+      },
+      {
+        "type": "ships",
+        "label": "Puerto norte",
+        "destinations": [
+          { "name": "Amatsu", "map": "amatsu" },
+          { "name": "Ayothaya", "map": "ayothaya" },
+          { "name": "Brasilis", "map": "brasilis" },
+          { "name": "Gonryun", "map": "gonryun" },
+          { "name": "Louyang", "map": "louyang" },
+          { "name": "Moscovia", "map": "moscovia" },
+          { "name": "Turtle Island", "map": "tur_dun01" }
+        ]
+      },
+      {
+        "type": "ships",
+        "label": "Puerto sur",
+        "destinations": [
+          { "name": "Dewata", "map": "dewata" },
+          { "name": "Malangdo", "map": "malangdo" },
+          { "name": "Malaya", "map": "malaya" },
+          { "name": "Izlude", "map": "izlude" },
+          { "name": "Sunken Ship", "map": "alb2trea" }
+        ]
+      },
+      {
+        "type": "special",
+        "label": "Endless Tower",
+        "destinations": [
+          { "name": "Endless Tower", "map": "e_tower" }
+        ]
+      }
+    ],
+    "geffen": [
+      {
+        "type": "kafra_fields",
+        "label": "Kafra",
+        "destinations": [
+          { "name": "Orc Dungeon", "map": "gef_fild10" },
+          { "name": "Mjolnir Dead Pit", "map": "mjolnir_02" }
+        ]
+      },
+      {
+        "type": "kafra_tp",
+        "label": "Doram Kafra",
+        "destinations": [
+          { "name": "Geffen Tower Underground Entrance", "map": "gef_tower" },
+          { "name": "North Field of Mount Mjolnir", "map": "mjolnir_02" },
+          { "name": "Orc Village", "map": "gef_fild10" },
+          { "name": "Glast Heim Entrance", "map": "gef_fild06" }
+        ]
+      },
+      {
+        "type": "dungeon_warper",
+        "label": "Dungeon Warper",
+        "destinations": [
+          { "name": "Dead Pit", "map": "mjo_dun03" },
+          { "name": "Glast Heim", "map": "glast_01" },
+          { "name": "Geffen Dungeon", "map": "gef_dun00" }
+        ]
+      }
+    ],
+    "payon": [
+      {
+        "type": "kafra_tp",
+        "label": "Doram Kafra",
+        "destinations": [
+          { "name": "Archer's Village", "map": "pay_arche" },
+          { "name": "Southeast Payon Field", "map": "pay_fild10" },
+          { "name": "Prontera South Field", "map": "moc_fild02" }
+        ]
+      },
+      {
+        "type": "dungeon_warper",
+        "label": "Dungeon Warper",
+        "destinations": [
+          { "name": "Payon Cave", "map": "pay_dun02" },
+          { "name": "Anthell", "map": "cmd_fild08" },
+          { "name": "Niflheim Field", "map": "nif_fild01" }
+        ]
+      }
+    ],
+    "morocc": [
+      {
+        "type": "kafra_tp",
+        "label": "Doram Kafra",
+        "destinations": [
+          { "name": "Morocc Ruins Pyramid", "map": "moc_ruins" },
+          { "name": "Sograt Desert Sphinx", "map": "moc_fild19" },
+          { "name": "Southeast Morocc Field", "map": "moc_fild11" },
+          { "name": "Comodo Beaches", "map": "cmd_fild02" },
+          { "name": "Kingdom of the Dead", "map": "niflheim" }
+        ]
+      },
+      {
+        "type": "dungeon_warper",
+        "label": "Dungeon Warper (Morocc Ruins)",
+        "destinations": [
+          { "name": "Pyramid", "map": "moc_pryd02" },
+          { "name": "Pyramid Basement", "map": "moc_pryd05" },
+          { "name": "Sphinx", "map": "in_sphinx2" }
+        ]
+      }
+    ],
+    "aldebaran": [
+      {
+        "type": "kafra_fields",
+        "label": "Kafra",
+        "destinations": [
+          { "name": "Mjolnir Dead Pit", "map": "mjolnir_02" }
+        ]
+      },
+      {
+        "type": "kafra_tp",
+        "label": "Doram Kafra",
+        "destinations": [
+          { "name": "Aldebaran Border", "map": "yuno_fild01" }
+        ]
+      },
+      {
+        "type": "dungeon_warper",
+        "label": "Dungeon Warper",
+        "destinations": [
+          { "name": "Clock Tower", "map": "c_tower2" },
+          { "name": "Clock Tower Basement", "map": "alde_dun02" },
+          { "name": "Mjolnir Field", "map": "mjolnir_03" }
+        ]
+      }
+    ],
+    "cmd_fild07": [
+      {
+        "type": "ships",
+        "label": "Barcos",
+        "destinations": [
+          { "name": "Alberta", "map": "alberta" },
+          { "name": "Izlude", "map": "izlude" }
+        ]
+      }
+    ],
+    "yuno": [
+      {
+        "type": "kafra_tp",
+        "label": "Doram Kafra",
+        "destinations": [
+          { "name": "West Field of the Abyss Valley", "map": "ein_fild06" },
+          { "name": "Phantasmagorika Excavation of the Abyss Valley", "map": "yuno_fild07" },
+          { "name": "Magma Dungeon Juno Plateau", "map": "yuno_fild03" },
+          { "name": "West Field of Abyss Lake", "map": "hu_fild04" }
+        ]
+      },
+      {
+        "type": "dungeon_warper",
+        "label": "Dungeon Warper",
+        "destinations": [
+          { "name": "Magma", "map": "mag_dun02" },
+          { "name": "Thanatos Tower", "map": "hu_fild01" }
+        ]
+      }
+    ],
+    "einbroch": [
+      {
+        "type": "kafra_tp",
+        "label": "Doram Kafra",
+        "destinations": [
+          { "name": "West Field of the Abyss Valley", "map": "ein_fild06" },
+          { "name": "North Field of Lighthalzen", "map": "lhz_fild01" }
+        ]
+      }
+    ],
+    "lighthalzen": [
+      {
+        "type": "kafra_tp",
+        "label": "Doram Kafra",
+        "destinations": [
+          { "name": "North Field of Lighthalzen", "map": "lhz_fild01" }
+        ]
+      },
+      {
+        "type": "dungeon_warper",
+        "label": "Dungeon Warper",
+        "destinations": [
+          { "name": "Ice Cave", "map": "ice_dun02" },
+          { "name": "Thor Volcano", "map": "ve_fild03" }
+        ]
+      }
+    ],
+    "rachel": [
+      {
+        "type": "kafra_tp",
+        "label": "Doram Kafra",
+        "destinations": [
+          { "name": "Southern Ice Cave Field", "map": "ra_fild04" },
+          { "name": "Thor Volcano East Field", "map": "ve_fild04" }
+        ]
+      }
+    ],
+    "veins": [
+      {
+        "type": "kafra_tp",
+        "label": "Doram Kafra",
+        "destinations": [
+          { "name": "Thor Volcano East Field", "map": "ra_fild04" },
+          { "name": "South Veins Field", "map": "ve_fild07" }
+        ]
+      }
+    ]
+  }
+}

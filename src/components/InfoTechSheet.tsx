@@ -32,9 +32,20 @@ const client: Field[] = [
   ['Nombres de recursos coreanos', 'CP949; no se tocan ni se reinterpretan'],
   ['Items custom', '5 (4 monedas + Alma de MVP)'],
   ['Quest IDs', 'Cada ID debe existir en servidor y en la lista del cliente'],
-  ['Navegación', 'Habilitada; no se logró desactivar sin riesgo'],
+  ['Navegación', 'Desactivada: sin botón, ventana ni rutas'],
+  ['Login', 'Simplificado: sin selector de cuenta ni botones de registro'],
+  ['Parches del cliente', 'Navegación y login; timestamp PE 2019-06-05'],
   ['Mapas con override visual', 'Reemplazo solo de la capa visual; colisión original intacta'],
   ['Reconstrucción del cliente', 'Descartada'],
+];
+
+const grfs: Field[] = [
+  ['Prioridad', 'La key 1 de data.ini gana sobre las siguientes'],
+  ['ozro_ui.grf', 'Fondo de login y overrides de UI (key 1)'],
+  ['ozro_maps.grf', '21 overrides de mapas .rsw/.gnd/.gat (key 2)'],
+  ['ozro_fixes.grf', 'clientinfo.xml y etcinfo.txt (key 3)'],
+  ['gefenia.grf', 'Mapas custom de gefenia (key 4)'],
+  ['Pendiente de empaquetar', 'Objetos custom, sprites, ilustraciones, loading y traducciones'],
 ];
 
 const progression: Field[] = [
@@ -118,7 +129,8 @@ const data: Field[] = [
 ];
 
 const limitations: Field[] = [
-  ['Navegación del cliente', 'No se pudo ocultar; queda habilitada'],
+  ['Navegación', 'Eliminada por parche binario; el cliente no se actualiza'],
+  ['Login', 'Selector y botones ocultos, no eliminados del binario'],
   ['4th jobs', 'Bloqueados: cliente 2019 y bugs de la base'],
   ['Cliente limpio', 'No abre con el overlay; no usar como reemplazo'],
   ['Mapas de job quest', 'Dependen de clones; no están en los clientes disponibles'],
@@ -185,6 +197,11 @@ const InfoTechSheet = () => (
         Nota: una base limpia con el overlay no abrió; el ejecutable está parcheado de forma particular.
         Tocar la base o reconstruir el cliente es más riesgoso que alinear el servidor.
       </p>
+    </div>
+
+    <div className="content-section">
+      <h3>Empaquetado del cliente</h3>
+      <Fields rows={grfs} />
     </div>
 
     <div className="content-section">

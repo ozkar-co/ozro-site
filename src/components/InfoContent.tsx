@@ -190,6 +190,13 @@ const contentMap: Record<string, ReactNode> = {
         <ul>
           <li>Endless Tower: reingreso cada 20 horas; límite interno de 4 horas</li>
         </ul>
+        <h3>Cliente y navegación</h3>
+        <ul>
+          <li>Navegación desactivada: no hay botón, ventana ni rutas; la exploración es manual</li>
+          <li>Los iconos del minimapa ya no generan flechas ni rutas</li>
+          <li>Login simplificado: solo usuario, contraseña, Save ID y el botón Login</li>
+          <li>El selector de tipo de cuenta y los botones de registro quedaron ocultos</li>
+        </ul>
         <h3>Economía y sistemas activos</h3>
         <ul>
           <li>Bounty Boards en 25 ciudades (Eclage deshabilitado)</li>
