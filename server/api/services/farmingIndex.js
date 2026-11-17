@@ -16,6 +16,7 @@ import {
 } from './gameDb.js';
 import { applyDropRate, dropMultiplier, effectiveMvpRates, mobTier, rateToPercent } from './dropRates.js';
 import { bestItemValue } from './itemValue.js';
+import { getItemDisplayName } from './itemInfo.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ASSETS_DIR = path.resolve(__dirname, '../../../assets');
@@ -82,7 +83,7 @@ function buildDrop(column, rate, item, tier) {
 
     return {
         id: Number(item.id),
-        name: item.name_english,
+        name: getItemDisplayName(item.id) ?? item.name_english,
         nameAegis: item.name_aegis,
         type: column.type,
         chancePercent: rateToPercent(adjustedRate),

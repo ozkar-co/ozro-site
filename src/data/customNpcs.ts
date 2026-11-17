@@ -306,7 +306,7 @@ export const customNpcGroups: CustomNpcGroup[] = [
               { name: "Eddga", keys: ["5 Tiger Skin", "2 Tiger's Footskin"] },
               { name: "RSX-0806", keys: ["2 Flashlight", "2 Cogwheel"] },
               { name: "Amon Ra", keys: ["3 Fragment of Rossata Stone"] },
-              { name: "Evil Snake Lord", keys: ["3 Ba Gua"] },
+              { name: "Evil Snake Lord", keys: ["3 Taeguk Plate"] },
               { name: "Osiris", keys: ["10 Rotten Bandage", "1 Memento", "10 Scale Shell"] },
               { name: "Dark Lord", keys: ["10 Skull", "1 Coif"] },
               { name: "Tao Gunka", keys: ["1 Gemstone", "3 Stone Fragment"] },

@@ -23,6 +23,7 @@ import {
     rateToPercent,
     MVP_REWARD_RATE
 } from './dropRates.js';
+import { getItemDisplayName } from './itemInfo.js';
 
 function mapMobSummary(row) {
     return {
@@ -119,7 +120,7 @@ function adjustDrop(drop, item, tier) {
     const rate = applyDropRate(drop.rate, multiplier);
     return {
         itemId: item?.id ?? null,
-        itemName: item?.name_english ?? drop.itemAegis,
+        itemName: getItemDisplayName(item?.id) ?? item?.name_english ?? drop.itemAegis,
         itemAegis: drop.itemAegis,
         itemType: item?.type ?? null,
         baseRate: drop.rate,

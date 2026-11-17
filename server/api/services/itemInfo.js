@@ -8,9 +8,37 @@ const ITEM_START_PATTERN = /^[ \t]*\[(\d+)\][ \t]*= \{/gm;
 
 let itemInfoPath = null;
 let itemRanges = new Map();
+let itemNames = new Map();
 
 export function isItemInfoAvailable() {
     return itemInfoPath !== null;
+}
+
+export function getItemDisplayName(id) {
+    return itemNames.get(Number(id)) || null;
+}
+
+export function findItemIdsByDisplayName(term, limit = 1000) {
+    const needle = String(term || '').trim().toLowerCase();
+    if (!needle) return [];
+
+    const ids = [];
+    for (const [id, name] of itemNames) {
+        if (name.toLowerCase().includes(needle)) {
+            ids.push(id);
+            if (ids.length >= limit) break;
+        }
+    }
+    return ids;
+}
+
+function decodeLuaString(value) {
+    return value.replace(/\\(.)/g, (_, char) => {
+        if (char === 'n') return '\n';
+        if (char === 't') return '\t';
+        if (char === 'r') return '\r';
+        return char;
+    });
 }
 
 export async function initializeItemInfoIndex() {
@@ -25,16 +53,25 @@ export async function initializeItemInfoIndex() {
         }
 
         const ranges = new Map();
+        const names = new Map();
         for (let i = 0; i < starts.length; i++) {
             const end = i + 1 < starts.length ? starts[i + 1].start : content.length;
             ranges.set(starts[i].id, { start: starts[i].start, end });
+
+            const block = content.slice(starts[i].start, end);
+            const nameMatch = /(?:^|[\r\n])[ \t]*identifiedDisplayName\s*=\s*"((?:[^"\\]|\\.)*)"/.exec(block);
+            if (nameMatch) {
+                names.set(starts[i].id, decodeLuaString(nameMatch[1]));
+            }
         }
 
         itemRanges = ranges;
+        itemNames = names;
         itemInfoPath = ITEM_INFO_PATH;
         console.log(`Índice de descripciones listo: ${ranges.size} objetos desde ${ITEM_INFO_PATH}`);
     } catch (error) {
         itemRanges = new Map();
+        itemNames = new Map();
         itemInfoPath = null;
         console.warn(`No se pudo leer itemInfo para descripciones: ${error.message}`);
     }

@@ -1,5 +1,6 @@
 import { query } from '../../services/mariadb.js';
 import { getMobsDroppingItem, getMobsDroppingItems } from './mobQuery.js';
+import { findItemIdsByDisplayName, getItemDisplayName } from './itemInfo.js';
 import {
     effectiveMobsSql,
     effectiveItemsSql,
@@ -70,7 +71,7 @@ function mapItemClasses(row) {
 function mapItemSummary(row) {
     return {
         id: row.id,
-        name: row.name_english,
+        name: getItemDisplayName(row.id) ?? row.name_english,
         nameAegis: row.name_aegis,
         type: row.type,
         subtype: row.subtype,
@@ -142,9 +143,13 @@ function buildItemFilters(params) {
             conditions.push('i.id = ?');
             values.push(parseInt(term, 10));
         } else {
-            conditions.push('(i.name_english LIKE ? OR i.name_aegis LIKE ?)');
             const like = `%${term}%`;
-            values.push(like, like);
+            const nameIds = findItemIdsByDisplayName(term);
+            const displayNameClause = nameIds.length > 0
+                ? ` OR i.id IN (${nameIds.map(() => '?').join(', ')})`
+                : '';
+            conditions.push(`(i.name_english LIKE ? OR i.name_aegis LIKE ?${displayNameClause})`);
+            values.push(like, like, ...nameIds);
         }
     }
 
