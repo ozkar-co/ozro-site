@@ -209,7 +209,7 @@ const KAFRA_ROUTES = [
   {
     from: 'aldebaran',
     to: 'izlude',
-    paths: [[[360, 300], [360, hLaneY(4, 'v')], [vLaneX('B', 'u'), hLaneY(4, 'v')], [vLaneX('B', 'u'), hLaneY(6, 'v')], [vLaneX('I', 'u'), hLaneY(6, 'v')], [vLaneX('I', 'u'), 800], [1120, 800]]],
+    paths: [[[360, 300], [360, hLaneY(6, 'v')], [vLaneX('I', 'u'), hLaneY(6, 'v')], [vLaneX('I', 'u'), 800], [1120, 800]]],
   },
   {
     from: 'morocc',
@@ -224,6 +224,27 @@ const KAFRA_ROUTES = [
   { from: 'morocc', to: 'cmd_fild07', paths: [[[360, 700], [360, 800]]] },
   { from: 'cmd_fild07', to: 'comodo', paths: [[[360, 800], [550, 800]]] },
   { from: 'comodo', to: 'umbala', paths: [[[550, 800], [550, 900]]] },
+  {
+    from: 'morocc',
+    to: 'payon',
+    paths: [[[360, 700], [360, hLaneY(6, 'u')], [vLaneX('G', 'u'), hLaneY(6, 'u')], [vLaneX('G', 'u'), 300], [930, 300]]],
+  },
+  {
+    from: 'morocc',
+    to: 'alberta',
+    paths: [[[360, 700], [vLaneX('G', 'u'), hLaneY(7, 'v')], [vLaneX('G', 'u'), 900], [930, 900]]],
+  },
+  {
+    from: 'morocc',
+    to: 'izlude',
+    line: 'KO',
+    paths: [[[360, 700], [360, hLaneY(7, 'u')], [vLaneX('H', 'v'), hLaneY(7, 'u')], [vLaneX('H', 'v'), hLaneY(8, 'u')], [1120, hLaneY(8, 'u')], [1120, 800]]],
+  },
+  {
+    from: 'geffen',
+    to: 'prontera',
+    paths: [[[550, 300], [550, hLaneY(5, 'u')], [740, hLaneY(5, 'u')], [740, 500]]],
+  },
 ];
 
 const CUSTOM_KAFRA_PAIRS = new Set(
@@ -231,16 +252,27 @@ const CUSTOM_KAFRA_PAIRS = new Set(
 );
 
 function kafraSvg() {
-  const casing = KAFRA_ROUTES.flatMap((route) =>
-    route.paths.map((points) => `<path d="${roundedPath(points)}" class="lm-casing" stroke-width="14"/>`),
-  ).join('');
-  const strands = KAFRA_ROUTES.flatMap((route) =>
-    route.paths.map(
-      (points) =>
-        `<path d="${roundedPath(points)}" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>`,
-    ),
-  ).join('');
-  return `<g class="edge custom-kafra" data-lines="K">${casing}${strands}</g>`;
+  return ['K', 'KO']
+    .map((line) => {
+      const routes = KAFRA_ROUTES.filter((route) => (route.line ?? 'K') === line);
+      if (routes.length === 0) return '';
+      const color = line === 'KO' ? '#b3651f' : '#2f7d5b';
+      const casing = routes
+        .flatMap((route) =>
+          route.paths.map((points) => `<path d="${roundedPath(points)}" class="lm-casing" stroke-width="14"/>`),
+        )
+        .join('');
+      const strands = routes
+        .flatMap((route) =>
+          route.paths.map(
+            (points) =>
+              `<path d="${roundedPath(points)}" class="lm-strand" stroke="${color}" stroke-width="9" data-line="${line}"><title>Kafra</title></path>`,
+          ),
+        )
+        .join('');
+      return `<g class="edge custom-kafra" data-lines="${line}">${casing}${strands}</g>`;
+    })
+    .join('\n');
 }
 
 function decorate(svg) {
