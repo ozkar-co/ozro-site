@@ -3251,7 +3251,8 @@
       "mobHp": 35738,
       "mobLevel": 111,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 2,
@@ -3269,7 +3270,8 @@
       "mobHp": 272,
       "mobLevel": 16,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 3,
@@ -3287,7 +3289,8 @@
       "mobHp": 6054,
       "mobLevel": 72,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 4,
@@ -3305,7 +3308,8 @@
       "mobHp": 156,
       "mobLevel": 8,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 5,
@@ -3323,7 +3327,8 @@
       "mobHp": 16058,
       "mobLevel": 91,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 6,
@@ -3341,7 +3346,8 @@
       "mobHp": 23178,
       "mobLevel": 105,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 7,
@@ -3359,7 +3365,8 @@
       "mobHp": 156,
       "mobLevel": 8,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 8,
@@ -3377,7 +3384,8 @@
       "mobHp": 424,
       "mobLevel": 21,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 9,
@@ -3395,7 +3403,8 @@
       "mobHp": 2302,
       "mobLevel": 44,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 10,
@@ -3413,7 +3422,8 @@
       "mobHp": 7140,
       "mobLevel": 75,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 11,
@@ -3431,7 +3441,8 @@
       "mobHp": 5710,
       "mobLevel": 74,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 12,
@@ -3449,7 +3460,8 @@
       "mobHp": 29114,
       "mobLevel": 110,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 13,
@@ -3467,7 +3479,8 @@
       "mobHp": 36410,
       "mobLevel": 114,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 14,
@@ -3485,7 +3498,8 @@
       "mobHp": 6054,
       "mobLevel": 72,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 15,
@@ -3503,7 +3517,8 @@
       "mobHp": 8524,
       "mobLevel": 79,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 16,
@@ -3521,7 +3536,8 @@
       "mobHp": 22944,
       "mobLevel": 108,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 17,
@@ -3539,7 +3555,8 @@
       "mobHp": 8582,
       "mobLevel": 81,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 18,
@@ -3557,7 +3574,8 @@
       "mobHp": 9010,
       "mobLevel": 81,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 19,
@@ -3575,7 +3593,8 @@
       "mobHp": 2364,
       "mobLevel": 47,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 20,
@@ -3593,7 +3612,8 @@
       "mobHp": 530,
       "mobLevel": 19,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 21,
@@ -3611,7 +3631,8 @@
       "mobHp": 310,
       "mobLevel": 15,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 22,
@@ -3629,7 +3650,8 @@
       "mobHp": 36638,
       "mobLevel": 115,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 2
     },
     {
       "missionId": 23,
@@ -3647,7 +3669,8 @@
       "mobHp": 9884,
       "mobLevel": 86,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 24,
@@ -3665,7 +3688,8 @@
       "mobHp": 12826,
       "mobLevel": 87,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 25,
@@ -3683,7 +3707,8 @@
       "mobHp": 17544,
       "mobLevel": 100,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 2
     },
     {
       "missionId": 26,
@@ -3701,7 +3726,8 @@
       "mobHp": 5710,
       "mobLevel": 74,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 2
     },
     {
       "missionId": 27,
@@ -3719,7 +3745,8 @@
       "mobHp": 37846,
       "mobLevel": 110,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 28,
@@ -3737,7 +3764,8 @@
       "mobHp": 8830,
       "mobLevel": 77,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 2
     },
     {
       "missionId": 29,
@@ -3755,7 +3783,8 @@
       "mobHp": 22944,
       "mobLevel": 108,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 30,
@@ -3773,7 +3802,8 @@
       "mobHp": 86158,
       "mobLevel": 135,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 2
     },
     {
       "missionId": 31,
@@ -3791,7 +3821,8 @@
       "mobHp": 13234,
       "mobLevel": 95,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 2
     },
     {
       "missionId": 32,
@@ -3809,7 +3840,8 @@
       "mobHp": 66204,
       "mobLevel": 121,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 2
     },
     {
       "missionId": 33,
@@ -3827,7 +3859,8 @@
       "mobHp": 66204,
       "mobLevel": 121,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 2
     },
     {
       "missionId": 34,
@@ -3845,7 +3878,8 @@
       "mobHp": 2020,
       "mobLevel": 42,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 35,
@@ -3863,7 +3897,8 @@
       "mobHp": 1866,
       "mobLevel": 40,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 36,
@@ -3881,7 +3916,8 @@
       "mobHp": 2472,
       "mobLevel": 53,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 37,
@@ -3899,7 +3935,8 @@
       "mobHp": 272,
       "mobLevel": 16,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 38,
@@ -3917,7 +3954,8 @@
       "mobHp": 96,
       "mobLevel": 3,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 39,
@@ -3935,7 +3973,8 @@
       "mobHp": 22944,
       "mobLevel": 108,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 1
     },
     {
       "missionId": 40,
@@ -3953,7 +3992,8 @@
       "mobHp": 27810,
       "mobLevel": 105,
       "partialDelivery": true,
-      "forfeitOnFail": true
+      "forfeitOnFail": true,
+      "coinReward": 2
     }
   ]
 }
