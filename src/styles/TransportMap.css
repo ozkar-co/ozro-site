@@ -7,11 +7,6 @@
 }
 
 .transport-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  flex-wrap: wrap;
   margin-bottom: 1rem;
 }
 
@@ -25,57 +20,200 @@
   margin: 0;
   color: #666;
   font-size: 0.92rem;
-  max-width: 560px;
+  max-width: 620px;
 }
 
-.transport-open {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #d8d8d8;
-  background: #fff;
-  color: #555;
-  border-radius: 999px;
-  padding: 0.4rem 0.9rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+.transport-message {
+  color: #666;
+  padding: 2rem 0;
+  text-align: center;
 }
 
-.transport-open:hover {
-  background: #fff1ee;
-  border-color: #ff8d7f;
-  color: #9b3e32;
+.transport-message.is-error {
+  color: #a33;
 }
 
-.transport-map-link {
-  display: block;
-  background: #f8f8f4;
-  border: 1px solid #e6e6e0;
+.transport-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 1rem;
+  align-items: start;
+}
+
+.transport-stage {
+  position: relative;
+  background: transparent;
+  border: 1px solid #e0e0e0;
   border-radius: 0.85rem;
-  padding: 0.75rem;
   overflow: hidden;
 }
 
-.transport-map-link img {
+.transport-stage > img {
   display: block;
   width: 100%;
   height: auto;
 }
 
-.transport-caption {
-  margin: 0.75rem 0 0;
-  color: #777;
-  font-size: 0.8rem;
+.transport-node-hit {
+  position: absolute;
+  width: 4.6%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border: 0;
+  padding: 0;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 2;
 }
 
-@media (max-width: 600px) {
-  .transport-view {
-    padding: 1rem;
+.transport-node-dot {
+  width: 42%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #111;
+  box-shadow: 0 0 0 1.5px #fff;
+  transition: transform 0.15s ease;
+}
+
+.transport-node-hit:hover .transport-node-dot,
+.transport-node-hit:focus-visible .transport-node-dot,
+.transport-node-hit.is-active .transport-node-dot {
+  transform: scale(1.35);
+}
+
+.transport-node-hit:focus-visible {
+  outline: 2px solid #ff8d7f;
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+.transport-detail {
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 0.85rem;
+  padding: 1rem;
+  min-height: 180px;
+  max-height: 640px;
+  overflow: auto;
+}
+
+.transport-detail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.transport-detail-head h3 {
+  margin: 0.15rem 0 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.transport-kicker {
+  display: inline-block;
+  color: #8a8a8a;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.transport-close {
+  border: 0;
+  background: transparent;
+  color: #888;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.2rem;
+}
+
+.transport-close:hover {
+  color: #333;
+}
+
+.transport-empty,
+.transport-detail-placeholder p {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0.4rem 0 0;
+}
+
+.transport-group {
+  border-top: 1px solid #eee;
+  padding-top: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.transport-group-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  color: #333;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 0.45rem;
+}
+
+.transport-group-head span:last-child {
+  color: #aaa;
+  font-weight: 600;
+}
+
+.transport-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.transport-group li {
+  background: #f4f4f2;
+  border: 1px solid #e6e6e6;
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  color: #444;
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.transport-group.is-kafra_tp .transport-group-head span:first-child {
+  color: #6b4fa8;
+}
+
+.transport-group.is-dungeon_warper .transport-group-head span:first-child {
+  color: #b3651f;
+}
+
+.transport-group.is-port .transport-group-head span:first-child,
+.transport-group.is-ships .transport-group-head span:first-child {
+  color: #236b91;
+}
+
+.transport-group.is-kafra_fields .transport-group-head span:first-child {
+  color: #2f7d5b;
+}
+
+.transport-group.is-special .transport-group-head span:first-child {
+  color: #9b3e32;
+}
+
+@media (max-width: 900px) {
+  .transport-layout {
+    grid-template-columns: 1fr;
   }
 
-  .transport-map-link {
-    padding: 0.35rem;
+  .transport-detail {
+    max-height: none;
+  }
+
+  .transport-view {
+    padding: 1rem;
   }
 }

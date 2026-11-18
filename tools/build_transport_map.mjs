@@ -9,6 +9,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
 const dataPath = resolve(root, 'assets/world/transport.json');
 const outputPath = resolve(root, 'assets/world/transport-map.svg');
+const layoutPath = resolve(root, 'assets/world/transport-layout.json');
+const VIEW_BOX = { x: 280, y: 20, width: 1060, height: 960 };
 
 const positions = {
   einbroch: [360, 100],
@@ -96,30 +98,6 @@ function laneOffsets(count, key) {
   if (count === 1) return [0];
   if (count === 2) return [-LANE_PITCH / 2, LANE_PITCH / 2];
   return [-LANE_PITCH, 0, LANE_PITCH];
-}
-
-function gridSvg() {
-  const parts = ['<g class="transport-grid" pointer-events="none">'];
-  GRID_X.forEach((x, index) => {
-    const offsets = laneOffsets(V_LANES[index], GRID_COLS[index]);
-    offsets.forEach((offset, lane) => {
-      const laneX = x + offset;
-      const name = `${GRID_COLS[index]}${LANE_NAMES[lane]}`;
-      parts.push(`<line x1="${laneX}" y1="65" x2="${laneX}" y2="950" />`);
-      parts.push(`<text x="${laneX}" y="52" text-anchor="middle">${name}</text>`);
-    });
-  });
-  GRID_Y.forEach((y, index) => {
-    const offsets = laneOffsets(H_LANES[index]);
-    offsets.forEach((offset, lane) => {
-      const laneY = y + offset;
-      const name = `${index + 1}${LANE_NAMES[lane]}`;
-      parts.push(`<line x1="330" y1="${laneY}" x2="1160" y2="${laneY}" />`);
-      parts.push(`<text x="320" y="${laneY + 4}" text-anchor="end">${name}</text>`);
-    });
-  });
-  parts.push('</g>');
-  return parts.join('\n');
 }
 
 function vLaneX(column, lane) {
@@ -275,19 +253,57 @@ const CUSTOM_KAFRA_PAIRS = new Set(
   KAFRA_ROUTES.map((route) => [route.from, route.to].sort().join('|')),
 );
 
+function arrowPolygon(points, size = 9) {
+  const lengths = [];
+  let total = 0;
+  for (let index = 1; index < points.length; index += 1) {
+    const length = Math.hypot(
+      points[index][0] - points[index - 1][0],
+      points[index][1] - points[index - 1][1],
+    );
+    lengths.push(length);
+    total += length;
+  }
+  if (total === 0) return '';
+  let target = total * 0.55;
+  let index = 0;
+  while (index < lengths.length && target > lengths[index]) {
+    target -= lengths[index];
+    index += 1;
+  }
+  if (index >= lengths.length) index = lengths.length - 1;
+  const [x1, y1] = points[index];
+  const [x2, y2] = points[index + 1];
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const length = Math.hypot(dx, dy) || 1;
+  const ux = dx / length;
+  const uy = dy / length;
+  const x = x1 + ux * target;
+  const y = y1 + uy * target;
+  const px = -uy;
+  const py = ux;
+  const tipX = x + ux * size;
+  const tipY = y + uy * size;
+  const baseX = x - ux * size * 0.6;
+  const baseY = y - uy * size * 0.6;
+  const width = size * 0.6;
+  return `<polygon points="${tipX},${tipY} ${baseX + px * width},${baseY + py * width} ${baseX - px * width},${baseY - py * width}" fill="#2f7d5b"/>`;
+}
+
 function kafraSvg() {
   return ['K', 'KO']
     .map((line) => {
       const routes = KAFRA_ROUTES.filter((route) => (route.line ?? 'K') === line);
       if (routes.length === 0) return '';
-      const color = line === 'KO' ? '#b3651f' : '#2f7d5b';
       const pieces = routes.flatMap((route) =>
         route.paths.flatMap((points) => {
           const d = roundedPath(points);
           return [
             `<path d="${d}" class="lm-casing" stroke-width="14"/>`,
-            `<path d="${d}" class="lm-strand" stroke="${color}" stroke-width="9" data-line="${line}"><title>Kafra</title></path>`,
-          ];
+            `<path d="${d}" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="${line}"><title>Kafra</title></path>`,
+            line === 'KO' ? arrowPolygon(points) : '',
+          ].filter(Boolean);
         }),
       ).join('');
       return `<g class="edge custom-kafra" data-lines="${line}">${pieces}</g>`;
@@ -295,7 +311,61 @@ function kafraSvg() {
     .join('\n');
 }
 
-function decorate(svg) {
+function escapeXml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+function removeLegend(svg) {
+  const start = svg.indexOf('<g class="legend">');
+  if (start === -1) return svg;
+  let depth = 0;
+  let index = start;
+  while (index < svg.length) {
+    const open = svg.indexOf('<g', index);
+    const close = svg.indexOf('</g>', index);
+    if (close === -1) return svg;
+    if (open !== -1 && open < close) {
+      depth += 1;
+      index = open + 2;
+    } else {
+      depth -= 1;
+      index = close + 4;
+      if (depth === 0) return `${svg.slice(0, start)}${svg.slice(index)}`;
+    }
+  }
+  return svg;
+}
+
+function setViewBox(svg) {
+  return svg.replace(/<svg([^>]*)>/, (match, attrs) => {
+    const updated = attrs
+      .replace(
+        /viewBox="[^"]*"/,
+        `viewBox="${VIEW_BOX.x} ${VIEW_BOX.y} ${VIEW_BOX.width} ${VIEW_BOX.height}"`,
+      )
+      .replace(/width="[^"]*"/, `width="${VIEW_BOX.width}"`)
+      .replace(/height="[^"]*"/, `height="${VIEW_BOX.height}"`);
+    return `<svg${updated}>`;
+  });
+}
+
+function nodeNamesSvg(graph) {
+  const labels = graph.nodes
+    .map((node) => {
+      const point = positions[node.id];
+      if (!point) return '';
+      const x = point[0] + 24;
+      const y = point[1] - 14;
+      return `<text x="${x}" y="${y}" text-anchor="start" transform="rotate(-32 ${x} ${y})">${escapeXml(node.name)}</text>`;
+    })
+    .join('');
+  return `<g class="transport-names" pointer-events="none">${labels}</g>`;
+}
+
+function decorate(graph, svg) {
   let next = svg;
 
   next = next.replace(
@@ -308,8 +378,7 @@ function decorate(svg) {
     },
   );
 
-  next = next.replace('>LINES</text>', '>LÍNEAS</text>');
-
+  next = next.replace(/<rect[^>]*class="lm-bg"[^>]*\/>/, '');
   next = next.replace(/<g class="lm-marks"[^>]*>[\s\S]*?<\/g>/g, '');
   next = next.replace(/<g class="edge"[^>]*data-lines="(?:AD|AI)"[^>]*>[\s\S]*?<\/g>/g, '');
   next = next.replace(/<g class="edge"([^>]*)>[\s\S]*?<\/g>/g, (match, attrs) => {
@@ -319,49 +388,60 @@ function decorate(svg) {
     return match;
   });
 
-  const firstEdge = next.indexOf('<g class="edge"');
-  if (firstEdge >= 0) {
-    next = `${next.slice(0, firstEdge)}${gridSvg()}\n${next.slice(firstEdge)}`;
-  } else {
-    next = next.replace('</svg>', `${gridSvg()}\n</svg>`);
-  }
-
   const firstNode = next.indexOf('<g class="node"');
   if (firstNode >= 0) {
     next = `${next.slice(0, firstNode)}${kafraSvg()}\n${airshipSvg()}\n${next.slice(firstNode)}`;
   }
 
+  next = removeLegend(next);
+
   next = next.replace(
     '</svg>',
-    `<style>
-      polygon { display: none; }
+    `${nodeNamesSvg(graph)}
+    <style>
       .node .lm-shape { fill: #ffffff; stroke: #374151; stroke-width: 2; }
       .node .lm-sheen { display: none; }
       .node .lm-label { font-weight: 700; }
       .edge[data-lines="KO"] .lm-casing,
       .edge[data-lines="KO"] .lm-strand { stroke-dasharray: 10 8; }
-      .legend-row[data-line="KO"] line { stroke-dasharray: 10 8; }
-      .transport-grid line {
-        stroke: #94a3b8;
-        stroke-width: 1;
-        stroke-dasharray: 5 7;
-        opacity: 0.55;
-      }
-      .transport-grid text {
-        fill: #64748b;
+      .transport-names text {
+        fill: #1d2530;
         font-size: 12px;
         font-weight: 600;
+        paint-order: stroke;
+        stroke: #ffffff;
+        stroke-width: 4;
+        stroke-linejoin: round;
       }
     </style>
 </svg>`,
   );
 
-  return next;
+  return setViewBox(next);
 }
 
 const graph = JSON.parse(await readFile(dataPath, 'utf8'));
 const dot = buildDot(graph);
 const model = layout(parseFlow(dot));
-const svg = decorate(render(model, { theme: 'minimal' }));
+const svg = decorate(graph, render(model, { theme: 'minimal' }));
 await writeFile(outputPath, svg);
+
+const transportLayout = {
+  viewBox: VIEW_BOX,
+  nodes: graph.nodes
+    .map((node) => {
+      const point = positions[node.id];
+      if (!point) return null;
+      return {
+        id: node.id,
+        name: node.name,
+        region: node.region,
+        x: point[0],
+        y: point[1],
+        tooltips: graph.tooltips[node.id] ?? [],
+      };
+    })
+    .filter(Boolean),
+};
+await writeFile(layoutPath, `${JSON.stringify(transportLayout, null, 2)}\n`);
 console.log(`wrote ${outputPath}`);
