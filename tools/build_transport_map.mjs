@@ -29,6 +29,7 @@ const positions = {
 };
 
 const vias = {};
+const hiddenSegments = new Set(['izlude-yuno']);
 
 const lines = [
   ['K', 'Kafra', '#2f7d5b'],
@@ -61,6 +62,7 @@ function buildDot(graph) {
 
   for (const line of graph.lines) {
     if (line.type === 'kafra' && line.from && line.to) {
+      if (hiddenSegments.has(`${line.from}-${line.to}`)) continue;
       const id = line.bidirectional === false ? 'KO' : 'K';
       const via = vias[`${line.from}-${line.to}`];
       const viaAttr = via ? `, via=${dotQuote(`${via[0]},${via[1]}`)}` : '';
@@ -74,6 +76,7 @@ function buildDot(graph) {
       for (let index = 0; index < stops.length - 1; index += 1) {
         const from = stops[index];
         const to = stops[index + 1];
+        if (hiddenSegments.has(`${from}-${to}`)) continue;
         const via = vias[`${from}-${to}`];
         const viaAttr = via ? `, via=${dotQuote(`${via[0]},${via[1]}`)}` : '';
         out.push(`  ${from} -> ${to} [lines=${id}${viaAttr}]`);
@@ -86,6 +89,25 @@ function buildDot(graph) {
 
   out.push('}');
   return out.join('\n');
+}
+
+const GRID_X = [360, 455, 550, 645, 740, 835, 930, 1025, 1120];
+const GRID_Y = [100, 200, 300, 400, 500, 600, 700, 800, 900];
+const GRID_COLS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
+const GRID_ROWS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+function gridSvg() {
+  const parts = ['<g class="transport-grid" pointer-events="none">'];
+  GRID_X.forEach((x, index) => {
+    parts.push(`<line x1="${x}" y1="60" x2="${x}" y2="950" />`);
+    parts.push(`<text x="${x}" y="50" text-anchor="middle">${GRID_COLS[index]}</text>`);
+  });
+  GRID_Y.forEach((y, index) => {
+    parts.push(`<line x1="330" y1="${y}" x2="1160" y2="${y}" />`);
+    parts.push(`<text x="320" y="${y + 4}" text-anchor="end">${GRID_ROWS[index]}</text>`);
+  });
+  parts.push('</g>');
+  return parts.join('\n');
 }
 
 function decorate(svg) {
@@ -105,7 +127,8 @@ function decorate(svg) {
 
   next = next.replace(
     '</svg>',
-    `<style>
+    `${gridSvg()}
+    <style>
       polygon { display: none; }
       .node .lm-shape { fill: #ffffff; stroke: #374151; stroke-width: 2; }
       .node .lm-sheen { display: none; }
@@ -113,6 +136,17 @@ function decorate(svg) {
       .edge[data-lines="KO"] .lm-casing,
       .edge[data-lines="KO"] .lm-strand { stroke-dasharray: 10 8; }
       .legend-row[data-line="KO"] line { stroke-dasharray: 10 8; }
+      .transport-grid line {
+        stroke: #94a3b8;
+        stroke-width: 1;
+        stroke-dasharray: 5 7;
+        opacity: 0.55;
+      }
+      .transport-grid text {
+        fill: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+      }
     </style>
 </svg>`,
   );
