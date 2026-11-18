@@ -13,19 +13,19 @@ const outputPath = resolve(root, 'assets/world/transport-map.svg');
 const positions = {
   einbroch: [360, 100],
   yuno: [550, 200],
-  lighthalzen: [930, 100],
-  hugel: [1120, 200],
-  rachel: [1120, 300],
-  aldebaran: [360, 300],
-  geffen: [550, 300],
+  lighthalzen: [740, 100],
+  hugel: [930, 100],
+  rachel: [1120, 200],
+  aldebaran: [360, 400],
+  geffen: [645, 300],
   prontera: [740, 500],
-  payon: [930, 300],
+  payon: [930, 500],
   cmd_fild07: [360, 800],
   izlude: [1120, 800],
   alberta: [930, 900],
-  morocc: [360, 700],
-  comodo: [550, 800],
-  umbala: [550, 900],
+  morocc: [550, 700],
+  comodo: [550, 900],
+  umbala: [360, 900],
 };
 
 const vias = {};
@@ -50,7 +50,7 @@ function buildDot(graph) {
     out.push(`    ${id} [label=${dotQuote(label)}, color=${dotQuote(color)}]`);
   }
   out.push('  }');
-  out.push('  node [width=0.6, height=0.6]');
+  out.push('  node [width=0.75, height=0.75]');
 
   for (const node of graph.nodes) {
     const point = positions[node.id];
@@ -95,11 +95,13 @@ const GRID_X = [360, 455, 550, 645, 740, 835, 930, 1025, 1120];
 const GRID_Y = [100, 200, 300, 400, 500, 600, 700, 800, 900];
 const GRID_COLS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
 const H_LANES = [1, 2, 1, 3, 3, 2, 3, 3, 1];
-const V_LANES = [3, 1, 1, 2, 2, 2, 3, 2, 3];
+const V_LANES = [3, 1, 3, 3, 3, 2, 3, 2, 3];
 const LANE_NAMES = ['u', 'v', 'w'];
 const LANE_PITCH = 18;
+const LANE_OFFSETS = { E: [-9, 9, 27], D: [-27, -9, 9] };
 
-function laneOffsets(count) {
+function laneOffsets(count, key) {
+  if (key && LANE_OFFSETS[key]) return LANE_OFFSETS[key].slice(0, count);
   if (count === 1) return [0];
   if (count === 2) return [-LANE_PITCH / 2, LANE_PITCH / 2];
   return [-LANE_PITCH, 0, LANE_PITCH];
@@ -108,7 +110,7 @@ function laneOffsets(count) {
 function gridSvg() {
   const parts = ['<g class="transport-grid" pointer-events="none">'];
   GRID_X.forEach((x, index) => {
-    const offsets = laneOffsets(V_LANES[index]);
+    const offsets = laneOffsets(V_LANES[index], GRID_COLS[index]);
     offsets.forEach((offset, lane) => {
       const laneX = x + offset;
       const name = `${GRID_COLS[index]}${LANE_NAMES[lane]}`;
@@ -131,7 +133,7 @@ function gridSvg() {
 
 function vLaneX(column, lane) {
   const index = GRID_COLS.indexOf(column);
-  const offsets = laneOffsets(V_LANES[index]);
+  const offsets = laneOffsets(V_LANES[index], column);
   return GRID_X[index] + offsets[LANE_NAMES.indexOf(lane)];
 }
 
@@ -168,9 +170,9 @@ const AIRSHIP_ROUTES = [
     color: '#2f6fae',
     label: 'Airship doméstico',
     paths: [
-      [[360, 100], [930, 100]],
+      [[360, 100], [740, 100]],
       [[360, 100], [vLaneX('A', 'v'), hLaneY(2, 'u')], [550, hLaneY(2, 'u')], [550, 200]],
-      [[550, 200], [550, hLaneY(2, 'u')], [1120, hLaneY(2, 'u')], [1120, 200]],
+      [[550, 200], [550, hLaneY(2, 'u')], [vLaneX('G', 'v'), hLaneY(2, 'u')], [vLaneX('G', 'v'), 100], [930, 100]],
     ],
   },
   {
@@ -178,72 +180,103 @@ const AIRSHIP_ROUTES = [
     color: '#7b5fb0',
     label: 'Airship internacional',
     paths: [
-      [[550, 200], [550, hLaneY(2, 'v')], [vLaneX('H', 'v'), hLaneY(2, 'v')], [vLaneX('H', 'v'), 300], [1120, 300]],
-      [[1120, 300], [vLaneX('I', 'w'), 300], [vLaneX('I', 'w'), 800], [1120, 800]],
+      [[550, 200], [550, hLaneY(2, 'v')], [1120, hLaneY(2, 'v')], [1120, 200]],
+      [[1120, 200], [vLaneX('I', 'w'), 200], [vLaneX('I', 'w'), 800], [1120, 800]],
     ],
   },
 ];
 
 function airshipSvg() {
   return AIRSHIP_ROUTES.map((line) => {
-    const casing = line.paths
-      .map((points) => `<path d="${roundedPath(points)}" class="lm-casing" stroke-width="14"/>`)
-      .join('');
-    const strands = line.paths
-      .map(
-        (points) =>
-          `<path d="${roundedPath(points)}" class="lm-strand" stroke="${line.color}" stroke-width="9" data-line="${line.id}"><title>${line.label}</title></path>`,
-      )
-      .join('');
-    return `<g class="edge custom-airship" data-lines="${line.id}">${casing}${strands}</g>`;
+    const pieces = line.paths.flatMap((points) => {
+      const d = roundedPath(points);
+      return [
+        `<path d="${d}" class="lm-casing" stroke-width="14"/>`,
+        `<path d="${d}" class="lm-strand" stroke="${line.color}" stroke-width="9" data-line="${line.id}"><title>${line.label}</title></path>`,
+      ];
+    }).join('');
+    return `<g class="edge custom-airship" data-lines="${line.id}">${pieces}</g>`;
   }).join('\n');
 }
 
 const KAFRA_ROUTES = [
-  { from: 'aldebaran', to: 'geffen', paths: [[[360, 300], [550, 300]]] },
+  { from: 'aldebaran', to: 'geffen', paths: [[[360, 400], [360, hLaneY(4, 'u')], [vLaneX('D', 'u'), hLaneY(4, 'u')], [vLaneX('D', 'u'), 300], [645, 300]]] },
   {
     from: 'aldebaran',
     to: 'yuno',
-    paths: [[[360, 300], [360, hLaneY(2, 'v')], [550, hLaneY(2, 'v')], [550, 200]]],
+    paths: [[[360, 400], [360, hLaneY(2, 'v')], [550, hLaneY(2, 'v')], [550, 200]]],
   },
   {
     from: 'aldebaran',
     to: 'izlude',
-    paths: [[[360, 300], [360, hLaneY(6, 'v')], [vLaneX('I', 'u'), hLaneY(6, 'v')], [vLaneX('I', 'u'), 800], [1120, 800]]],
+    paths: [[[360, 400], [vLaneX('I', 'u'), hLaneY(4, 'v')], [vLaneX('I', 'u'), 800], [1120, 800]]],
   },
   {
     from: 'morocc',
     to: 'prontera',
-    paths: [[[360, 700], [vLaneX('A', 'u'), 700], [vLaneX('A', 'u'), hLaneY(5, 'v')], [740, hLaneY(5, 'v')], [740, 500]]],
+    paths: [[[550, 700], [550, hLaneY(7, 'u')], [vLaneX('E', 'u'), hLaneY(7, 'u')], [vLaneX('E', 'u'), 500], [740, 500]]],
   },
   {
     from: 'morocc',
     to: 'comodo',
-    paths: [[[360, 700], [360, hLaneY(7, 'w')], [550, hLaneY(7, 'w')], [550, 800]]],
+    paths: [[[550, 700], [550, 900]]],
   },
-  { from: 'morocc', to: 'cmd_fild07', paths: [[[360, 700], [360, 800]]] },
-  { from: 'cmd_fild07', to: 'comodo', paths: [[[360, 800], [550, 800]]] },
-  { from: 'comodo', to: 'umbala', paths: [[[550, 800], [550, 900]]] },
+  { from: 'morocc', to: 'cmd_fild07', paths: [[[360, 800], [360, hLaneY(8, 'u')], [vLaneX('C', 'u'), hLaneY(8, 'u')], [vLaneX('C', 'u'), 700], [550, 700]]] },
+  { from: 'cmd_fild07', to: 'comodo', paths: [[[360, 800], [360, hLaneY(8, 'v')], [vLaneX('C', 'u'), hLaneY(8, 'v')], [vLaneX('C', 'u'), 900], [550, 900]]] },
+  { from: 'comodo', to: 'umbala', paths: [[[550, 900], [360, 900]]] },
   {
     from: 'morocc',
     to: 'payon',
-    paths: [[[360, 700], [360, hLaneY(6, 'u')], [vLaneX('G', 'u'), hLaneY(6, 'u')], [vLaneX('G', 'u'), 300], [930, 300]]],
+    paths: [[[550, 700], [550, hLaneY(7, 'v')], [vLaneX('G', 'u'), hLaneY(7, 'v')], [vLaneX('G', 'u'), 500], [930, 500]]],
   },
   {
     from: 'morocc',
     to: 'alberta',
-    paths: [[[360, 700], [vLaneX('G', 'u'), hLaneY(7, 'v')], [vLaneX('G', 'u'), 900], [930, 900]]],
+    paths: [[[550, 700], [550, hLaneY(7, 'w')], [vLaneX('G', 'u'), hLaneY(7, 'w')], [vLaneX('G', 'u'), 900], [930, 900]]],
   },
   {
     from: 'morocc',
     to: 'izlude',
     line: 'KO',
-    paths: [[[360, 700], [360, hLaneY(7, 'u')], [vLaneX('H', 'v'), hLaneY(7, 'u')], [vLaneX('H', 'v'), hLaneY(8, 'u')], [1120, hLaneY(8, 'u')], [1120, 800]]],
+    paths: [[[550, 700], [vLaneX('C', 'w'), 700], [vLaneX('C', 'w'), hLaneY(8, 'w')], [1120, hLaneY(8, 'w')], [1120, 800]]],
   },
   {
     from: 'geffen',
     to: 'prontera',
-    paths: [[[550, 300], [550, hLaneY(5, 'u')], [740, hLaneY(5, 'u')], [740, 500]]],
+    paths: [[[645, 300], [vLaneX('D', 'v'), 300], [vLaneX('D', 'v'), hLaneY(5, 'u')], [740, hLaneY(5, 'u')], [740, 500]]],
+  },
+  {
+    from: 'payon',
+    to: 'izlude',
+    line: 'KO',
+    paths: [[[930, 500], [vLaneX('G', 'w'), 500], [vLaneX('G', 'w'), hLaneY(8, 'u')], [1120, hLaneY(8, 'u')], [1120, 800]]],
+  },
+  {
+    from: 'geffen',
+    to: 'izlude',
+    line: 'KO',
+    paths: [[[645, 300], [vLaneX('D', 'w'), 300], [vLaneX('D', 'w'), hLaneY(4, 'u')], [vLaneX('I', 'v'), hLaneY(4, 'u')], [vLaneX('I', 'v'), 800], [1120, 800]]],
+  },
+  {
+    from: 'payon',
+    to: 'alberta',
+    paths: [[[930, 500], [930, 900]]],
+  },
+  {
+    from: 'prontera',
+    to: 'alberta',
+    paths: [[[740, 500], [vLaneX('E', 'v'), 500], [vLaneX('E', 'v'), hLaneY(9, 'u')], [930, hLaneY(9, 'u')], [930, 900]]],
+  },
+  {
+    from: 'prontera',
+    to: 'payon',
+    paths: [[[740, 500], [930, 500]]],
+  },
+  {
+    from: 'prontera',
+    to: 'izlude',
+    line: 'KO',
+    paths: [[[740, 500], [vLaneX('E', 'w'), 500], [vLaneX('E', 'w'), hLaneY(8, 'v')], [1120, hLaneY(8, 'v')], [1120, 800]]],
   },
 ];
 
@@ -257,20 +290,16 @@ function kafraSvg() {
       const routes = KAFRA_ROUTES.filter((route) => (route.line ?? 'K') === line);
       if (routes.length === 0) return '';
       const color = line === 'KO' ? '#b3651f' : '#2f7d5b';
-      const casing = routes
-        .flatMap((route) =>
-          route.paths.map((points) => `<path d="${roundedPath(points)}" class="lm-casing" stroke-width="14"/>`),
-        )
-        .join('');
-      const strands = routes
-        .flatMap((route) =>
-          route.paths.map(
-            (points) =>
-              `<path d="${roundedPath(points)}" class="lm-strand" stroke="${color}" stroke-width="9" data-line="${line}"><title>Kafra</title></path>`,
-          ),
-        )
-        .join('');
-      return `<g class="edge custom-kafra" data-lines="${line}">${casing}${strands}</g>`;
+      const pieces = routes.flatMap((route) =>
+        route.paths.flatMap((points) => {
+          const d = roundedPath(points);
+          return [
+            `<path d="${d}" class="lm-casing" stroke-width="14"/>`,
+            `<path d="${d}" class="lm-strand" stroke="${color}" stroke-width="9" data-line="${line}"><title>Kafra</title></path>`,
+          ];
+        }),
+      ).join('');
+      return `<g class="edge custom-kafra" data-lines="${line}">${pieces}</g>`;
     })
     .join('\n');
 }
