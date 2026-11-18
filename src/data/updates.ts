@@ -9,6 +9,16 @@ export interface UpdateEntry {
 export const recentUpdates: UpdateEntry[] = [
   {
     date: '18 de noviembre de 2026',
+    title: 'Enciclopedia: NPCs y tasas reales del servidor',
+    paragraphs: [
+      'Se regeneró el inventario de NPCs desde los scripts activos: 17.757 NPCs en 777 mapas, con 160 NPCs custom de OzRo marcados con la insignia OzRo.',
+      'Cada NPC de tienda o barter ahora guarda su inventario: precios, stock y objetos requeridos para intercambios, visible desde NPCs por mapa.',
+      'Las fichas de monstruos aplican las tasas reales del servidor: el doble de HP para mobs normales y MVPs, y los multiplicadores de drop por tipo de monstruo y de objeto que ya usaba la base de datos.',
+      'Los jefes y MVPs que invocan criaturas muestran su lista de invocaciones tanto en la ficha del monstruo como en el radar de MVPs.',
+    ],
+  },
+  {
+    date: '18 de noviembre de 2026',
     title: 'Limpieza de NPCs obsoletos y fuera de alcance',
     paragraphs: [
       'Se desactivaron NPCs e instancias de contenido posterior al episodio 17.1: Hidden Garden, Lost Farm, Twilight Garden y Water Garden, más las instancias de la Ep18 (Maze of Oz, Thor Gunsu Base, Villa of Deception, Villa of High Priest y Wolves) y el encantador de la 17.2.',
