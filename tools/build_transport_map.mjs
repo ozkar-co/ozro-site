@@ -438,7 +438,7 @@ const transportLayout = {
         region: node.region,
         x: point[0],
         y: point[1],
-        tooltips: graph.tooltips[node.id] ?? [],
+        tooltips: (graph.tooltips[node.id] ?? []).filter((group) => group.type !== 'kafra_tp' && group.label !== 'Doram Kafra'),
       };
     })
     .filter(Boolean),

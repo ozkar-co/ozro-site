@@ -24,28 +24,6 @@
           ]
         },
         {
-          "type": "kafra_tp",
-          "label": "Doram Kafra",
-          "destinations": [
-            {
-              "name": "Southwestern Prontera Field",
-              "map": "prt_fild07"
-            },
-            {
-              "name": "Prontera North Field",
-              "map": "prt_fild01"
-            },
-            {
-              "name": "Byalan Island",
-              "map": "izlu2dun"
-            },
-            {
-              "name": "Prontera South Field",
-              "map": "moc_fild02"
-            }
-          ]
-        },
-        {
           "type": "dungeon_warper",
           "label": "Dungeon Warper",
           "destinations": [
@@ -211,28 +189,6 @@
           ]
         },
         {
-          "type": "kafra_tp",
-          "label": "Doram Kafra",
-          "destinations": [
-            {
-              "name": "Geffen Tower Underground Entrance",
-              "map": "gef_tower"
-            },
-            {
-              "name": "North Field of Mount Mjolnir",
-              "map": "mjolnir_02"
-            },
-            {
-              "name": "Orc Village",
-              "map": "gef_fild10"
-            },
-            {
-              "name": "Glast Heim Entrance",
-              "map": "gef_fild06"
-            }
-          ]
-        },
-        {
           "type": "dungeon_warper",
           "label": "Dungeon Warper",
           "destinations": [
@@ -260,24 +216,6 @@
       "y": 500,
       "tooltips": [
         {
-          "type": "kafra_tp",
-          "label": "Doram Kafra",
-          "destinations": [
-            {
-              "name": "Archer's Village",
-              "map": "pay_arche"
-            },
-            {
-              "name": "Southeast Payon Field",
-              "map": "pay_fild10"
-            },
-            {
-              "name": "Prontera South Field",
-              "map": "moc_fild02"
-            }
-          ]
-        },
-        {
           "type": "dungeon_warper",
           "label": "Dungeon Warper",
           "destinations": [
@@ -304,28 +242,6 @@
       "x": 550,
       "y": 700,
       "tooltips": [
-        {
-          "type": "kafra_tp",
-          "label": "Doram Kafra",
-          "destinations": [
-            {
-              "name": "Morocc Ruins Pyramid",
-              "map": "moc_ruins"
-            },
-            {
-              "name": "Sograt Desert Sphinx",
-              "map": "moc_fild19"
-            },
-            {
-              "name": "Southeast Morocc Field",
-              "map": "moc_fild11"
-            },
-            {
-              "name": "Comodo Beaches",
-              "map": "cmd_fild02"
-            }
-          ]
-        },
         {
           "type": "dungeon_warper",
           "label": "Dungeon Warper (Morocc Ruins)",
@@ -380,16 +296,6 @@
           ]
         },
         {
-          "type": "kafra_tp",
-          "label": "Doram Kafra",
-          "destinations": [
-            {
-              "name": "Aldebaran Border",
-              "map": "yuno_fild01"
-            }
-          ]
-        },
-        {
           "type": "dungeon_warper",
           "label": "Dungeon Warper",
           "destinations": [
@@ -440,28 +346,6 @@
       "y": 200,
       "tooltips": [
         {
-          "type": "kafra_tp",
-          "label": "Doram Kafra",
-          "destinations": [
-            {
-              "name": "West Field of the Abyss Valley",
-              "map": "ein_fild06"
-            },
-            {
-              "name": "Phantasmagorika Excavation",
-              "map": "yuno_fild07"
-            },
-            {
-              "name": "Magma Dungeon Juno Plateau",
-              "map": "yuno_fild03"
-            },
-            {
-              "name": "West Field of Abyss Lake",
-              "map": "hu_fild04"
-            }
-          ]
-        },
-        {
           "type": "dungeon_warper",
           "label": "Dungeon Warper",
           "destinations": [
@@ -483,22 +367,7 @@
       "region": "north",
       "x": 360,
       "y": 100,
-      "tooltips": [
-        {
-          "type": "kafra_tp",
-          "label": "Doram Kafra",
-          "destinations": [
-            {
-              "name": "West Field of the Abyss Valley",
-              "map": "ein_fild06"
-            },
-            {
-              "name": "North Field of Lighthalzen",
-              "map": "lhz_fild01"
-            }
-          ]
-        }
-      ]
+      "tooltips": []
     },
     {
       "id": "lighthalzen",
@@ -507,16 +376,6 @@
       "x": 740,
       "y": 100,
       "tooltips": [
-        {
-          "type": "kafra_tp",
-          "label": "Doram Kafra",
-          "destinations": [
-            {
-              "name": "North Field of Lighthalzen",
-              "map": "lhz_fild01"
-            }
-          ]
-        },
         {
           "type": "dungeon_warper",
           "label": "Dungeon Warper",
@@ -547,26 +406,7 @@
       "region": "north",
       "x": 1120,
       "y": 200,
-      "tooltips": [
-        {
-          "type": "kafra_tp",
-          "label": "Doram Kafra",
-          "destinations": [
-            {
-              "name": "Southern Ice Cave Field",
-              "map": "ra_fild04"
-            },
-            {
-              "name": "Thor Volcano East Field",
-              "map": "ve_fild04"
-            },
-            {
-              "name": "South Veins Field",
-              "map": "ve_fild07"
-            }
-          ]
-        }
-      ]
+      "tooltips": []
     }
   ]
 }
