@@ -112,14 +112,6 @@ const TransportMap = () => {
           Kafra
         </span>
         <span className="transport-legend-item">
-          <svg className="transport-swatch-triangles" viewBox="0 0 28 10" aria-hidden="true">
-            <line x1="0" y1="5" x2="28" y2="5" stroke="#2f7d5b" strokeWidth="4" strokeLinecap="round" />
-            <polygon points="7,1 13,5 7,9" fill="#2f7d5b" />
-            <polygon points="17,1 23,5 17,9" fill="#2f7d5b" />
-          </svg>
-          Kafra unidireccional
-        </span>
-        <span className="transport-legend-item">
           <span className="transport-swatch is-airship-domestic" />
           Airship doméstico
         </span>

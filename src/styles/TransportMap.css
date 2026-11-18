@@ -46,13 +46,7 @@
   background: #888;
 }
 
- .transport-swatch-triangles {
-  width: 28px;
-  height: 10px;
-  display: block;
-}
-
-.transport-swatch.is-kafra {
+ .transport-swatch.is-kafra {
   background: #2f7d5b;
 }
 
