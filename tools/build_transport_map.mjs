@@ -253,34 +253,31 @@ const CUSTOM_KAFRA_PAIRS = new Set(
   KAFRA_ROUTES.map((route) => [route.from, route.to].sort().join('|')),
 );
 
-function arrowPolygon(points, size = 9) {
-  const lengths = [];
-  let total = 0;
+function pointAt(points, distance) {
+  let remaining = distance;
   for (let index = 1; index < points.length; index += 1) {
-    const length = Math.hypot(
-      points[index][0] - points[index - 1][0],
-      points[index][1] - points[index - 1][1],
-    );
-    lengths.push(length);
-    total += length;
+    const [x1, y1] = points[index - 1];
+    const [x2, y2] = points[index];
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const length = Math.hypot(dx, dy);
+    if (remaining <= length || index === points.length - 1) {
+      const ratio = length === 0 ? 0 : Math.min(1, Math.max(0, remaining / length));
+      return {
+        x: x1 + dx * ratio,
+        y: y1 + dy * ratio,
+        ux: dx / (length || 1),
+        uy: dy / (length || 1),
+      };
+    }
+    remaining -= length;
   }
-  if (total === 0) return '';
-  let target = total * 0.55;
-  let index = 0;
-  while (index < lengths.length && target > lengths[index]) {
-    target -= lengths[index];
-    index += 1;
-  }
-  if (index >= lengths.length) index = lengths.length - 1;
-  const [x1, y1] = points[index];
-  const [x2, y2] = points[index + 1];
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const length = Math.hypot(dx, dy) || 1;
-  const ux = dx / length;
-  const uy = dy / length;
-  const x = x1 + ux * target;
-  const y = y1 + uy * target;
+  const [x, y] = points[points.length - 1];
+  return { x, y, ux: 1, uy: 0 };
+}
+
+function triangleAt(points, distance, size = 8) {
+  const { x, y, ux, uy } = pointAt(points, distance);
   const px = -uy;
   const py = ux;
   const tipX = x + ux * size;
@@ -288,7 +285,24 @@ function arrowPolygon(points, size = 9) {
   const baseX = x - ux * size * 0.6;
   const baseY = y - uy * size * 0.6;
   const width = size * 0.6;
-  return `<polygon points="${tipX},${tipY} ${baseX + px * width},${baseY + py * width} ${baseX - px * width},${baseY - py * width}" fill="#2f7d5b"/>`;
+  return `<polygon points="${tipX},${tipY} ${baseX + px * width},${baseY + py * width} ${baseX - px * width},${baseY - py * width}" fill="#2f7d5b" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/>`;
+}
+
+function trianglesAlong(points, spacing = 58, size = 8) {
+  let total = 0;
+  for (let index = 1; index < points.length; index += 1) {
+    total += Math.hypot(
+      points[index][0] - points[index - 1][0],
+      points[index][1] - points[index - 1][1],
+    );
+  }
+  const margin = 40;
+  if (total <= margin * 2) return triangleAt(points, total / 2, size);
+  const triangles = [];
+  for (let distance = margin; distance <= total - margin; distance += spacing) {
+    triangles.push(triangleAt(points, distance, size));
+  }
+  return triangles.join('');
 }
 
 function kafraSvg() {
@@ -302,13 +316,19 @@ function kafraSvg() {
           return [
             `<path d="${d}" class="lm-casing" stroke-width="14"/>`,
             `<path d="${d}" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="${line}"><title>Kafra</title></path>`,
-            line === 'KO' ? arrowPolygon(points) : '',
           ].filter(Boolean);
         }),
       ).join('');
       return `<g class="edge custom-kafra" data-lines="${line}">${pieces}</g>`;
     })
     .join('\n');
+}
+
+function kafraArrowsSvg() {
+  const arrows = KAFRA_ROUTES.filter((route) => route.line === 'KO')
+    .flatMap((route) => route.paths.map((points) => trianglesAlong(points)))
+    .join('');
+  return `<g class="transport-arrows" pointer-events="none">${arrows}</g>`;
 }
 
 function escapeXml(value) {
@@ -357,7 +377,7 @@ function nodeNamesSvg(graph) {
     .map((node) => {
       const point = positions[node.id];
       if (!point) return '';
-      const x = point[0] + 24;
+      const x = point[0] + (node.id === 'alberta' ? 44 : 24);
       const y = point[1] - 14;
       return `<text x="${x}" y="${y}" text-anchor="start" transform="rotate(-32 ${x} ${y})">${escapeXml(node.name)}</text>`;
     })
@@ -406,7 +426,7 @@ function decorate(graph, svg) {
 
   const firstNode = next.indexOf('<g class="node"');
   if (firstNode >= 0) {
-    next = `${next.slice(0, firstNode)}${kafraSvg()}\n${airshipSvg()}\n${next.slice(firstNode)}`;
+    next = `${next.slice(0, firstNode)}${kafraSvg()}\n${airshipSvg()}\n${kafraArrowsSvg()}\n${next.slice(firstNode)}`;
   }
 
   next = removeLegend(next);
@@ -418,8 +438,6 @@ function decorate(graph, svg) {
       .node .lm-shape { fill: #ffffff; stroke: #374151; stroke-width: 2; }
       .node .lm-sheen { display: none; }
       .node .lm-label { font-weight: 700; }
-      .edge[data-lines="KO"] .lm-casing,
-      .edge[data-lines="KO"] .lm-strand { stroke-dasharray: 10 8; }
       .transport-names text {
         fill: #1d2530;
         font-size: 12px;
@@ -442,6 +460,26 @@ const model = layout(parseFlow(dot));
 const svg = decorate(graph, render(model, { theme: 'minimal' }));
 await writeFile(outputPath, svg);
 
+const nodeNames = new Map(graph.nodes.map((node) => [node.id, node.name]));
+const normalKafra = new Map();
+
+for (const route of KAFRA_ROUTES) {
+  const fromName = nodeNames.get(route.from);
+  const toName = nodeNames.get(route.to);
+  if (!fromName || !toName) continue;
+
+  const add = (id, name, map) => {
+    if (!normalKafra.has(id)) normalKafra.set(id, []);
+    const list = normalKafra.get(id);
+    if (!list.some((destination) => destination.name === name && destination.map === map)) {
+      list.push({ name, map });
+    }
+  };
+
+  add(route.from, toName, route.to);
+  if ((route.line ?? 'K') === 'K') add(route.to, fromName, route.from);
+}
+
 const transportLayout = {
   version: Date.now(),
   viewBox: VIEW_BOX,
@@ -449,13 +487,28 @@ const transportLayout = {
     .map((node) => {
       const point = positions[node.id];
       if (!point) return null;
+      const tooltips = (graph.tooltips[node.id] ?? [])
+        .filter((group) => group.type !== 'kafra_tp' && group.label !== 'Doram Kafra')
+        .map((group) => ({ ...group, destinations: [...group.destinations] }));
+      const normal = normalKafra.get(node.id) ?? [];
+      if (normal.length > 0) {
+        const existing = tooltips.find((group) => group.type === 'kafra_fields');
+        if (existing) {
+          const seen = new Set(existing.destinations.map((destination) => `${destination.name}|${destination.map}`));
+          for (const destination of normal) {
+            if (!seen.has(`${destination.name}|${destination.map}`)) existing.destinations.push(destination);
+          }
+        } else {
+          tooltips.unshift({ type: 'kafra_fields', label: 'Kafra', destinations: normal });
+        }
+      }
       return {
         id: node.id,
         name: node.name,
         region: node.region,
         x: point[0],
         y: point[1],
-        tooltips: (graph.tooltips[node.id] ?? []).filter((group) => group.type !== 'kafra_tp' && group.label !== 'Doram Kafra'),
+        tooltips,
       };
     })
     .filter(Boolean),

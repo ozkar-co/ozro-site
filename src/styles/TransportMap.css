@@ -23,6 +23,47 @@
   max-width: 620px;
 }
 
+.transport-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+  margin: 0 0 1rem;
+  color: #555;
+  font-size: 0.8rem;
+}
+
+.transport-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.transport-swatch {
+  display: inline-block;
+  width: 22px;
+  height: 5px;
+  border-radius: 999px;
+  background: #888;
+}
+
+ .transport-swatch-triangles {
+  width: 28px;
+  height: 10px;
+  display: block;
+}
+
+.transport-swatch.is-kafra {
+  background: #2f7d5b;
+}
+
+.transport-swatch.is-airship-domestic {
+  background: #2f6fae;
+}
+
+.transport-swatch.is-airship-international {
+  background: #7b5fb0;
+}
+
 .transport-message {
   color: #666;
   padding: 2rem 0;

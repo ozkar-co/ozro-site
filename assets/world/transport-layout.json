@@ -1,5 +1,5 @@
 {
-  "version": 1794972835062,
+  "version": 1794973184411,
   "viewBox": {
     "x": 280,
     "y": 20,
@@ -21,6 +21,26 @@
             {
               "name": "Orc Dungeon",
               "map": "gef_fild10"
+            },
+            {
+              "name": "Morocc",
+              "map": "morocc"
+            },
+            {
+              "name": "Geffen",
+              "map": "geffen"
+            },
+            {
+              "name": "Alberta",
+              "map": "alberta"
+            },
+            {
+              "name": "Payon",
+              "map": "payon"
+            },
+            {
+              "name": "Izlude",
+              "map": "izlude"
             }
           ]
         },
@@ -52,6 +72,16 @@
       "y": 800,
       "tooltips": [
         {
+          "type": "kafra_fields",
+          "label": "Kafra",
+          "destinations": [
+            {
+              "name": "Aldebaran",
+              "map": "aldebaran"
+            }
+          ]
+        },
+        {
           "type": "ships",
           "label": "Barcos",
           "destinations": [
@@ -78,6 +108,24 @@
       "x": 930,
       "y": 900,
       "tooltips": [
+        {
+          "type": "kafra_fields",
+          "label": "Kafra",
+          "destinations": [
+            {
+              "name": "Morocc",
+              "map": "morocc"
+            },
+            {
+              "name": "Payon",
+              "map": "payon"
+            },
+            {
+              "name": "Prontera",
+              "map": "prontera"
+            }
+          ]
+        },
         {
           "type": "port",
           "label": "Puerto norte",
@@ -186,6 +234,18 @@
             {
               "name": "Mjolnir Dead Pit",
               "map": "mjolnir_02"
+            },
+            {
+              "name": "Aldebaran",
+              "map": "aldebaran"
+            },
+            {
+              "name": "Prontera",
+              "map": "prontera"
+            },
+            {
+              "name": "Izlude",
+              "map": "izlude"
             }
           ]
         },
@@ -217,6 +277,28 @@
       "y": 500,
       "tooltips": [
         {
+          "type": "kafra_fields",
+          "label": "Kafra",
+          "destinations": [
+            {
+              "name": "Morocc",
+              "map": "morocc"
+            },
+            {
+              "name": "Izlude",
+              "map": "izlude"
+            },
+            {
+              "name": "Alberta",
+              "map": "alberta"
+            },
+            {
+              "name": "Prontera",
+              "map": "prontera"
+            }
+          ]
+        },
+        {
           "type": "dungeon_warper",
           "label": "Dungeon Warper",
           "destinations": [
@@ -244,6 +326,36 @@
       "y": 700,
       "tooltips": [
         {
+          "type": "kafra_fields",
+          "label": "Kafra",
+          "destinations": [
+            {
+              "name": "Prontera",
+              "map": "prontera"
+            },
+            {
+              "name": "Comodo",
+              "map": "comodo"
+            },
+            {
+              "name": "Pharos Beacon",
+              "map": "cmd_fild07"
+            },
+            {
+              "name": "Payon",
+              "map": "payon"
+            },
+            {
+              "name": "Alberta",
+              "map": "alberta"
+            },
+            {
+              "name": "Izlude",
+              "map": "izlude"
+            }
+          ]
+        },
+        {
           "type": "dungeon_warper",
           "label": "Dungeon Warper (Morocc Ruins)",
           "destinations": [
@@ -269,7 +381,26 @@
       "region": "center",
       "x": 550,
       "y": 900,
-      "tooltips": []
+      "tooltips": [
+        {
+          "type": "kafra_fields",
+          "label": "Kafra",
+          "destinations": [
+            {
+              "name": "Morocc",
+              "map": "morocc"
+            },
+            {
+              "name": "Pharos Beacon",
+              "map": "cmd_fild07"
+            },
+            {
+              "name": "Umbala",
+              "map": "umbala"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "umbala",
@@ -277,7 +408,18 @@
       "region": "center",
       "x": 360,
       "y": 900,
-      "tooltips": []
+      "tooltips": [
+        {
+          "type": "kafra_fields",
+          "label": "Kafra",
+          "destinations": [
+            {
+              "name": "Comodo",
+              "map": "comodo"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "aldebaran",
@@ -293,6 +435,18 @@
             {
               "name": "Mjolnir Dead Pit",
               "map": "mjolnir_02"
+            },
+            {
+              "name": "Geffen",
+              "map": "geffen"
+            },
+            {
+              "name": "Yuno",
+              "map": "yuno"
+            },
+            {
+              "name": "Izlude",
+              "map": "izlude"
             }
           ]
         },
@@ -324,6 +478,20 @@
       "y": 800,
       "tooltips": [
         {
+          "type": "kafra_fields",
+          "label": "Kafra",
+          "destinations": [
+            {
+              "name": "Morocc",
+              "map": "morocc"
+            },
+            {
+              "name": "Comodo",
+              "map": "comodo"
+            }
+          ]
+        },
+        {
           "type": "ships",
           "label": "Barcos",
           "destinations": [
@@ -346,6 +514,16 @@
       "x": 550,
       "y": 200,
       "tooltips": [
+        {
+          "type": "kafra_fields",
+          "label": "Kafra",
+          "destinations": [
+            {
+              "name": "Aldebaran",
+              "map": "aldebaran"
+            }
+          ]
+        },
         {
           "type": "dungeon_warper",
           "label": "Dungeon Warper",
