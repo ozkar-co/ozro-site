@@ -99,19 +99,30 @@ const TransportMap = () => {
               src={`${MAP_URL}?v=${layout.version}`}
               alt="Mapa esquemático de transporte de Rune-Midgard"
             />
-            {overlayNodes.map((node) => (
-              <button
-                key={node.id}
-                type="button"
-                className={`transport-node-hit${selected === node.id ? ' is-active' : ''}`}
-                style={{ left: `${node.left}%`, top: `${node.top}%` }}
-                aria-label={node.name}
-                aria-pressed={selected === node.id}
-                onClick={() => setSelected((current) => (current === node.id ? null : node.id))}
-              >
-                <span className="transport-node-dot" />
-              </button>
-            ))}
+            {overlayNodes.map((node) =>
+              node.tooltips.length === 0 ? (
+                <span
+                  key={node.id}
+                  className="transport-node-hit is-disabled"
+                  style={{ left: `${node.left}%`, top: `${node.top}%` }}
+                  aria-hidden="true"
+                >
+                  <span className="transport-node-dot" />
+                </span>
+              ) : (
+                <button
+                  key={node.id}
+                  type="button"
+                  className={`transport-node-hit${selected === node.id ? ' is-active' : ''}`}
+                  style={{ left: `${node.left}%`, top: `${node.top}%` }}
+                  aria-label={node.name}
+                  aria-pressed={selected === node.id}
+                  onClick={() => setSelected((current) => (current === node.id ? null : node.id))}
+                >
+                  <span className="transport-node-dot" />
+                </button>
+              ),
+            )}
           </div>
 
           {selectedOverlay && (

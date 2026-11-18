@@ -66,7 +66,7 @@
 }
 
 .transport-node-dot {
-  width: 42%;
+  width: 56%;
   aspect-ratio: 1;
   border-radius: 50%;
   background: #111;
@@ -74,10 +74,19 @@
   transition: transform 0.15s ease;
 }
 
-.transport-node-hit:hover .transport-node-dot,
+.transport-node-hit:not(.is-disabled):hover .transport-node-dot,
 .transport-node-hit:focus-visible .transport-node-dot,
 .transport-node-hit.is-active .transport-node-dot {
   transform: scale(1.35);
+}
+
+.transport-node-hit.is-disabled {
+  cursor: default;
+}
+
+.transport-node-hit.is-disabled .transport-node-dot {
+  background: #9ca3af;
+  box-shadow: none;
 }
 
 .transport-node-hit:focus-visible {
