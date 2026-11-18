@@ -9,6 +9,22 @@ export interface UpdateEntry {
 export const recentUpdates: UpdateEntry[] = [
   {
     date: '18 de noviembre de 2026',
+    title: 'Limpieza de NPCs obsoletos y fuera de alcance',
+    paragraphs: [
+      'Se desactivaron NPCs e instancias de contenido posterior al episodio 17.1: Hidden Garden, Lost Farm, Twilight Garden y Water Garden, más las instancias de la Ep18 (Maze of Oz, Thor Gunsu Base, Villa of Deception, Villa of High Priest y Wolves) y el encantador de la 17.2.',
+      'También se retiraron los barter de la Ep18 y los cofres de logros, cuya función ya estaba desactivada.',
+      'Se desactivaron los servicios de teleport obsoletos de Kafra, Zonda y el Representante del Airship, reemplazados por los warps personalizados.',
+    ],
+  },
+  {
+    date: '18 de noviembre de 2026',
+    title: 'Limpieza del menú principal del cliente',
+    paragraphs: [
+      'Se quitaron del menú principal los iconos de Descripción de atajos (el teclado), Battlegrounds, Tip, Cash Shop, Asistencia, Logros y REC/Repetición.',
+    ],
+  },
+  {
+    date: '18 de noviembre de 2026',
     title: 'Corregido el bloqueo al cancelar diálogos de NPC',
     paragraphs: [
       'Cancelar un menú de NPC con Esc/X ya no deja al personaje bloqueado ni obliga a reloguear.',
