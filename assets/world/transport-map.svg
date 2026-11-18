@@ -27,187 +27,150 @@
 </style>
 <defs><linearGradient id="lm-sheen-minimal-60" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f4f8" stop-opacity="1"/><stop offset="0.6" stop-color="#f1f4f8" stop-opacity="0"/></linearGradient></defs>
 <rect x="298.5" y="38.5" width="883" height="1153" class="lm-bg" fill="#f1f3f6"/>
+<g class="transport-grid" pointer-events="none">
+<line x1="342" y1="65" x2="342" y2="950" />
+<text x="342" y="52" text-anchor="middle">Au</text>
+<line x1="360" y1="65" x2="360" y2="950" />
+<text x="360" y="52" text-anchor="middle">Av</text>
+<line x1="378" y1="65" x2="378" y2="950" />
+<text x="378" y="52" text-anchor="middle">Aw</text>
+<line x1="455" y1="65" x2="455" y2="950" />
+<text x="455" y="52" text-anchor="middle">Bu</text>
+<line x1="550" y1="65" x2="550" y2="950" />
+<text x="550" y="52" text-anchor="middle">Cu</text>
+<line x1="636" y1="65" x2="636" y2="950" />
+<text x="636" y="52" text-anchor="middle">Du</text>
+<line x1="654" y1="65" x2="654" y2="950" />
+<text x="654" y="52" text-anchor="middle">Dv</text>
+<line x1="731" y1="65" x2="731" y2="950" />
+<text x="731" y="52" text-anchor="middle">Eu</text>
+<line x1="749" y1="65" x2="749" y2="950" />
+<text x="749" y="52" text-anchor="middle">Ev</text>
+<line x1="826" y1="65" x2="826" y2="950" />
+<text x="826" y="52" text-anchor="middle">Fu</text>
+<line x1="844" y1="65" x2="844" y2="950" />
+<text x="844" y="52" text-anchor="middle">Fv</text>
+<line x1="912" y1="65" x2="912" y2="950" />
+<text x="912" y="52" text-anchor="middle">Gu</text>
+<line x1="930" y1="65" x2="930" y2="950" />
+<text x="930" y="52" text-anchor="middle">Gv</text>
+<line x1="948" y1="65" x2="948" y2="950" />
+<text x="948" y="52" text-anchor="middle">Gw</text>
+<line x1="1016" y1="65" x2="1016" y2="950" />
+<text x="1016" y="52" text-anchor="middle">Hu</text>
+<line x1="1034" y1="65" x2="1034" y2="950" />
+<text x="1034" y="52" text-anchor="middle">Hv</text>
+<line x1="1102" y1="65" x2="1102" y2="950" />
+<text x="1102" y="52" text-anchor="middle">Iu</text>
+<line x1="1120" y1="65" x2="1120" y2="950" />
+<text x="1120" y="52" text-anchor="middle">Iv</text>
+<line x1="1138" y1="65" x2="1138" y2="950" />
+<text x="1138" y="52" text-anchor="middle">Iw</text>
+<line x1="330" y1="100" x2="1160" y2="100" />
+<text x="320" y="104" text-anchor="end">1u</text>
+<line x1="330" y1="191" x2="1160" y2="191" />
+<text x="320" y="195" text-anchor="end">2u</text>
+<line x1="330" y1="209" x2="1160" y2="209" />
+<text x="320" y="213" text-anchor="end">2v</text>
+<line x1="330" y1="300" x2="1160" y2="300" />
+<text x="320" y="304" text-anchor="end">3u</text>
+<line x1="330" y1="382" x2="1160" y2="382" />
+<text x="320" y="386" text-anchor="end">4u</text>
+<line x1="330" y1="400" x2="1160" y2="400" />
+<text x="320" y="404" text-anchor="end">4v</text>
+<line x1="330" y1="418" x2="1160" y2="418" />
+<text x="320" y="422" text-anchor="end">4w</text>
+<line x1="330" y1="482" x2="1160" y2="482" />
+<text x="320" y="486" text-anchor="end">5u</text>
+<line x1="330" y1="500" x2="1160" y2="500" />
+<text x="320" y="504" text-anchor="end">5v</text>
+<line x1="330" y1="518" x2="1160" y2="518" />
+<text x="320" y="522" text-anchor="end">5w</text>
+<line x1="330" y1="591" x2="1160" y2="591" />
+<text x="320" y="595" text-anchor="end">6u</text>
+<line x1="330" y1="609" x2="1160" y2="609" />
+<text x="320" y="613" text-anchor="end">6v</text>
+<line x1="330" y1="682" x2="1160" y2="682" />
+<text x="320" y="686" text-anchor="end">7u</text>
+<line x1="330" y1="700" x2="1160" y2="700" />
+<text x="320" y="704" text-anchor="end">7v</text>
+<line x1="330" y1="718" x2="1160" y2="718" />
+<text x="320" y="722" text-anchor="end">7w</text>
+<line x1="330" y1="782" x2="1160" y2="782" />
+<text x="320" y="786" text-anchor="end">8u</text>
+<line x1="330" y1="800" x2="1160" y2="800" />
+<text x="320" y="804" text-anchor="end">8v</text>
+<line x1="330" y1="818" x2="1160" y2="818" />
+<text x="320" y="822" text-anchor="end">8w</text>
+<line x1="330" y1="900" x2="1160" y2="900" />
+<text x="320" y="904" text-anchor="end">9u</text>
+</g>
 <g class="edge" data-from="prontera" data-to="geffen" data-lines="K">
 <path d="M718.5,492.7 L582,492.7 Q550,492.7 550,460.7 L550,321.5" class="lm-casing" stroke-width="22"/>
 <path d="M718.5,492.7 L582,492.7 Q550,492.7 550,460.7 L550,321.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-<g class="lm-marks" data-line="K">
-<polygon points="550,327.5 547.3,337.9 552.7,337.9" fill="#ffffff"/>
-</g>
+
 </g>
 <g class="edge" data-from="prontera" data-to="payon" data-lines="K">
 <path d="M761.5,484.3 L882.6,484.3 Q914.6,484.3 914.6,452.3 L914.6,321.5" class="lm-casing" stroke-width="22"/>
 <path d="M761.5,484.3 L882.6,484.3 Q914.6,484.3 914.6,452.3 L914.6,321.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-<g class="lm-marks" data-line="K">
-<polygon points="914.6,327.5 911.9,337.9 917.3,337.9" fill="#ffffff"/>
+
 </g>
-</g>
-<g class="edge" data-from="prontera" data-to="morocc" data-lines="K">
-<path d="M718.5,507.3 L384.7,507.3 Q352.7,507.3 352.7,539.3 L352.7,678.5" class="lm-casing" stroke-width="22"/>
-<path d="M718.5,507.3 L384.7,507.3 Q352.7,507.3 352.7,539.3 L352.7,678.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-<g class="lm-marks" data-line="K">
-<polygon points="552.9,507.3 563.3,510 563.3,504.6" fill="#ffffff"/>
-<polygon points="352.7,672.5 355.4,662.2 350,662.2" fill="#ffffff"/>
-</g>
-</g>
+
 <g class="edge" data-from="prontera" data-to="alberta" data-lines="K">
 <path d="M761.5,520.3 L898,520.3 Q930,520.3 930,552.3 L930,878.5" class="lm-casing" stroke-width="22"/>
 <path d="M761.5,520.3 L898,520.3 Q930,520.3 930,552.3 L930,878.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-<g class="lm-marks" data-line="K">
-<polygon points="930,872.5 932.7,862.2 927.3,862.2" fill="#ffffff"/>
-<polygon points="930,632.5 932.7,622.2 927.3,622.2" fill="#ffffff"/>
-</g>
+
 </g>
 <g class="edge" data-from="alberta" data-to="payon" data-lines="K">
 <path d="M930,878.5 L930,321.5" class="lm-casing" stroke-width="22"/>
 <path d="M930,878.5 L930,321.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-<g class="lm-marks" data-line="K">
-<polygon points="930,327.5 927.3,337.8 932.7,337.8" fill="#ffffff"/>
-<polygon points="930,567.5 927.3,577.8 932.7,577.8" fill="#ffffff"/>
-<polygon points="930,807.5 927.3,817.8 932.7,817.8" fill="#ffffff"/>
-</g>
+
 </g>
 <g class="edge" data-from="alberta" data-to="morocc" data-lines="K">
 <path d="M924.1,878.5 L924.1,746.5 Q924.1,714.5 892.1,714.5 L381.5,714.5" class="lm-casing" stroke-width="22"/>
 <path d="M924.1,878.5 L924.1,746.5 Q924.1,714.5 892.1,714.5 L381.5,714.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-<g class="lm-marks" data-line="K">
-<polygon points="387.5,714.5 397.8,717.2 397.8,711.8" fill="#ffffff"/>
-<polygon points="627.5,714.5 637.8,717.2 637.8,711.8" fill="#ffffff"/>
+
 </g>
-</g>
-<g class="edge" data-from="geffen" data-to="aldebaran" data-lines="K">
-<path d="M528.5,300 L381.5,300" class="lm-casing" stroke-width="22"/>
-<path d="M528.5,300 L381.5,300" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-<g class="lm-marks" data-line="K">
-<polygon points="387.5,300 397.9,302.7 397.9,297.3" fill="#ffffff"/>
-</g>
-</g>
-<g class="edge" data-from="aldebaran" data-to="izlude" data-lines="K">
-<path d="M367.3,321.5 L367.3,525.5 Q367.3,557.5 399.3,557.5 L1084.7,557.5 Q1116.7,557.5 1116.7,589.5 L1116.7,778.5" class="lm-casing" stroke-width="22"/>
-<path d="M367.3,321.5 L367.3,525.5 Q367.3,557.5 399.3,557.5 L1084.7,557.5 Q1116.7,557.5 1116.7,589.5 L1116.7,778.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-<g class="lm-marks" data-line="K">
-<polygon points="638.6,557.5 628.2,554.8 628.2,560.2" fill="#ffffff"/>
-<polygon points="855.7,557.5 845.3,554.8 845.3,560.2" fill="#ffffff"/>
-<polygon points="1116.7,772.5 1119.4,762.2 1114,762.2" fill="#ffffff"/>
-</g>
-</g>
-<g class="edge" data-from="aldebaran" data-to="yuno" data-lines="K">
-<path d="M360,278.5 L360,239.3 Q360,207.3 392,207.3 L528.5,207.3" class="lm-casing" stroke-width="22"/>
-<path d="M360,278.5 L360,239.3 Q360,207.3 392,207.3 L528.5,207.3" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-<g class="lm-marks" data-line="K">
-<polygon points="522.5,207.3 512.2,204.6 512.2,210" fill="#ffffff"/>
-</g>
-</g>
-<g class="edge" data-from="comodo" data-to="morocc" data-lines="K">
-<path d="M550,778.5 L550,747.3 Q550,716 518.8,716 L381.5,716" class="lm-casing" stroke-width="22"/>
-<path d="M550,778.5 L550,747.3 Q550,716 518.8,716 L381.5,716" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-<g class="lm-marks" data-line="K">
-<polygon points="387.5,716 397.9,718.7 397.9,713.3" fill="#ffffff"/>
-</g>
-</g>
-<g class="edge" data-from="comodo" data-to="umbala" data-lines="K">
-<path d="M550,821.5 L550,878.5" class="lm-casing" stroke-width="22"/>
-<path d="M550,821.5 L550,878.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-<g class="lm-marks" data-line="K">
-<polygon points="550,872.5 552.7,862.2 547.3,862.2" fill="#ffffff"/>
-</g>
-</g>
+
+
+
+
+
 <g class="edge" data-from="morocc" data-to="payon" data-lines="K">
 <path d="M381.5,680.8 L888.4,680.8 Q920.4,680.8 920.4,648.8 L920.4,321.5" class="lm-casing" stroke-width="22"/>
 <path d="M381.5,680.8 L888.4,680.8 Q920.4,680.8 920.4,648.8 L920.4,321.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-<g class="lm-marks" data-line="K">
-<polygon points="552.6,680.8 542.3,678.1 542.3,683.5" fill="#ffffff"/>
-<polygon points="714.6,680.8 704.3,678.1 704.3,683.5" fill="#ffffff"/>
-<polygon points="920.4,327.5 917.7,337.9 923.1,337.9" fill="#ffffff"/>
-<polygon points="920.4,567.5 917.7,577.8 923.1,577.8" fill="#ffffff"/>
+
 </g>
-</g>
-<g class="edge" data-from="comodo" data-to="cmd_fild07" data-lines="K">
-<path d="M528.5,800 L381.5,800" class="lm-casing" stroke-width="22"/>
-<path d="M528.5,800 L381.5,800" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-<g class="lm-marks" data-line="K">
-<polygon points="387.5,800 397.9,802.7 397.9,797.3" fill="#ffffff"/>
-</g>
-</g>
-<g class="edge" data-from="morocc" data-to="cmd_fild07" data-lines="K">
-<path d="M360,721.5 L360,778.5" class="lm-casing" stroke-width="22"/>
-<path d="M360,721.5 L360,778.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-<g class="lm-marks" data-line="K">
-<polygon points="360,772.5 362.7,762.2 357.3,762.2" fill="#ffffff"/>
-</g>
-</g>
+
+
 <g class="edge" data-from="prontera" data-to="izlude" data-lines="KO">
 <path d="M761.5,489.9 L1091.3,489.9 Q1123.3,489.9 1123.3,521.9 L1123.3,778.5" class="lm-casing" stroke-width="22"/>
 <path d="M761.5,489.9 L1091.3,489.9 Q1123.3,489.9 1123.3,521.9 L1123.3,778.5" class="lm-strand" stroke="#b3651f" stroke-width="9" data-line="KO"><title>Kafra unidireccional</title></path>
-<g class="lm-marks" data-line="KO">
-<polygon points="925.1,489.9 914.7,487.2 914.7,492.6" fill="#ffffff"/>
-<polygon points="1123.3,772.5 1126,762.2 1120.6,762.2" fill="#ffffff"/>
-</g>
+
 </g>
 <g class="edge" data-from="izlude" data-to="geffen" data-lines="KO">
 <path d="M1098.5,809.8 L974.8,809.8 Q942.8,809.8 942.8,777.8 L942.8,542.4 Q942.8,510.4 910.8,510.4 L829.5,510.4 Q797.5,510.4 797.5,478.4 L797.5,332 Q797.5,300 765.5,300 L571.5,300" class="lm-casing" stroke-width="22"/>
 <path d="M1098.5,809.8 L974.8,809.8 Q942.8,809.8 942.8,777.8 L942.8,542.4 Q942.8,510.4 910.8,510.4 L829.5,510.4 Q797.5,510.4 797.5,478.4 L797.5,332 Q797.5,300 765.5,300 L571.5,300" class="lm-strand" stroke="#b3651f" stroke-width="9" data-line="KO"><title>Kafra unidireccional</title></path>
-<g class="lm-marks" data-line="KO">
-<polygon points="577.5,300 587.8,302.7 587.8,297.3" fill="#ffffff"/>
-</g>
+
 </g>
 <g class="edge" data-from="izlude" data-to="payon" data-lines="KO">
 <path d="M1098.5,790.2 L980.4,790.2 Q948.4,790.2 948.4,758.2 L948.4,321.5" class="lm-casing" stroke-width="22"/>
 <path d="M1098.5,790.2 L980.4,790.2 Q948.4,790.2 948.4,758.2 L948.4,321.5" class="lm-strand" stroke="#b3651f" stroke-width="9" data-line="KO"><title>Kafra unidireccional</title></path>
-<g class="lm-marks" data-line="KO">
-<polygon points="948.4,327.5 945.7,337.9 951.1,337.9" fill="#ffffff"/>
-<polygon points="948.4,567.5 945.7,577.9 951.1,577.9" fill="#ffffff"/>
-</g>
+
 </g>
 <g class="edge" data-from="izlude" data-to="morocc" data-lines="KO">
 <path d="M1107.7,778.5 L1107.7,728.3 Q1107.7,696.3 1075.7,696.3 L381.5,696.3" class="lm-casing" stroke-width="22"/>
 <path d="M1107.7,778.5 L1107.7,728.3 Q1107.7,696.3 1075.7,696.3 L381.5,696.3" class="lm-strand" stroke="#b3651f" stroke-width="9" data-line="KO"><title>Kafra unidireccional</title></path>
-<g class="lm-marks" data-line="KO">
-<polygon points="387.5,696.3 397.8,699 397.8,693.6" fill="#ffffff"/>
-<polygon points="627.5,696.3 637.8,699 637.8,693.6" fill="#ffffff"/>
-<polygon points="867.5,696.3 877.9,699 877.9,693.6" fill="#ffffff"/>
+
 </g>
-</g>
-<g class="edge" data-from="yuno" data-to="einbroch" data-lines="AD">
-<path d="M528.5,192.7 L392,192.7 Q360,192.7 360,160.7 L360,121.5" class="lm-casing" stroke-width="22"/>
-<path d="M528.5,192.7 L392,192.7 Q360,192.7 360,160.7 L360,121.5" class="lm-strand" stroke="#2f6fae" stroke-width="9" data-line="AD"><title>Airship doméstico</title></path>
-<g class="lm-marks" data-line="AD">
-<polygon points="360,127.5 357.3,137.9 362.7,137.9" fill="#ffffff"/>
-</g>
-</g>
-<g class="edge" data-from="einbroch" data-to="lighthalzen" data-lines="AD">
-<path d="M381.5,100 L908.5,100" class="lm-casing" stroke-width="22"/>
-<path d="M381.5,100 L908.5,100" class="lm-strand" stroke="#2f6fae" stroke-width="9" data-line="AD"><title>Airship doméstico</title></path>
-<g class="lm-marks" data-line="AD">
-<polygon points="902.5,100 892.2,97.3 892.2,102.7" fill="#ffffff"/>
-<polygon points="662.5,100 652.2,97.3 652.2,102.7" fill="#ffffff"/>
-<polygon points="422.5,100 412.2,97.3 412.2,102.7" fill="#ffffff"/>
-</g>
-</g>
-<g class="edge" data-from="yuno" data-to="hugel" data-lines="AD">
-<path d="M571.5,200 L1098.5,200" class="lm-casing" stroke-width="22"/>
-<path d="M571.5,200 L1098.5,200" class="lm-strand" stroke="#2f6fae" stroke-width="9" data-line="AD"><title>Airship doméstico</title></path>
-<g class="lm-marks" data-line="AD">
-<polygon points="1092.5,200 1082.2,197.3 1082.2,202.7" fill="#ffffff"/>
-<polygon points="852.5,200 842.2,197.3 842.2,202.7" fill="#ffffff"/>
-<polygon points="612.5,200 602.2,197.3 602.2,202.7" fill="#ffffff"/>
-</g>
-</g>
-<g class="edge" data-from="yuno" data-to="rachel" data-lines="AI">
-<path d="M571.5,207.3 L955.5,207.3 Q987.5,207.3 987.5,239.3 L987.5,268 Q987.5,300 1019.5,300 L1098.5,300" class="lm-casing" stroke-width="22"/>
-<path d="M571.5,207.3 L955.5,207.3 Q987.5,207.3 987.5,239.3 L987.5,268 Q987.5,300 1019.5,300 L1098.5,300" class="lm-strand" stroke="#7b5fb0" stroke-width="9" data-line="AI"><title>Airship internacional</title></path>
-<g class="lm-marks" data-line="AI">
-<polygon points="762.2,207.3 751.8,204.6 751.8,210" fill="#ffffff"/>
-<polygon points="1092.5,300 1082.2,297.3 1082.2,302.7" fill="#ffffff"/>
-</g>
-</g>
-<g class="edge" data-from="rachel" data-to="izlude" data-lines="AI">
-<path d="M1120,321.5 L1120,778.5" class="lm-casing" stroke-width="22"/>
-<path d="M1120,321.5 L1120,778.5" class="lm-strand" stroke="#7b5fb0" stroke-width="9" data-line="AI"><title>Airship internacional</title></path>
-<g class="lm-marks" data-line="AI">
-<polygon points="1120,772.5 1122.7,762.2 1117.3,762.2" fill="#ffffff"/>
-<polygon points="1120,532.5 1122.7,522.2 1117.3,522.2" fill="#ffffff"/>
-</g>
-</g>
+
+
+
+
+
+<g class="edge custom-kafra" data-lines="K"><path d="M 360 300 L 550 300" class="lm-casing" stroke-width="14"/><path d="M 360 300 L 360 221 Q 360 209 372 209 L 545.5 209 Q 550 209 550 204.5 L 550 200" class="lm-casing" stroke-width="14"/><path d="M 360 300 L 360 388 Q 360 400 372 400 L 443 400 Q 455 400 455 412 L 455 597 Q 455 609 467 609 L 1090 609 Q 1102 609 1102 621 L 1102 791 Q 1102 800 1111 800 L 1120 800" class="lm-casing" stroke-width="14"/><path d="M 360 700 L 351 700 Q 342 700 342 691 L 342 512 Q 342 500 354 500 L 739.5 500 Q 740 500 740 500 L 740 500" class="lm-casing" stroke-width="14"/><path d="M 360 700 L 360 709 Q 360 718 369 718 L 538 718 Q 550 718 550 730 L 550 800" class="lm-casing" stroke-width="14"/><path d="M 360 700 L 360 800" class="lm-casing" stroke-width="14"/><path d="M 360 800 L 550 800" class="lm-casing" stroke-width="14"/><path d="M 550 800 L 550 900" class="lm-casing" stroke-width="14"/><path d="M 360 300 L 550 300" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path><path d="M 360 300 L 360 221 Q 360 209 372 209 L 545.5 209 Q 550 209 550 204.5 L 550 200" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path><path d="M 360 300 L 360 388 Q 360 400 372 400 L 443 400 Q 455 400 455 412 L 455 597 Q 455 609 467 609 L 1090 609 Q 1102 609 1102 621 L 1102 791 Q 1102 800 1111 800 L 1120 800" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path><path d="M 360 700 L 351 700 Q 342 700 342 691 L 342 512 Q 342 500 354 500 L 739.5 500 Q 740 500 740 500 L 740 500" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path><path d="M 360 700 L 360 709 Q 360 718 369 718 L 538 718 Q 550 718 550 730 L 550 800" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path><path d="M 360 700 L 360 800" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path><path d="M 360 800 L 550 800" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path><path d="M 550 800 L 550 900" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path></g>
+<g class="edge custom-airship" data-lines="AD"><path d="M 360 100 L 930 100" class="lm-casing" stroke-width="14"/><path d="M 360 100 L 360 179 Q 360 191 372 191 L 545.5 191 Q 550 191 550 195.5 L 550 200" class="lm-casing" stroke-width="14"/><path d="M 550 200 L 550 195.5 Q 550 191 554.5 191 L 1115.5 191 Q 1120 191 1120 195.5 L 1120 200" class="lm-casing" stroke-width="14"/><path d="M 360 100 L 930 100" class="lm-strand" stroke="#2f6fae" stroke-width="9" data-line="AD"><title>Airship doméstico</title></path><path d="M 360 100 L 360 179 Q 360 191 372 191 L 545.5 191 Q 550 191 550 195.5 L 550 200" class="lm-strand" stroke="#2f6fae" stroke-width="9" data-line="AD"><title>Airship doméstico</title></path><path d="M 550 200 L 550 195.5 Q 550 191 554.5 191 L 1115.5 191 Q 1120 191 1120 195.5 L 1120 200" class="lm-strand" stroke="#2f6fae" stroke-width="9" data-line="AD"><title>Airship doméstico</title></path></g>
+<g class="edge custom-airship" data-lines="AI"><path d="M 550 200 L 550 204.5 Q 550 209 554.5 209 L 1022 209 Q 1034 209 1034 221 L 1034 288 Q 1034 300 1046 300 L 1120 300" class="lm-casing" stroke-width="14"/><path d="M 1120 300 L 1129 300 Q 1138 300 1138 309 L 1138 791 Q 1138 800 1129 800 L 1120 800" class="lm-casing" stroke-width="14"/><path d="M 550 200 L 550 204.5 Q 550 209 554.5 209 L 1022 209 Q 1034 209 1034 221 L 1034 288 Q 1034 300 1046 300 L 1120 300" class="lm-strand" stroke="#7b5fb0" stroke-width="9" data-line="AI"><title>Airship internacional</title></path><path d="M 1120 300 L 1129 300 Q 1138 300 1138 309 L 1138 791 Q 1138 800 1129 800 L 1120 800" class="lm-strand" stroke="#7b5fb0" stroke-width="9" data-line="AI"><title>Airship internacional</title></path></g>
 <g class="node" id="prontera" data-label="" data-shape="box"><rect x="718.5" y="478.5" width="43" height="43" rx="21.5" class="lm-shape"/><rect x="718.5" y="478.5" width="43" height="43" rx="16" class="lm-sheen" fill="url(#lm-sheen-minimal-60)"/><text font-size="15" text-anchor="middle" dominant-baseline="central" class="lm-label"><tspan x="740" y="500"></tspan></text></g>
 <g class="node" id="izlude" data-label="" data-shape="box"><rect x="1098.5" y="778.5" width="43" height="43" rx="21.5" class="lm-shape"/><rect x="1098.5" y="778.5" width="43" height="43" rx="16" class="lm-sheen" fill="url(#lm-sheen-minimal-60)"/><text font-size="15" text-anchor="middle" dominant-baseline="central" class="lm-label"><tspan x="1120" y="800"></tspan></text></g>
 <g class="node" id="alberta" data-label="" data-shape="box"><rect x="908.5" y="878.5" width="43" height="43" rx="21.5" class="lm-shape"/><rect x="908.5" y="878.5" width="43" height="43" rx="16" class="lm-sheen" fill="url(#lm-sheen-minimal-60)"/><text font-size="15" text-anchor="middle" dominant-baseline="central" class="lm-label"><tspan x="930" y="900"></tspan></text></g>
@@ -224,45 +187,7 @@
 <g class="node" id="hugel" data-label="" data-shape="box"><rect x="1098.5" y="178.5" width="43" height="43" rx="21.5" class="lm-shape"/><rect x="1098.5" y="178.5" width="43" height="43" rx="16" class="lm-sheen" fill="url(#lm-sheen-minimal-60)"/><text font-size="15" text-anchor="middle" dominant-baseline="central" class="lm-label"><tspan x="1120" y="200"></tspan></text></g>
 <g class="node" id="rachel" data-label="" data-shape="box"><rect x="1098.5" y="278.5" width="43" height="43" rx="21.5" class="lm-shape"/><rect x="1098.5" y="278.5" width="43" height="43" rx="16" class="lm-sheen" fill="url(#lm-sheen-minimal-60)"/><text font-size="15" text-anchor="middle" dominant-baseline="central" class="lm-label"><tspan x="1120" y="300"></tspan></text></g>
 <g class="legend"><rect x="338.5" y="981.5" width="278.6" height="170" rx="12" class="lm-legend-box"/><text x="356.5" y="1003.5" font-size="12" class="lm-legend-title" dominant-baseline="central">LÍNEAS</text><g class="legend-row" data-line="K"><line x1="360.5" y1="1031.5" x2="412.5" y2="1031.5" stroke="#2f7d5b" stroke-width="9" stroke-linecap="round"/><polygon points="391.5,1031.5 381.5,1028.8 381.5,1034.2" fill="#ffffff"/><text x="430.5" y="1031.5" font-size="14" class="lm-legend-text" dominant-baseline="central">Kafra</text></g><g class="legend-row" data-line="KO"><line x1="360.5" y1="1059.5" x2="412.5" y2="1059.5" stroke="#b3651f" stroke-width="9" stroke-linecap="round"/><polygon points="391.5,1059.5 381.5,1056.8 381.5,1062.2" fill="#ffffff"/><text x="430.5" y="1059.5" font-size="14" class="lm-legend-text" dominant-baseline="central">Kafra unidireccional</text></g><g class="legend-row" data-line="AD"><line x1="360.5" y1="1087.5" x2="412.5" y2="1087.5" stroke="#2f6fae" stroke-width="9" stroke-linecap="round"/><polygon points="391.5,1087.5 381.5,1084.8 381.5,1090.2" fill="#ffffff"/><text x="430.5" y="1087.5" font-size="14" class="lm-legend-text" dominant-baseline="central">Airship doméstico</text></g><g class="legend-row" data-line="AI"><line x1="360.5" y1="1115.5" x2="412.5" y2="1115.5" stroke="#7b5fb0" stroke-width="9" stroke-linecap="round"/><polygon points="391.5,1115.5 381.5,1112.8 381.5,1118.2" fill="#ffffff"/><text x="430.5" y="1115.5" font-size="14" class="lm-legend-text" dominant-baseline="central">Airship internacional</text></g></g>
-<g class="transport-grid" pointer-events="none">
-<line x1="360" y1="60" x2="360" y2="950" />
-<text x="360" y="50" text-anchor="middle">A</text>
-<line x1="455" y1="60" x2="455" y2="950" />
-<text x="455" y="50" text-anchor="middle">B</text>
-<line x1="550" y1="60" x2="550" y2="950" />
-<text x="550" y="50" text-anchor="middle">C</text>
-<line x1="645" y1="60" x2="645" y2="950" />
-<text x="645" y="50" text-anchor="middle">D</text>
-<line x1="740" y1="60" x2="740" y2="950" />
-<text x="740" y="50" text-anchor="middle">E</text>
-<line x1="835" y1="60" x2="835" y2="950" />
-<text x="835" y="50" text-anchor="middle">F</text>
-<line x1="930" y1="60" x2="930" y2="950" />
-<text x="930" y="50" text-anchor="middle">G</text>
-<line x1="1025" y1="60" x2="1025" y2="950" />
-<text x="1025" y="50" text-anchor="middle">H</text>
-<line x1="1120" y1="60" x2="1120" y2="950" />
-<text x="1120" y="50" text-anchor="middle">I</text>
-<line x1="330" y1="100" x2="1160" y2="100" />
-<text x="320" y="104" text-anchor="end">1</text>
-<line x1="330" y1="200" x2="1160" y2="200" />
-<text x="320" y="204" text-anchor="end">2</text>
-<line x1="330" y1="300" x2="1160" y2="300" />
-<text x="320" y="304" text-anchor="end">3</text>
-<line x1="330" y1="400" x2="1160" y2="400" />
-<text x="320" y="404" text-anchor="end">4</text>
-<line x1="330" y1="500" x2="1160" y2="500" />
-<text x="320" y="504" text-anchor="end">5</text>
-<line x1="330" y1="600" x2="1160" y2="600" />
-<text x="320" y="604" text-anchor="end">6</text>
-<line x1="330" y1="700" x2="1160" y2="700" />
-<text x="320" y="704" text-anchor="end">7</text>
-<line x1="330" y1="800" x2="1160" y2="800" />
-<text x="320" y="804" text-anchor="end">8</text>
-<line x1="330" y1="900" x2="1160" y2="900" />
-<text x="320" y="904" text-anchor="end">9</text>
-</g>
-    <style>
+<style>
       polygon { display: none; }
       .node .lm-shape { fill: #ffffff; stroke: #374151; stroke-width: 2; }
       .node .lm-sheen { display: none; }

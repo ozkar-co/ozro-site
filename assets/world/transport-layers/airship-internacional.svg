@@ -33,21 +33,18 @@
       .edge[data-lines="KO"] .lm-casing,
       .edge[data-lines="KO"] .lm-strand { stroke-dasharray: 10 8; }
       .legend-row[data-line="KO"] line { stroke-dasharray: 10 8; }
+      .transport-grid line {
+        stroke: #94a3b8;
+        stroke-width: 1;
+        stroke-dasharray: 5 7;
+        opacity: 0.55;
+      }
+      .transport-grid text {
+        fill: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+      }
     </style>
 <defs><linearGradient id="lm-sheen-minimal-60" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f4f8" stop-opacity="1"/><stop offset="0.6" stop-color="#f1f4f8" stop-opacity="0"/></linearGradient></defs>
-<g class="edge" data-from="izlude" data-to="yuno" data-lines="AI">
-<path d="M1098.5,785.3 L1019.5,785.3 Q987.5,785.3 987.5,753.3 L987.5,243.2 Q987.5,211.2 955.5,211.2 L571.5,211.2" class="lm-casing" stroke-width="22"/>
-<path d="M1098.5,785.3 L1019.5,785.3 Q987.5,785.3 987.5,753.3 L987.5,243.2 Q987.5,211.2 955.5,211.2 L571.5,211.2" class="lm-strand" stroke="#7b5fb0" stroke-width="9" data-line="AI"><title>Airship internacional</title></path>
-
-</g>
-<g class="edge" data-from="yuno" data-to="rachel" data-lines="AI">
-<path d="M571.5,203.4 L961.7,203.4 Q993.7,203.4 993.7,235.4 L993.7,268 Q993.7,300 1025.7,300 L1098.5,300" class="lm-casing" stroke-width="22"/>
-<path d="M571.5,203.4 L961.7,203.4 Q993.7,203.4 993.7,235.4 L993.7,268 Q993.7,300 1025.7,300 L1098.5,300" class="lm-strand" stroke="#7b5fb0" stroke-width="9" data-line="AI"><title>Airship internacional</title></path>
-
-</g>
-<g class="edge" data-from="rachel" data-to="izlude" data-lines="AI">
-<path d="M1120,321.5 L1120,778.5" class="lm-casing" stroke-width="22"/>
-<path d="M1120,321.5 L1120,778.5" class="lm-strand" stroke="#7b5fb0" stroke-width="9" data-line="AI"><title>Airship internacional</title></path>
-
-</g>
+<g class="edge custom-airship" data-lines="AI"><path d="M 550 200 L 550 204.5 Q 550 209 554.5 209 L 1022 209 Q 1034 209 1034 221 L 1034 288 Q 1034 300 1046 300 L 1120 300" class="lm-casing" stroke-width="14"/><path d="M 1120 300 L 1129 300 Q 1138 300 1138 309 L 1138 791 Q 1138 800 1129 800 L 1120 800" class="lm-casing" stroke-width="14"/><path d="M 550 200 L 550 204.5 Q 550 209 554.5 209 L 1022 209 Q 1034 209 1034 221 L 1034 288 Q 1034 300 1046 300 L 1120 300" class="lm-strand" stroke="#7b5fb0" stroke-width="9" data-line="AI"><title>Airship internacional</title></path><path d="M 1120 300 L 1129 300 Q 1138 300 1138 309 L 1138 791 Q 1138 800 1129 800 L 1120 800" class="lm-strand" stroke="#7b5fb0" stroke-width="9" data-line="AI"><title>Airship internacional</title></path></g>
 </svg>

@@ -33,21 +33,18 @@
       .edge[data-lines="KO"] .lm-casing,
       .edge[data-lines="KO"] .lm-strand { stroke-dasharray: 10 8; }
       .legend-row[data-line="KO"] line { stroke-dasharray: 10 8; }
+      .transport-grid line {
+        stroke: #94a3b8;
+        stroke-width: 1;
+        stroke-dasharray: 5 7;
+        opacity: 0.55;
+      }
+      .transport-grid text {
+        fill: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+      }
     </style>
 <defs><linearGradient id="lm-sheen-minimal-60" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f4f8" stop-opacity="1"/><stop offset="0.6" stop-color="#f1f4f8" stop-opacity="0"/></linearGradient></defs>
-<g class="edge" data-from="yuno" data-to="einbroch" data-lines="AD">
-<path d="M528.5,192.7 L392,192.7 Q360,192.7 360,160.7 L360,121.5" class="lm-casing" stroke-width="22"/>
-<path d="M528.5,192.7 L392,192.7 Q360,192.7 360,160.7 L360,121.5" class="lm-strand" stroke="#2f6fae" stroke-width="9" data-line="AD"><title>Airship doméstico</title></path>
-
-</g>
-<g class="edge" data-from="einbroch" data-to="lighthalzen" data-lines="AD">
-<path d="M381.5,100 L908.5,100" class="lm-casing" stroke-width="22"/>
-<path d="M381.5,100 L908.5,100" class="lm-strand" stroke="#2f6fae" stroke-width="9" data-line="AD"><title>Airship doméstico</title></path>
-
-</g>
-<g class="edge" data-from="yuno" data-to="hugel" data-lines="AD">
-<path d="M571.5,200 L1098.5,200" class="lm-casing" stroke-width="22"/>
-<path d="M571.5,200 L1098.5,200" class="lm-strand" stroke="#2f6fae" stroke-width="9" data-line="AD"><title>Airship doméstico</title></path>
-
-</g>
+<g class="edge custom-airship" data-lines="AD"><path d="M 360 100 L 930 100" class="lm-casing" stroke-width="14"/><path d="M 360 100 L 360 179 Q 360 191 372 191 L 545.5 191 Q 550 191 550 195.5 L 550 200" class="lm-casing" stroke-width="14"/><path d="M 550 200 L 550 195.5 Q 550 191 554.5 191 L 1115.5 191 Q 1120 191 1120 195.5 L 1120 200" class="lm-casing" stroke-width="14"/><path d="M 360 100 L 930 100" class="lm-strand" stroke="#2f6fae" stroke-width="9" data-line="AD"><title>Airship doméstico</title></path><path d="M 360 100 L 360 179 Q 360 191 372 191 L 545.5 191 Q 550 191 550 195.5 L 550 200" class="lm-strand" stroke="#2f6fae" stroke-width="9" data-line="AD"><title>Airship doméstico</title></path><path d="M 550 200 L 550 195.5 Q 550 191 554.5 191 L 1115.5 191 Q 1120 191 1120 195.5 L 1120 200" class="lm-strand" stroke="#2f6fae" stroke-width="9" data-line="AD"><title>Airship doméstico</title></path></g>
 </svg>

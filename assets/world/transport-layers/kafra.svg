@@ -33,6 +33,17 @@
       .edge[data-lines="KO"] .lm-casing,
       .edge[data-lines="KO"] .lm-strand { stroke-dasharray: 10 8; }
       .legend-row[data-line="KO"] line { stroke-dasharray: 10 8; }
+      .transport-grid line {
+        stroke: #94a3b8;
+        stroke-width: 1;
+        stroke-dasharray: 5 7;
+        opacity: 0.55;
+      }
+      .transport-grid text {
+        fill: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+      }
     </style>
 <defs><linearGradient id="lm-sheen-minimal-60" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f4f8" stop-opacity="1"/><stop offset="0.6" stop-color="#f1f4f8" stop-opacity="0"/></linearGradient></defs>
 <g class="edge" data-from="prontera" data-to="geffen" data-lines="K">
@@ -43,11 +54,6 @@
 <g class="edge" data-from="prontera" data-to="payon" data-lines="K">
 <path d="M761.5,484.3 L882.6,484.3 Q914.6,484.3 914.6,452.3 L914.6,321.5" class="lm-casing" stroke-width="22"/>
 <path d="M761.5,484.3 L882.6,484.3 Q914.6,484.3 914.6,452.3 L914.6,321.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-
-</g>
-<g class="edge" data-from="prontera" data-to="morocc" data-lines="K">
-<path d="M718.5,507.3 L384.7,507.3 Q352.7,507.3 352.7,539.3 L352.7,678.5" class="lm-casing" stroke-width="22"/>
-<path d="M718.5,507.3 L384.7,507.3 Q352.7,507.3 352.7,539.3 L352.7,678.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
 
 </g>
 <g class="edge" data-from="prontera" data-to="alberta" data-lines="K">
@@ -65,44 +71,10 @@
 <path d="M924.1,878.5 L924.1,746.5 Q924.1,714.5 892.1,714.5 L381.5,714.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
 
 </g>
-<g class="edge" data-from="geffen" data-to="aldebaran" data-lines="K">
-<path d="M528.5,300 L381.5,300" class="lm-casing" stroke-width="22"/>
-<path d="M528.5,300 L381.5,300" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-
-</g>
-<g class="edge" data-from="aldebaran" data-to="izlude" data-lines="K">
-<path d="M367.3,321.5 L367.3,525.5 Q367.3,557.5 399.3,557.5 L1084.7,557.5 Q1116.7,557.5 1116.7,589.5 L1116.7,778.5" class="lm-casing" stroke-width="22"/>
-<path d="M367.3,321.5 L367.3,525.5 Q367.3,557.5 399.3,557.5 L1084.7,557.5 Q1116.7,557.5 1116.7,589.5 L1116.7,778.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-
-</g>
-<g class="edge" data-from="aldebaran" data-to="yuno" data-lines="K">
-<path d="M360,278.5 L360,239.3 Q360,207.3 392,207.3 L528.5,207.3" class="lm-casing" stroke-width="22"/>
-<path d="M360,278.5 L360,239.3 Q360,207.3 392,207.3 L528.5,207.3" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-
-</g>
-<g class="edge" data-from="comodo" data-to="morocc" data-lines="K">
-<path d="M550,778.5 L550,747.3 Q550,716 518.8,716 L381.5,716" class="lm-casing" stroke-width="22"/>
-<path d="M550,778.5 L550,747.3 Q550,716 518.8,716 L381.5,716" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-
-</g>
-<g class="edge" data-from="comodo" data-to="umbala" data-lines="K">
-<path d="M550,821.5 L550,878.5" class="lm-casing" stroke-width="22"/>
-<path d="M550,821.5 L550,878.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-
-</g>
 <g class="edge" data-from="morocc" data-to="payon" data-lines="K">
 <path d="M381.5,680.8 L888.4,680.8 Q920.4,680.8 920.4,648.8 L920.4,321.5" class="lm-casing" stroke-width="22"/>
 <path d="M381.5,680.8 L888.4,680.8 Q920.4,680.8 920.4,648.8 L920.4,321.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
 
 </g>
-<g class="edge" data-from="comodo" data-to="cmd_fild07" data-lines="K">
-<path d="M528.5,800 L381.5,800" class="lm-casing" stroke-width="22"/>
-<path d="M528.5,800 L381.5,800" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-
-</g>
-<g class="edge" data-from="morocc" data-to="cmd_fild07" data-lines="K">
-<path d="M360,721.5 L360,778.5" class="lm-casing" stroke-width="22"/>
-<path d="M360,721.5 L360,778.5" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path>
-
-</g>
+<g class="edge custom-kafra" data-lines="K"><path d="M 360 300 L 550 300" class="lm-casing" stroke-width="14"/><path d="M 360 300 L 360 221 Q 360 209 372 209 L 545.5 209 Q 550 209 550 204.5 L 550 200" class="lm-casing" stroke-width="14"/><path d="M 360 300 L 360 388 Q 360 400 372 400 L 443 400 Q 455 400 455 412 L 455 597 Q 455 609 467 609 L 1090 609 Q 1102 609 1102 621 L 1102 791 Q 1102 800 1111 800 L 1120 800" class="lm-casing" stroke-width="14"/><path d="M 360 700 L 351 700 Q 342 700 342 691 L 342 512 Q 342 500 354 500 L 739.5 500 Q 740 500 740 500 L 740 500" class="lm-casing" stroke-width="14"/><path d="M 360 700 L 360 709 Q 360 718 369 718 L 538 718 Q 550 718 550 730 L 550 800" class="lm-casing" stroke-width="14"/><path d="M 360 700 L 360 800" class="lm-casing" stroke-width="14"/><path d="M 360 800 L 550 800" class="lm-casing" stroke-width="14"/><path d="M 550 800 L 550 900" class="lm-casing" stroke-width="14"/><path d="M 360 300 L 550 300" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path><path d="M 360 300 L 360 221 Q 360 209 372 209 L 545.5 209 Q 550 209 550 204.5 L 550 200" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path><path d="M 360 300 L 360 388 Q 360 400 372 400 L 443 400 Q 455 400 455 412 L 455 597 Q 455 609 467 609 L 1090 609 Q 1102 609 1102 621 L 1102 791 Q 1102 800 1111 800 L 1120 800" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path><path d="M 360 700 L 351 700 Q 342 700 342 691 L 342 512 Q 342 500 354 500 L 739.5 500 Q 740 500 740 500 L 740 500" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path><path d="M 360 700 L 360 709 Q 360 718 369 718 L 538 718 Q 550 718 550 730 L 550 800" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path><path d="M 360 700 L 360 800" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path><path d="M 360 800 L 550 800" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path><path d="M 550 800 L 550 900" class="lm-strand" stroke="#2f7d5b" stroke-width="9" data-line="K"><title>Kafra</title></path></g>
 </svg>

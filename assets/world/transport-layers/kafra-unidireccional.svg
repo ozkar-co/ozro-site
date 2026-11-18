@@ -33,6 +33,17 @@
       .edge[data-lines="KO"] .lm-casing,
       .edge[data-lines="KO"] .lm-strand { stroke-dasharray: 10 8; }
       .legend-row[data-line="KO"] line { stroke-dasharray: 10 8; }
+      .transport-grid line {
+        stroke: #94a3b8;
+        stroke-width: 1;
+        stroke-dasharray: 5 7;
+        opacity: 0.55;
+      }
+      .transport-grid text {
+        fill: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+      }
     </style>
 <defs><linearGradient id="lm-sheen-minimal-60" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f4f8" stop-opacity="1"/><stop offset="0.6" stop-color="#f1f4f8" stop-opacity="0"/></linearGradient></defs>
 <g class="edge" data-from="prontera" data-to="izlude" data-lines="KO">
@@ -41,13 +52,13 @@
 
 </g>
 <g class="edge" data-from="izlude" data-to="geffen" data-lines="KO">
-<path d="M1098.5,816.3 L974.8,816.3 Q942.8,816.3 942.8,784.3 L942.8,542.4 Q942.8,510.4 910.8,510.4 L829.5,510.4 Q797.5,510.4 797.5,478.4 L797.5,332 Q797.5,300 765.5,300 L571.5,300" class="lm-casing" stroke-width="22"/>
-<path d="M1098.5,816.3 L974.8,816.3 Q942.8,816.3 942.8,784.3 L942.8,542.4 Q942.8,510.4 910.8,510.4 L829.5,510.4 Q797.5,510.4 797.5,478.4 L797.5,332 Q797.5,300 765.5,300 L571.5,300" class="lm-strand" stroke="#b3651f" stroke-width="9" data-line="KO"><title>Kafra unidireccional</title></path>
+<path d="M1098.5,809.8 L974.8,809.8 Q942.8,809.8 942.8,777.8 L942.8,542.4 Q942.8,510.4 910.8,510.4 L829.5,510.4 Q797.5,510.4 797.5,478.4 L797.5,332 Q797.5,300 765.5,300 L571.5,300" class="lm-casing" stroke-width="22"/>
+<path d="M1098.5,809.8 L974.8,809.8 Q942.8,809.8 942.8,777.8 L942.8,542.4 Q942.8,510.4 910.8,510.4 L829.5,510.4 Q797.5,510.4 797.5,478.4 L797.5,332 Q797.5,300 765.5,300 L571.5,300" class="lm-strand" stroke="#b3651f" stroke-width="9" data-line="KO"><title>Kafra unidireccional</title></path>
 
 </g>
 <g class="edge" data-from="izlude" data-to="payon" data-lines="KO">
-<path d="M1098.5,797.2 L980.4,797.2 Q948.4,797.2 948.4,765.2 L948.4,321.5" class="lm-casing" stroke-width="22"/>
-<path d="M1098.5,797.2 L980.4,797.2 Q948.4,797.2 948.4,765.2 L948.4,321.5" class="lm-strand" stroke="#b3651f" stroke-width="9" data-line="KO"><title>Kafra unidireccional</title></path>
+<path d="M1098.5,790.2 L980.4,790.2 Q948.4,790.2 948.4,758.2 L948.4,321.5" class="lm-casing" stroke-width="22"/>
+<path d="M1098.5,790.2 L980.4,790.2 Q948.4,790.2 948.4,758.2 L948.4,321.5" class="lm-strand" stroke="#b3651f" stroke-width="9" data-line="KO"><title>Kafra unidireccional</title></path>
 
 </g>
 <g class="edge" data-from="izlude" data-to="morocc" data-lines="KO">

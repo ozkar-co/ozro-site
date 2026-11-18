@@ -33,6 +33,17 @@
       .edge[data-lines="KO"] .lm-casing,
       .edge[data-lines="KO"] .lm-strand { stroke-dasharray: 10 8; }
       .legend-row[data-line="KO"] line { stroke-dasharray: 10 8; }
+      .transport-grid line {
+        stroke: #94a3b8;
+        stroke-width: 1;
+        stroke-dasharray: 5 7;
+        opacity: 0.55;
+      }
+      .transport-grid text {
+        fill: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+      }
     </style>
 <defs><linearGradient id="lm-sheen-minimal-60" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f4f8" stop-opacity="1"/><stop offset="0.6" stop-color="#f1f4f8" stop-opacity="0"/></linearGradient></defs>
 <g class="node" id="prontera" data-label="" data-shape="box"><rect x="718.5" y="478.5" width="43" height="43" rx="21.5" class="lm-shape"/><rect x="718.5" y="478.5" width="43" height="43" rx="16" class="lm-sheen" fill="url(#lm-sheen-minimal-60)"/><text font-size="15" text-anchor="middle" dominant-baseline="central" class="lm-label"><tspan x="740" y="500"></tspan></text></g>

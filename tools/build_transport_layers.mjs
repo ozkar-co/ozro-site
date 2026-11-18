@@ -16,7 +16,7 @@ const defs = [...source.matchAll(/<defs>[\s\S]*?<\/defs>/g)].map((match) => matc
 
 if (!rootOpen) throw new Error('No se encontró el SVG base');
 
-const edges = [...source.matchAll(/<g class="edge"[^>]*data-lines="([^"]+)"[^>]*>[\s\S]*?<\/g>/g)]
+const edges = [...source.matchAll(/<g class="edge[^"]*"[^>]*data-lines="([^"]+)"[^>]*>[\s\S]*?<\/g>/g)]
   .map((match) => ({ lines: match[1], svg: match[0] }));
 const nodes = [...source.matchAll(/<g class="node"[\s\S]*?<\/g>/g)].map((match) => match[0]);
 
