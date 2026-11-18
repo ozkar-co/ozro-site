@@ -9,6 +9,14 @@ export interface UpdateEntry {
 export const recentUpdates: UpdateEntry[] = [
   {
     date: '18 de noviembre de 2026',
+    title: 'Corregido el bloqueo al cancelar diálogos de NPC',
+    paragraphs: [
+      'Cancelar un menú de NPC con Esc/X ya no deja al personaje bloqueado ni obliga a reloguear.',
+      'Los diálogos de selección ahora cierran y liberan el estado del NPC de inmediato.',
+    ],
+  },
+  {
+    date: '18 de noviembre de 2026',
     title: 'Banco del menú retirado y Banquero en las ciudades',
     paragraphs: [
       'Se desactivó el acceso al banco desde el menú.',
