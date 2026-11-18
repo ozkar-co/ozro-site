@@ -33,19 +33,15 @@
   color: #a33;
 }
 
-.transport-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 1rem;
-  align-items: start;
+.transport-stage-wrap {
+  position: relative;
 }
 
 .transport-stage {
   position: relative;
-  background: transparent;
+  overflow: hidden;
   border: 1px solid #e0e0e0;
   border-radius: 0.85rem;
-  overflow: hidden;
 }
 
 .transport-stage > img {
@@ -90,17 +86,44 @@
   border-radius: 50%;
 }
 
-.transport-detail {
-  background: #fff;
-  border: 1px solid #e6e6e6;
-  border-radius: 0.85rem;
-  padding: 1rem;
-  min-height: 180px;
-  max-height: 640px;
+.transport-popover {
+  position: absolute;
+  z-index: 5;
+  width: min(290px, 72vw);
+  max-height: 320px;
   overflow: auto;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 0.85rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+  padding: 0.85rem;
 }
 
-.transport-detail-head {
+.transport-popover.is-right.is-middle {
+  transform: translate(14px, -50%);
+}
+
+.transport-popover.is-left.is-middle {
+  transform: translate(calc(-100% - 14px), -50%);
+}
+
+.transport-popover.is-right.is-below {
+  transform: translate(14px, 14px);
+}
+
+.transport-popover.is-left.is-below {
+  transform: translate(calc(-100% - 14px), 14px);
+}
+
+.transport-popover.is-right.is-above {
+  transform: translate(14px, calc(-100% - 14px));
+}
+
+.transport-popover.is-left.is-above {
+  transform: translate(calc(-100% - 14px), calc(-100% - 14px));
+}
+
+.transport-popover-head {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -108,10 +131,10 @@
   margin-bottom: 0.85rem;
 }
 
-.transport-detail-head h3 {
+.transport-popover-head h3 {
   margin: 0.15rem 0 0;
   color: #333;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
 }
 
 .transport-kicker {
@@ -137,8 +160,7 @@
   color: #333;
 }
 
-.transport-empty,
-.transport-detail-placeholder p {
+.transport-empty {
   color: #666;
   font-size: 0.9rem;
   margin: 0.4rem 0 0;
@@ -205,16 +227,19 @@
   color: #9b3e32;
 }
 
-@media (max-width: 900px) {
-  .transport-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .transport-detail {
-    max-height: none;
-  }
-
+@media (max-width: 700px) {
   .transport-view {
     padding: 1rem;
+  }
+
+  .transport-popover {
+    position: fixed;
+    left: 1rem !important;
+    right: 1rem;
+    bottom: 1rem;
+    top: auto !important;
+    width: auto;
+    max-height: 50vh;
+    transform: none !important;
   }
 }

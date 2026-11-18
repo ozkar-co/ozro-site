@@ -1,8 +1,34 @@
 import { useEffect, useMemo, useState } from 'react';
-import { loadTransportLayout, type TransportLayout } from '../../api/transportLayout';
+import { loadTransportLayout, type TransportLayout, type TransportLayoutNode } from '../../api/transportLayout';
 import '../../styles/TransportMap.css';
 
 const MAP_URL = '/assets/world/transport-map.svg';
+
+const TooltipGroups = ({ node }: { node: TransportLayoutNode }) => {
+  if (node.tooltips.length === 0) {
+    return <p className="transport-empty">Sin destinos en tooltip.</p>;
+  }
+
+  return (
+    <>
+      {node.tooltips.map((group) => (
+        <div className={`transport-group is-${group.type}`} key={`${node.id}-${group.label}`}>
+          <div className="transport-group-head">
+            <span>{group.label}</span>
+            <span>{group.destinations.length}</span>
+          </div>
+          <ul>
+            {group.destinations.map((destination) => (
+              <li key={`${destination.map}-${destination.name}`} title={destination.map}>
+                {destination.name}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </>
+  );
+};
 
 const TransportMap = () => {
   const [layout, setLayout] = useState<TransportLayout | null>(null);
@@ -40,10 +66,16 @@ const TransportMap = () => {
     }));
   }, [layout]);
 
-  const selectedNode = useMemo(
-    () => layout?.nodes.find((node) => node.id === selected) ?? null,
-    [layout, selected],
+  const selectedOverlay = useMemo(
+    () => overlayNodes.find((node) => node.id === selected) ?? null,
+    [overlayNodes, selected],
   );
+
+  const popoverClass = selectedOverlay
+    ? `transport-popover is-${selectedOverlay.left > 60 ? 'left' : 'right'} is-${
+        selectedOverlay.top < 28 ? 'below' : selectedOverlay.top > 72 ? 'above' : 'middle'
+      }`
+    : '';
 
   return (
     <section className="transport-view">
@@ -61,9 +93,12 @@ const TransportMap = () => {
       {error && <p className="transport-message is-error">{error}</p>}
 
       {layout && (
-        <div className="transport-layout">
+        <div className="transport-stage-wrap">
           <div className="transport-stage">
-            <img src={MAP_URL} alt="Mapa esquemático de transporte de Rune-Midgard" />
+            <img
+              src={`${MAP_URL}?v=${layout.version}`}
+              alt="Mapa esquemático de transporte de Rune-Midgard"
+            />
             {overlayNodes.map((node) => (
               <button
                 key={node.id}
@@ -79,51 +114,30 @@ const TransportMap = () => {
             ))}
           </div>
 
-          <aside className="transport-detail" aria-live="polite">
-            {selectedNode ? (
-              <>
-                <div className="transport-detail-head">
-                  <div>
-                    <span className="transport-kicker">Estación</span>
-                    <h3>{selectedNode.name}</h3>
-                  </div>
-                  <button
-                    type="button"
-                    className="transport-close"
-                    aria-label="Cerrar detalle"
-                    onClick={() => setSelected(null)}
-                  >
-                    ×
-                  </button>
+          {selectedOverlay && (
+            <div
+              className={popoverClass}
+              style={{ left: `${selectedOverlay.left}%`, top: `${selectedOverlay.top}%` }}
+              role="dialog"
+              aria-label={`Destinos de ${selectedOverlay.name}`}
+            >
+              <div className="transport-popover-head">
+                <div>
+                  <span className="transport-kicker">Estación</span>
+                  <h3>{selectedOverlay.name}</h3>
                 </div>
-
-                {selectedNode.tooltips.length === 0 && (
-                  <p className="transport-empty">Sin destinos en tooltip.</p>
-                )}
-
-                {selectedNode.tooltips.map((group) => (
-                  <div className={`transport-group is-${group.type}`} key={`${selectedNode.id}-${group.label}`}>
-                    <div className="transport-group-head">
-                      <span>{group.label}</span>
-                      <span>{group.destinations.length}</span>
-                    </div>
-                    <ul>
-                      {group.destinations.map((destination) => (
-                        <li key={`${destination.map}-${destination.name}`} title={destination.map}>
-                          {destination.name}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </>
-            ) : (
-              <div className="transport-detail-placeholder">
-                <span className="transport-kicker">Selecciona una estación</span>
-                <p>Haz clic en el punto negro de un nodo para abrir su tooltip.</p>
+                <button
+                  type="button"
+                  className="transport-close"
+                  aria-label="Cerrar tooltip"
+                  onClick={() => setSelected(null)}
+                >
+                  ×
+                </button>
               </div>
-            )}
-          </aside>
+              <TooltipGroups node={selectedOverlay} />
+            </div>
+          )}
         </div>
       )}
     </section>

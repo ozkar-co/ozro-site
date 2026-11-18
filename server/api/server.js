@@ -28,7 +28,10 @@ app.use('/assets', express.static(assetsPath, {
   maxAge: '7d',
   immutable: true,
   setHeaders: (res, filePath) => {
-    if (/(?:manifest|build-report|catalog|maps|spawns|index|access|levelPenalty|worldview|routes)\.json$/.test(filePath)) {
+    if (
+      /transport-(?:map\.svg|layout\.json)$/.test(filePath)
+      || /(?:manifest|build-report|catalog|maps|spawns|index|access|levelPenalty|worldview|routes)\.json$/.test(filePath)
+    ) {
       res.setHeader('Cache-Control', 'no-cache');
     }
   }

@@ -427,6 +427,7 @@ const svg = decorate(graph, render(model, { theme: 'minimal' }));
 await writeFile(outputPath, svg);
 
 const transportLayout = {
+  version: Date.now(),
   viewBox: VIEW_BOX,
   nodes: graph.nodes
     .map((node) => {
