@@ -84,7 +84,13 @@ const TransportMap = () => {
 
   const visibleGroups = selectedOverlay
     ? selectedOverlay.id === 'alberta' && selectedPort
-      ? selectedOverlay.tooltips.filter((group) => group.type === 'kafra_fields' || group.label === selectedPort)
+      ? selectedPort === 'Puerto sur'
+        ? selectedOverlay.tooltips.filter(
+            (group) => group.type === 'dungeon_warper' || group.label === 'Puerto sur',
+          )
+        : selectedOverlay.tooltips.filter(
+            (group) => group.type === 'kafra_fields' || group.label === 'Puerto norte',
+          )
       : selectedOverlay.tooltips
     : [];
 

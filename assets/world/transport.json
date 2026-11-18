@@ -416,6 +416,32 @@
         ]
       },
       {
+        "type": "dungeon_warper",
+        "label": "Dungeons",
+        "destinations": [
+          {
+            "name": "Byalan Dungeon",
+            "map": "iz_dun02"
+          },
+          {
+            "name": "Turtle Cave",
+            "map": "tur_dun02"
+          },
+          {
+            "name": "Shrine of Gonryun",
+            "map": "gon_dun02"
+          },
+          {
+            "name": "Louyang Royal Tomb",
+            "map": "lou_dun02"
+          },
+          {
+            "name": "Endless Tower",
+            "map": "e_tower"
+          }
+        ]
+      },
+      {
         "type": "port",
         "label": "Puerto sur",
         "destinations": [
@@ -438,26 +464,6 @@
           {
             "name": "Sunken Ship",
             "map": "alb2trea"
-          },
-          {
-            "name": "Byalan Dungeon",
-            "map": "iz_dun02"
-          },
-          {
-            "name": "Turtle Cave",
-            "map": "tur_dun02"
-          },
-          {
-            "name": "Shrine of Gonryun",
-            "map": "gon_dun02"
-          },
-          {
-            "name": "Louyang Royal Tomb",
-            "map": "lou_dun02"
-          },
-          {
-            "name": "Endless Tower",
-            "map": "e_tower"
           }
         ]
       }
