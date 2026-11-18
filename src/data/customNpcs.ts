@@ -33,6 +33,38 @@ export const customNpcGroups: CustomNpcGroup[] = [
       'NPCs que mueven la economía del servidor: compran chatarra, venden gemas, cambian puntos y administran el archivo de cartas.',
     npcs: [
       {
+        id: 'banker',
+        name: 'Banquero de Rune-Midgard',
+        role: 'Banco oficial',
+        sprite: sprite('109'),
+        summary:
+          'Abre y consulta tu cuenta bancaria en las principales ciudades de Rune-Midgard.',
+        description: [
+          'El Banco de Rune-Midgard nació en la era de los héroes, cuando los gremios necesitaban un lugar seguro para guardar el botín de las cruzadas y el zeny de sus expediciones.',
+          'Sus sucursales se reconocen por el sello de la cámara de comercio. Cualquier aventurero puede abrir una cuenta que lo acompaña entre personajes y ciudades.',
+          'Los banqueros no preguntan por el origen del zeny: solo llevan la contabilidad, protegen el depósito y desean que el camino de vuelta sea próspero.',
+        ],
+        services: [
+          'Abrir cuenta bancaria',
+          'Depositar y retirar zeny',
+          'Consultar el saldo de la cuenta',
+          'Servicio disponible en las principales ciudades',
+        ],
+        locations: [
+          'Prontera (160, 320)',
+          'Izlude (135, 140)',
+          'Geffen (128, 62)',
+          'Payon (175, 110)',
+          'Alberta (120, 60)',
+          'Aldebaran (150, 119)',
+          'Yuno (145, 190)',
+          'Lighthalzen (170, 100)',
+          'Einbroch (235, 205)',
+          'Comodo (202, 150)',
+          'Morocc (163, 97)',
+        ],
+      },
+      {
         id: 'garrett',
         name: 'Garrett el Recolector',
         role: 'Recolector de Geffen',

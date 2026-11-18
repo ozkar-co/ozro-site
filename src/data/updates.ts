@@ -8,6 +8,14 @@ export interface UpdateEntry {
 /** Changelog OzRo derivado del git log de rathena (17 ene 2026 – hoy). */
 export const recentUpdates: UpdateEntry[] = [
   {
+    date: '18 de noviembre de 2026',
+    title: 'Banco del menú retirado y Banquero en las ciudades',
+    paragraphs: [
+      'Se desactivó el acceso al banco desde el menú.',
+      'El servicio ahora se abre hablando con el Banquero de Rune-Midgard en las principales ciudades.',
+    ],
+  },
+  {
     date: '17 de noviembre de 2026',
     title: 'Retirados los iconos de las cabezas de los NPCs',
     paragraphs: [

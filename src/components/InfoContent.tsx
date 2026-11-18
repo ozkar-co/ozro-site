@@ -202,6 +202,7 @@ const contentMap: Record<string, ReactNode> = {
         <ul>
           <li>Bounty Boards en 25 ciudades (Eclage deshabilitado)</li>
           <li>18 quests repetibles de EXP (50 kills por tramo)</li>
+          <li>Banco de Rune-Midgard: el botón del menú fue retirado; el servicio se abre hablando con el Banquero en las principales ciudades</li>
           <li>Garrett el Recolector: compra objetos inútiles (chatarra) a buen precio</li>
           <li>Card Collector: archivo de cartas por cuenta con progreso y faltantes</li>
           <li>Merchant gana Job EXP al vender (Shop EXP)</li>
