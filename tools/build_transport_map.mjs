@@ -17,8 +17,8 @@ const positions = {
   hugel: [930, 100],
   rachel: [1120, 200],
   aldebaran: [360, 400],
-  geffen: [645, 300],
-  prontera: [740, 500],
+  geffen: [636, 300],
+  prontera: [749, 500],
   payon: [930, 500],
   cmd_fild07: [360, 800],
   izlude: [1120, 800],
@@ -27,9 +27,6 @@ const positions = {
   comodo: [550, 900],
   umbala: [360, 900],
 };
-
-const vias = {};
-const hiddenSegments = new Set(['izlude-yuno']);
 
 const lines = [
   ['K', 'Kafra', '#2f7d5b'],
@@ -62,11 +59,8 @@ function buildDot(graph) {
 
   for (const line of graph.lines) {
     if (line.type === 'kafra' && line.from && line.to) {
-      if (hiddenSegments.has(`${line.from}-${line.to}`)) continue;
       const id = line.bidirectional === false ? 'KO' : 'K';
-      const via = vias[`${line.from}-${line.to}`];
-      const viaAttr = via ? `, via=${dotQuote(`${via[0]},${via[1]}`)}` : '';
-      out.push(`  ${line.from} -> ${line.to} [lines=${id}${viaAttr}]`);
+      out.push(`  ${line.from} -> ${line.to} [lines=${id}]`);
       continue;
     }
 
@@ -76,10 +70,7 @@ function buildDot(graph) {
       for (let index = 0; index < stops.length - 1; index += 1) {
         const from = stops[index];
         const to = stops[index + 1];
-        if (hiddenSegments.has(`${from}-${to}`)) continue;
-        const via = vias[`${from}-${to}`];
-        const viaAttr = via ? `, via=${dotQuote(`${via[0]},${via[1]}`)}` : '';
-        out.push(`  ${from} -> ${to} [lines=${id}${viaAttr}]`);
+        out.push(`  ${from} -> ${to} [lines=${id}]`);
       }
       if (line.loop && stops.length > 1) {
         out.push(`  ${stops[stops.length - 1]} -> ${stops[0]} [lines=${id}]`);
@@ -200,7 +191,7 @@ function airshipSvg() {
 }
 
 const KAFRA_ROUTES = [
-  { from: 'aldebaran', to: 'geffen', paths: [[[360, 400], [360, hLaneY(4, 'u')], [vLaneX('D', 'u'), hLaneY(4, 'u')], [vLaneX('D', 'u'), 300], [645, 300]]] },
+  { from: 'aldebaran', to: 'geffen', paths: [[[360, 400], [360, hLaneY(4, 'u')], [vLaneX('D', 'u'), hLaneY(4, 'u')], [vLaneX('D', 'u'), 300], [636, 300]]] },
   {
     from: 'aldebaran',
     to: 'yuno',
@@ -214,7 +205,7 @@ const KAFRA_ROUTES = [
   {
     from: 'morocc',
     to: 'prontera',
-    paths: [[[550, 700], [550, hLaneY(7, 'u')], [vLaneX('E', 'u'), hLaneY(7, 'u')], [vLaneX('E', 'u'), 500], [740, 500]]],
+    paths: [[[550, 700], [550, hLaneY(7, 'u')], [vLaneX('E', 'u'), hLaneY(7, 'u')], [vLaneX('E', 'u'), 500], [749, 500]]],
   },
   {
     from: 'morocc',
@@ -243,7 +234,7 @@ const KAFRA_ROUTES = [
   {
     from: 'geffen',
     to: 'prontera',
-    paths: [[[645, 300], [vLaneX('D', 'v'), 300], [vLaneX('D', 'v'), hLaneY(5, 'u')], [740, hLaneY(5, 'u')], [740, 500]]],
+    paths: [[[636, 300], [vLaneX('D', 'v'), 300], [vLaneX('D', 'v'), hLaneY(5, 'u')], [749, hLaneY(5, 'u')], [749, 500]]],
   },
   {
     from: 'payon',
@@ -255,7 +246,7 @@ const KAFRA_ROUTES = [
     from: 'geffen',
     to: 'izlude',
     line: 'KO',
-    paths: [[[645, 300], [vLaneX('D', 'w'), 300], [vLaneX('D', 'w'), hLaneY(4, 'u')], [vLaneX('I', 'v'), hLaneY(4, 'u')], [vLaneX('I', 'v'), 800], [1120, 800]]],
+    paths: [[[636, 300], [vLaneX('D', 'w'), 300], [vLaneX('D', 'w'), hLaneY(4, 'u')], [vLaneX('I', 'v'), hLaneY(4, 'u')], [vLaneX('I', 'v'), 800], [1120, 800]]],
   },
   {
     from: 'payon',
@@ -265,18 +256,18 @@ const KAFRA_ROUTES = [
   {
     from: 'prontera',
     to: 'alberta',
-    paths: [[[740, 500], [vLaneX('E', 'v'), 500], [vLaneX('E', 'v'), hLaneY(9, 'u')], [930, hLaneY(9, 'u')], [930, 900]]],
+    paths: [[[749, 500], [vLaneX('E', 'v'), 500], [vLaneX('E', 'v'), hLaneY(9, 'u')], [930, hLaneY(9, 'u')], [930, 900]]],
   },
   {
     from: 'prontera',
     to: 'payon',
-    paths: [[[740, 500], [930, 500]]],
+    paths: [[[749, 500], [930, 500]]],
   },
   {
     from: 'prontera',
     to: 'izlude',
     line: 'KO',
-    paths: [[[740, 500], [vLaneX('E', 'w'), 500], [vLaneX('E', 'w'), hLaneY(8, 'v')], [1120, hLaneY(8, 'v')], [1120, 800]]],
+    paths: [[[749, 500], [vLaneX('E', 'w'), 500], [vLaneX('E', 'w'), hLaneY(8, 'v')], [1120, hLaneY(8, 'v')], [1120, 800]]],
   },
 ];
 
