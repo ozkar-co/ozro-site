@@ -228,15 +228,6 @@ const Mvps = () => {
     });
   }, [mvps, query, stateFilter, levelFilter, sort]);
 
-  const upcoming = useMemo(
-    () =>
-      mvps
-        .filter((mvp) => mvp.live.windowStart && (mvp.live.state === 'dead' || mvp.live.state === 'probable'))
-        .sort((a, b) => (a.live.windowStart ?? Infinity) - (b.live.windowStart ?? Infinity))
-        .slice(0, 8),
-    [mvps]
-  );
-
   const mobNames = useMemo(() => new Map(mvps.map((mvp) => [mvp.mobId, mvp.name])), [mvps]);
   const selected = selectedId ? mvps.find((mvp) => mvp.id === selectedId) ?? null : null;
   const updatedSeconds = lastFetchedAt > 0 ? Math.max(0, Math.floor((nowMs - lastFetchedAt) / 1000)) : null;
@@ -261,47 +252,6 @@ const Mvps = () => {
   return (
     <>
       {error && <div className="mvps-error">{error}</div>}
-
-          {upcoming.length > 0 && (
-            <section className="mvps-radar" aria-label="Próximos respawns">
-              <div className="mvps-radar-head">
-                <h2>Próximos respawns</h2>
-                <span className="mvps-live-dot">En vivo</span>
-              </div>
-              <div className="mvps-radar-track">
-                {upcoming.map((mvp) => (
-                  <button
-                    type="button"
-                    key={`radar-${mvp.id}`}
-                    className={`mvps-radar-card state-${mvp.live.state}`}
-                    onClick={() => setSelectedId(mvp.id)}
-                  >
-                    <div className="mvps-radar-sprite">
-                      <AtlasSprite sprite={sprites[mvp.mobId]} alt={mvp.name} className="mvps-sprite-img" />
-                    </div>
-                    <div className="mvps-radar-info">
-                      <strong>{mvp.name}</strong>
-                      <span>{mvp.map}</span>
-                      <span className="mvp-souls">
-                        <img src="/icons/mvp-soul.png" alt="" />
-                        {mvp.souls} {mvp.souls === 1 ? 'alma' : 'almas'}
-                      </span>
-                      <em>
-                        {mvp.live.state === 'dead'
-                          ? `en ${formatDuration((mvp.live.windowStart ?? serverNow) - serverNow)}`
-                          : `probable ${Math.round((mvp.live.probabilityAlive ?? 0) * 100)}%`}
-                      </em>
-                      {mvp.live.state === 'probable' && (
-                        <div className="mvps-probability">
-                          <span style={{ width: `${Math.round((mvp.live.probabilityAlive ?? 0) * 100)}%` }} />
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
 
           {data && data.recentKills.length > 0 && (
             <section className="mvps-recent" aria-label="Últimas cazas">
