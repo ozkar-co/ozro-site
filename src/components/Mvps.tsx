@@ -465,6 +465,20 @@ const Mvps = () => {
                 </div>
               </div>
 
+              {selected.summons && selected.summons.length > 0 && (
+                <div className="mvp-modal-summons">
+                  <span>Invocaciones</span>
+                  <ul>
+                    {selected.summons.map((summon) => (
+                      <li key={`${summon.mobId}-${summon.amount}`}>
+                        <Link to={`/database?tab=mobs&q=${summon.mobId}`}>{summon.mobName}</Link>
+                        {summon.amount > 1 ? ` x${summon.amount}` : ''}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {selected.lastKill && (
                 <div className="mvp-modal-last">
                   Último golpe: <strong>{selected.lastKill.killer ?? 'Cazador desconocido'}</strong> · hace{' '}

@@ -4,6 +4,8 @@ import {
     isSpawnDataAvailable,
     spawnTableSql
 } from './gameDb.js';
+import { applyMobHp } from './mobRates.js';
+import { getMobSummons } from './mobSummons.js';
 
 const YELLOW_WINDOW_SECONDS = 20 * 60;
 let mvplogWarningShown = false;
@@ -221,7 +223,7 @@ export async function getMvpRadar() {
             name: row.name_english,
             nameAegis: row.name_aegis,
             level,
-            hp: toNumber(row.hp),
+            hp: applyMobHp(row.hp, 'mvp'),
             element: row.element,
             elementLevel: toNumber(row.element_level),
             race: row.race,
@@ -234,6 +236,7 @@ export async function getMvpRadar() {
             amount: toNumber(row.amount),
             delay: toNumber(row.delay),
             delay2: toNumber(row.delay2),
+            summons: getMobSummons(row.mob_id),
             ...computed
         });
     }

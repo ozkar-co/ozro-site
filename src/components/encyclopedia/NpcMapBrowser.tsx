@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   loadNpcMap,
   npcDisplayName,
@@ -6,6 +7,8 @@ import {
   npcSpriteUrl,
   type NpcEntry,
   type NpcMapsIndex,
+  type NpcShop,
+  type NpcShopItem,
   type NpcSpriteIndex,
 } from '../../api/npcData';
 import '../../styles/Encyclopedia.css';
@@ -34,6 +37,55 @@ const FUNCTION_ORDER = [
 
 const DEFAULT_MAP = 'prontera';
 const FALLBACK_SPRITE = '/icons/npc.png';
+
+const itemLabel = (itemId?: number, aegis?: string) => {
+  if (itemId) return `Objeto #${itemId}`;
+  return (aegis ?? 'Objeto').replace(/_/g, ' ');
+};
+
+const itemLink = (itemId?: number) =>
+  itemId ? `/database?tab=items&q=${itemId}` : undefined;
+
+const ShopItem = ({ item }: { item: NpcShopItem }) => {
+  const href = itemLink(item.itemId);
+  return (
+    <li>
+      {href ? <Link to={href}>{itemLabel(item.itemId, item.item)}</Link> : itemLabel(item.itemId, item.item)}
+      {item.price != null && item.price > 0 && ` · ${item.price.toLocaleString('es')}z`}
+      {item.price === -1 && ' · precio base'}
+      {item.zeny != null && item.zeny > 0 && ` · ${item.zeny.toLocaleString('es')}z`}
+      {item.stock != null && item.stock > 0 && ` · stock ${item.stock.toLocaleString('es')}`}
+      {item.requiredItems && item.requiredItems.length > 0 && (
+        <span className="npc-shop-required">
+          {' · '}
+          {item.requiredItems.map((required) => {
+            const requiredHref = itemLink(required.itemId);
+            const label = itemLabel(required.itemId, required.item);
+            return (
+              <span key={`${required.item}-${required.amount ?? 0}`}>
+                {requiredHref ? <Link to={requiredHref}>{label}</Link> : label}
+                {required.amount ? ` x${required.amount.toLocaleString('es')}` : ''}
+              </span>
+            );
+          })}
+        </span>
+      )}
+    </li>
+  );
+};
+
+const NpcShopDetails = ({ shop }: { shop: NpcShop }) => (
+  <details className="npc-shop">
+    <summary>
+      {shop.type === 'barter' ? 'Intercambio' : 'Tienda'} ({shop.items.length.toLocaleString('es')})
+    </summary>
+    <ul>
+      {shop.items.map((item, index) => (
+        <ShopItem key={`${item.itemId ?? item.item ?? 'item'}-${index}`} item={item} />
+      ))}
+    </ul>
+  </details>
+);
 
 interface NpcMapBrowserProps {
   maps: NpcMapsIndex | null;
@@ -276,9 +328,12 @@ const NpcMapBrowser = ({ maps, sprites, mapsError }: NpcMapBrowserProps) => {
                     </div>
                     <div className="npc-info">
                       <h3 title={npc.name}>{npcDisplayName(npc)}</h3>
-                      <span className={`npc-function fn-${npc.function}`}>
-                        {FUNCTION_LABELS[npc.function] ?? npc.function}
-                      </span>
+                      <div className="npc-badges">
+                        <span className={`npc-function fn-${npc.function}`}>
+                          {FUNCTION_LABELS[npc.function] ?? npc.function}
+                        </span>
+                        {npc.isCustom && <span className="npc-custom-badge">OzRo</span>}
+                      </div>
                       <p className="npc-location">
                         {selectedMapInfo?.mapName ?? selectedMap} · {npc.x}, {npc.y}
                       </p>
@@ -287,6 +342,7 @@ const NpcMapBrowser = ({ maps, sprites, mapsError }: NpcMapBrowserProps) => {
                           {questCount} {questCount === 1 ? 'quest' : 'quests'}
                         </p>
                       )}
+                      {npc.shop && <NpcShopDetails shop={npc.shop} />}
                     </div>
                   </article>
                 );

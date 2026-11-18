@@ -281,7 +281,8 @@ export function mapMobToCard(mob: MobSummary | MobDetail, sprite = PLACEHOLDER_M
     spawnMaps: mob.spawnMaps,
     spawnMapCount: mob.spawnMapCount,
     spawnAmount: mob.spawnAmount,
-    hasWorldSpawn: mob.hasWorldSpawn
+    hasWorldSpawn: mob.hasWorldSpawn,
+    summons: mob.summons
   };
 }
 

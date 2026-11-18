@@ -1,1 +1,1 @@
-[{"id":"04cd66a5429d","name":"Maram#Armybase1","x":133,"y":53,"dir":5,"sprite":"4_EP18_MARAM","function":"quest","visible":true,"isInstance":false,"quests":{"given":[16578]}},{"id":"772841fd5557","name":"#Secret passage - Logistics base","x":186,"y":58,"dir":0,"sprite":null,"function":"warp","visible":false,"isInstance":false}]
+[{"id":"772841fd5557","name":"#Secret passage - Logistics base","x":186,"y":58,"dir":0,"sprite":null,"function":"warp","visible":false,"isInstance":false}]

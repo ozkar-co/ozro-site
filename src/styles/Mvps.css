@@ -740,3 +740,34 @@
     height: 110px;
   }
 }
+
+.mvp-modal-summons {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.mvp-modal-summons > span {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: #777;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mvp-modal-summons ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.mvp-modal-summons a {
+  color: #2c5aa0;
+  text-decoration: none;
+}
+
+.mvp-modal-summons a:hover {
+  text-decoration: underline;
+}

@@ -3,6 +3,7 @@ export interface NpcMapInfo {
   mapName: string;
   total: number;
   visible: number;
+  custom?: number;
   instance: boolean;
 }
 
@@ -18,6 +19,28 @@ export interface NpcQuestInfo {
   checked?: number[];
 }
 
+export interface NpcShopRequiredItem {
+  item: string;
+  itemId?: number;
+  amount?: number;
+  refine?: number;
+}
+
+export interface NpcShopItem {
+  itemId?: number;
+  item?: string;
+  price?: number;
+  stock?: number;
+  zeny?: number;
+  refine?: number;
+  requiredItems?: NpcShopRequiredItem[];
+}
+
+export interface NpcShop {
+  type: string;
+  items: NpcShopItem[];
+}
+
 export interface NpcEntry {
   id: string;
   name: string;
@@ -28,7 +51,9 @@ export interface NpcEntry {
   function: string;
   visible: boolean;
   isInstance: boolean;
+  isCustom?: boolean;
   quests?: NpcQuestInfo;
+  shop?: NpcShop;
 }
 
 export interface NpcSpriteInfo {

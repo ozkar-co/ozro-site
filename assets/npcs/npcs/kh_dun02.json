@@ -1,1 +1,1 @@
-[{"id":"13fb0de2b87e","name":"kh_dun04","x":43,"y":195,"dir":0,"sprite":"45","function":"warp","visible":true,"isInstance":false},{"id":"5cc4f718ee38","name":"#tr120132","x":70,"y":107,"dir":4,"sprite":"4_TREASURE_BOX","function":"otro","visible":true,"isInstance":false},{"id":"6b39c7e4243e","name":"#wp120132","x":70,"y":107,"dir":4,"sprite":"HIDDEN_WARP_NPC","function":"otro","visible":false,"isInstance":false}]
+[{"id":"13fb0de2b87e","name":"kh_dun04","x":43,"y":195,"dir":0,"sprite":"45","function":"warp","visible":true,"isInstance":false}]

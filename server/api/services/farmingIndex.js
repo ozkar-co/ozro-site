@@ -15,6 +15,7 @@ import {
     spawnTableSql
 } from './gameDb.js';
 import { applyDropRate, dropMultiplier, effectiveMvpRates, mobTier, rateToPercent } from './dropRates.js';
+import { applyMobHp } from './mobRates.js';
 import { bestItemValue } from './itemValue.js';
 import { getItemDisplayName } from './itemInfo.js';
 
@@ -164,6 +165,8 @@ function buildMob(row, itemByAegis, spawnsByMob) {
 
     if (mzw < MIN_MZW) return null;
 
+    const hp = applyMobHp(Number(row.hp) || 0, tier);
+
     const spawnMaps = (spawnsByMob.get(Number(row.id)) || []).map((spawn) => {
         const access = mapAccess(spawn.map);
         return {
@@ -183,7 +186,7 @@ function buildMob(row, itemByAegis, spawnsByMob) {
         name: row.name_english,
         nameAegis: row.name_aegis,
         level: Number(row.level) || 0,
-        hp: Number(row.hp) || 0,
+        hp,
         baseExp: Number(row.base_exp) || 0,
         jobExp: Number(row.job_exp) || 0,
         mvpExp: Number(row.mvp_exp) || 0,
@@ -194,7 +197,7 @@ function buildMob(row, itemByAegis, spawnsByMob) {
         mzwBase: mzw,
         mzwNormal,
         mzwMvp,
-        zenyPerHpBase: Number(row.hp) > 0 ? mzw / Number(row.hp) : 0,
+        zenyPerHpBase: hp > 0 ? mzw / hp : 0,
         dropCount: drops.length,
         drops,
         spawnMaps,

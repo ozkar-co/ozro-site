@@ -1,1 +1,1 @@
-[{"id":"7157d5057c6d","name":"Guard#iz_dun","x":142,"y":190,"dir":5,"sprite":"413","function":"warp","visible":true,"isInstance":false},{"id":"549b79b39b95","name":"#tr120141","x":64,"y":223,"dir":4,"sprite":"4_TREASURE_BOX","function":"otro","visible":true,"isInstance":false},{"id":"4c50e7709fdf","name":"#wp120141","x":64,"y":223,"dir":4,"sprite":"HIDDEN_WARP_NPC","function":"otro","visible":false,"isInstance":false}]
+[{"id":"7157d5057c6d","name":"Guard#iz_dun","x":142,"y":190,"dir":5,"sprite":"413","function":"warp","visible":true,"isInstance":false}]

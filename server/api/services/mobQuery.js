@@ -23,16 +23,19 @@ import {
     rateToPercent,
     MVP_REWARD_RATE
 } from './dropRates.js';
+import { applyMobHp } from './mobRates.js';
+import { getMobSummons } from './mobSummons.js';
 import { getItemDisplayName } from './itemInfo.js';
 
 function mapMobSummary(row) {
+    const tier = mobTierFromRow(row);
     return {
         id: row.id,
         name: row.name_english,
         nameAegis: row.name_aegis,
         nameJapanese: row.name_japanese,
         level: row.level,
-        hp: row.hp,
+        hp: applyMobHp(row.hp, tier),
         sp: row.sp,
         baseExp: row.base_exp,
         jobExp: row.job_exp,
@@ -47,7 +50,8 @@ function mapMobSummary(row) {
         race: row.race,
         size: row.size,
         isMvp: Boolean(row.mode_mvp) || (row.mvp_exp > 0),
-        class: row.class
+        class: row.class,
+        summons: getMobSummons(row.id)
     };
 }
 

@@ -1367,3 +1367,29 @@ a {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.mob-summons h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #777;
+}
+
+.mob-summons ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.mob-summons a {
+  color: #2c5aa0;
+  text-decoration: none;
+}
+
+.mob-summons a:hover {
+  text-decoration: underline;
+}

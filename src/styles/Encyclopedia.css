@@ -873,3 +873,54 @@
     padding: 1.25rem;
   }
 }
+
+.npc-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.npc-custom-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: #fdebd0;
+  color: #9c640c;
+  font-weight: 700;
+}
+
+.npc-shop {
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+  color: #555;
+}
+
+.npc-shop summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #1e8449;
+}
+
+.npc-shop ul {
+  margin: 0.35rem 0 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.npc-shop a {
+  color: #2c5aa0;
+  text-decoration: none;
+}
+
+.npc-shop a:hover {
+  text-decoration: underline;
+}
+
+.npc-shop-required {
+  color: #777;
+}

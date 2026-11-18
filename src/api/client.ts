@@ -148,6 +148,14 @@ export interface MobSpawnPoint {
   source?: { file: string; line: number };
 }
 
+export interface MobSummon {
+  mobId: number;
+  mobAegis?: string | null;
+  mobName: string;
+  amount: number;
+  conditions?: string[];
+}
+
 export interface MobSummary {
   id: number;
   name: string;
@@ -171,6 +179,7 @@ export interface MobSummary {
   spawnMapCount?: number;
   spawnAmount?: number;
   hasWorldSpawn?: boolean;
+  summons?: MobSummon[];
 }
 
 export interface MobDrop {
@@ -285,6 +294,7 @@ export interface MvpEntry {
   respawnMinSeconds: number;
   respawnMaxSeconds: number;
   lastKill: MvpLastKill | null;
+  summons?: MobSummon[];
 }
 
 export interface MvpRecentKill {

@@ -13,6 +13,14 @@ interface MobDrop {
   itemIcon: SpriteRect | string;
 }
 
+interface MobSummon {
+  mobId: number;
+  mobAegis?: string | null;
+  mobName: string;
+  amount: number;
+  conditions?: string[];
+}
+
 interface MobResult {
   id: string;
   name: string;
@@ -48,6 +56,7 @@ interface MobResult {
   spawnMapCount?: number;
   spawnAmount?: number;
   hasWorldSpawn?: boolean;
+  summons?: MobSummon[];
 }
 
 const MOB_SIZE = {
@@ -393,6 +402,24 @@ const MobCard: React.FC<MobCardProps> = ({ result }) => {
                       );
                     })}
                 </div>
+              </div>
+            </div>
+          )}
+          {result.summons && result.summons.length > 0 && (
+            <div className="result-card-section">
+              <div className="mob-summons">
+                <h4>Invocaciones</h4>
+                <ul>
+                  {result.summons.map((summon) => (
+                    <li key={`${summon.mobId}-${summon.amount}`}>
+                      <Link to={`/database?tab=mobs&q=${summon.mobId}`}>{summon.mobName}</Link>
+                      {summon.amount > 1 ? ` x${summon.amount}` : ''}
+                      {summon.conditions && summon.conditions.length > 0
+                        ? ` · ${summon.conditions.join(', ')}`
+                        : ''}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           )}
