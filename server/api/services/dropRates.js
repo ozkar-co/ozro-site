@@ -13,6 +13,7 @@ const DEFAULT_CONFIG = {
     normal: { common: 500, heal: 1000, use: 1000, equip: 1500, card: 1000 },
     boss: { common: 500, heal: 1000, use: 1000, equip: 1500, card: 10000 },
     mvp: { common: 100, heal: 100, use: 100, equip: 100, card: 100 },
+    treasure: 500,
     mvpReward: 500,
     mvpDropMode: 0
 };
@@ -23,6 +24,7 @@ function loadConfig() {
         normal: { ...DEFAULT_CONFIG.normal, ...(raw.normal || {}) },
         boss: { ...DEFAULT_CONFIG.boss, ...(raw.boss || {}) },
         mvp: { ...DEFAULT_CONFIG.mvp, ...(raw.mvp || {}) },
+        treasure: Number.isFinite(raw.treasure) ? raw.treasure : DEFAULT_CONFIG.treasure,
         mvpReward: Number.isFinite(raw.mvpReward) ? raw.mvpReward : DEFAULT_CONFIG.mvpReward,
         mvpDropMode: Number.isFinite(raw.mvpDropMode) ? raw.mvpDropMode : DEFAULT_CONFIG.mvpDropMode
     };
@@ -35,6 +37,9 @@ export const DROP_RATE_CONFIG = {
     boss: config.boss,
     mvp: config.mvp
 };
+
+/** Tasa para cofres del tesoro (item_rate_treasure). */
+export const TREASURE_RATE = config.treasure;
 
 /** Recompensa MVP directa (item_rate_mvp). */
 export const MVP_REWARD_RATE = config.mvpReward;
@@ -61,8 +66,6 @@ export function itemDropCategory(itemType) {
         case 'weapon':
         case 'armor':
         case 'petarmor':
-        case 'shadowgear':
-        case 'armor2':
             return 'equip';
         default:
             // Etc, Ammo, Petegg, Delayconsume y desconocidos
@@ -71,7 +74,8 @@ export function itemDropCategory(itemType) {
 }
 
 /** Tier del monstruo dueño del drop: normal, boss (no MVP) o mvp. */
-export function mobTier({ isMvp, isBoss } = {}) {
+export function mobTier({ isMvp, isBoss, isTreasure } = {}) {
+    if (isTreasure) return 'treasure';
     if (isMvp) return 'mvp';
     if (isBoss) return 'boss';
     return 'normal';
@@ -85,6 +89,7 @@ export function mobTier({ isMvp, isBoss } = {}) {
  */
 export function dropMultiplier(tier, dropType, itemType) {
     if (dropType === 'mvp') return MVP_REWARD_RATE;
+    if (tier === 'treasure') return TREASURE_RATE;
     const rates = DROP_RATE_CONFIG[tier] || DROP_RATE_CONFIG.normal;
     const category = itemDropCategory(itemType);
     return rates[category] ?? DROP_RATE_CONFIG.normal[category];

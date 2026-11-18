@@ -16,7 +16,7 @@ import {
 } from './gameDb.js';
 import { applyDropRate, dropMultiplier, effectiveMvpRates, mobTier, rateToPercent } from './dropRates.js';
 import { applyMobHp } from './mobRates.js';
-import { bestItemValue } from './itemValue.js';
+import { bestItemValue, initializeItemValues } from './itemValue.js';
 import { getItemDisplayName } from './itemInfo.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -46,7 +46,8 @@ function readJson(filePath) {
 function rowTier(row) {
     return mobTier({
         isMvp: Number(row.mode_mvp) === 1 || Number(row.mvp_exp) > 0,
-        isBoss: String(row.class || row.mob_class || '').toLowerCase() === 'boss'
+        isBoss: String(row.class || row.mob_class || '').toLowerCase() === 'boss',
+        isTreasure: Number(row.racegroup_treasure) === 1
     });
 }
 
@@ -306,6 +307,8 @@ export async function initializeFarmingIndex() {
         return false;
     }
 
+    await initializeItemValues();
+
     penaltyData = readJson(LEVEL_PENALTY_PATH);
     accessData = readJson(WORLD_ACCESS_PATH);
 
@@ -439,7 +442,7 @@ export function getFarmingMobs(params = {}) {
         total,
         page,
         limit,
-        valueSource: 'npc',
+        valueSource: 'mixed',
         playerLevel: level,
         penaltyApplied: applyPenalty && level !== null,
         results: pageResults
@@ -539,7 +542,7 @@ export function getFarmingMaps(params = {}) {
         total,
         page,
         limit,
-        valueSource: 'npc',
+        valueSource: 'mixed',
         playerLevel: level,
         penaltyApplied: applyPenalty && level !== null,
         results: pageResults

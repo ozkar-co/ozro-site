@@ -20,6 +20,7 @@
     "equip": 100,
     "card": 10000
   },
+  "treasure": 500,
   "mvpReward": 500,
   "mvpDropMode": 0
 }

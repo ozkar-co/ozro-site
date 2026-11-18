@@ -81,7 +81,10 @@ function DropTable({ drops, title }: { drops: FarmingDrop[]; title?: string }) {
               </td>
               <td>{drop.type === 'mvp' ? 'MVP' : 'Normal'}</td>
               <td>{formatPercent(drop.chancePercent)}</td>
-              <td>{formatZeny(drop.sell)}</td>
+              <td>
+                {formatZeny(drop.sell)}
+                {drop.valueSource && <span className="farm-muted"> {drop.valueSource}</span>}
+              </td>
               <td>{formatZeny(drop.expected)}</td>
             </tr>
           ))}
@@ -322,8 +325,9 @@ const FarmingCalculator = () => {
       <div className="farm-intro">
         <h2>Calculadora de farmeo</h2>
         <p>
-          Valor NPC esperado por kill, usando todos los drops y los rates del servidor.
-          Los objetos no vendibles a NPC se ignoran y los mobs con MZW menor a 10 no se listan.
+          Valor de venta esperado por kill, usando todos los drops y los rates del servidor.
+          Usa el precio de Garrett si el item está en su mesa; si no, el precio de compra NPC del master de mercado.
+          Los items sin precio se ignoran y los mobs con MZW menor a 10 no se listan.
           En mapas, el MZW es un promedio ponderado por cantidad de spawn.
           {' '}
           <Link to="/encyclopedia?tab=worldmap">Ver mapa del mundo</Link>
@@ -465,7 +469,7 @@ const FarmingCalculator = () => {
 
       <div className="farm-summary">
         <span>{formatNumber(total)} resultados</span>
-        <span>Valor NPC bruto, sin costos</span>
+        <span>Valor de venta bruto, sin costos</span>
         {useLevelAdjust && level !== null && <span>Ajustado a nivel {level}</span>}
       </div>
 
