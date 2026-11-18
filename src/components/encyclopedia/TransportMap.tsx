@@ -33,6 +33,7 @@ const TooltipGroups = ({ node }: { node: TransportLayoutNode }) => {
 const TransportMap = () => {
   const [layout, setLayout] = useState<TransportLayout | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
+  const [selectedPort, setSelectedPort] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -71,6 +72,22 @@ const TransportMap = () => {
     [overlayNodes, selected],
   );
 
+  const selectStation = (id: string, port: string | null = null) => {
+    if (selected === id && selectedPort === port) {
+      setSelected(null);
+      setSelectedPort(null);
+      return;
+    }
+    setSelected(id);
+    setSelectedPort(port);
+  };
+
+  const visibleGroups = selectedOverlay
+    ? selectedOverlay.id === 'alberta' && selectedPort
+      ? selectedOverlay.tooltips.filter((group) => group.label === selectedPort)
+      : selectedOverlay.tooltips
+    : [];
+
   const popoverClass = selectedOverlay
     ? `transport-popover is-${selectedOverlay.left > 60 ? 'left' : 'right'} is-${
         selectedOverlay.top < 28 ? 'below' : selectedOverlay.top > 72 ? 'above' : 'middle'
@@ -99,17 +116,54 @@ const TransportMap = () => {
               src={`${MAP_URL}?v=${layout.version}`}
               alt="Mapa esquemático de transporte de Rune-Midgard"
             />
-            {overlayNodes.map((node) =>
-              node.tooltips.length === 0 ? (
-                <span
-                  key={node.id}
-                  className="transport-node-hit is-disabled"
-                  style={{ left: `${node.left}%`, top: `${node.top}%` }}
-                  aria-hidden="true"
-                >
-                  <span className="transport-node-dot" />
-                </span>
-              ) : (
+            {overlayNodes.map((node) => {
+              if (node.id === 'alberta') {
+                return (
+                  <div
+                    key={node.id}
+                    className="transport-port-group"
+                    style={{ left: `${node.left}%`, top: `${node.top}%` }}
+                  >
+                    <button
+                      type="button"
+                      className={`transport-port-hit${
+                        selected === 'alberta' && selectedPort === 'Puerto norte' ? ' is-active' : ''
+                      }`}
+                      aria-label="Alberta, puerto norte"
+                      aria-pressed={selected === 'alberta' && selectedPort === 'Puerto norte'}
+                      onClick={() => selectStation('alberta', 'Puerto norte')}
+                    >
+                      <span className="transport-node-dot" />
+                    </button>
+                    <button
+                      type="button"
+                      className={`transport-port-hit${
+                        selected === 'alberta' && selectedPort === 'Puerto sur' ? ' is-active' : ''
+                      }`}
+                      aria-label="Alberta, puerto sur"
+                      aria-pressed={selected === 'alberta' && selectedPort === 'Puerto sur'}
+                      onClick={() => selectStation('alberta', 'Puerto sur')}
+                    >
+                      <span className="transport-node-dot" />
+                    </button>
+                  </div>
+                );
+              }
+
+              if (node.tooltips.length === 0) {
+                return (
+                  <span
+                    key={node.id}
+                    className="transport-node-hit is-disabled"
+                    style={{ left: `${node.left}%`, top: `${node.top}%` }}
+                    aria-hidden="true"
+                  >
+                    <span className="transport-node-dot" />
+                  </span>
+                );
+              }
+
+              return (
                 <button
                   key={node.id}
                   type="button"
@@ -117,12 +171,12 @@ const TransportMap = () => {
                   style={{ left: `${node.left}%`, top: `${node.top}%` }}
                   aria-label={node.name}
                   aria-pressed={selected === node.id}
-                  onClick={() => setSelected((current) => (current === node.id ? null : node.id))}
+                  onClick={() => selectStation(node.id)}
                 >
                   <span className="transport-node-dot" />
                 </button>
-              ),
-            )}
+              );
+            })}
           </div>
 
           {selectedOverlay && (
@@ -134,7 +188,7 @@ const TransportMap = () => {
             >
               <div className="transport-popover-head">
                 <div>
-                  <span className="transport-kicker">Estación</span>
+                  <span className="transport-kicker">{selectedPort ?? 'Estación'}</span>
                   <h3>{selectedOverlay.name}</h3>
                 </div>
                 <button
@@ -146,7 +200,7 @@ const TransportMap = () => {
                   ×
                 </button>
               </div>
-              <TooltipGroups node={selectedOverlay} />
+              <TooltipGroups node={{ ...selectedOverlay, tooltips: visibleGroups }} />
             </div>
           )}
         </div>

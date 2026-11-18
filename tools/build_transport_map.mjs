@@ -378,6 +378,22 @@ function decorate(graph, svg) {
     },
   );
 
+  next = next.replace(
+    /(<g class="node" id="alberta"[^>]*>)([\s\S]*?)(<\/g>)/,
+    (match, open, body, close) => {
+      const updated = body.replace(
+        /<rect ([^>]*class="lm-shape"[^>]*)>/,
+        (rectMatch, attrs) => {
+          const width = Number(attrs.match(/width="([\d.]+)"/)?.[1] ?? 54);
+          const height = width * 1.9;
+          const [cx, cy] = positions.alberta;
+          return `<rect x="${cx - width / 2}" y="${cy - height / 2}" width="${width}" height="${height}" rx="${width / 2}" class="lm-shape"/>`;
+        },
+      );
+      return `${open}${updated}${close}`;
+    },
+  );
+
   next = next.replace(/<rect[^>]*class="lm-bg"[^>]*\/>/, '');
   next = next.replace(/<g class="lm-marks"[^>]*>[\s\S]*?<\/g>/g, '');
   next = next.replace(/<g class="edge"[^>]*data-lines="(?:AD|AI)"[^>]*>[\s\S]*?<\/g>/g, '');

@@ -95,6 +95,48 @@
   border-radius: 50%;
 }
 
+.transport-port-group {
+  position: absolute;
+  width: 5.4%;
+  aspect-ratio: 0.53;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.transport-port-hit {
+  position: absolute;
+  left: 50%;
+  width: 78%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border: 0;
+  padding: 0;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.transport-port-hit:first-child {
+  top: 23%;
+}
+
+.transport-port-hit:last-child {
+  top: 77%;
+}
+
+.transport-port-hit:hover .transport-node-dot,
+.transport-port-hit:focus-visible .transport-node-dot,
+.transport-port-hit.is-active .transport-node-dot {
+  transform: scale(1.35);
+}
+
+.transport-port-hit:focus-visible {
+  outline: 2px solid #ff8d7f;
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
 .transport-popover {
   position: absolute;
   z-index: 5;
