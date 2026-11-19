@@ -21,6 +21,7 @@ function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): bo
     if (options.selectedCardLocations.length > 0) return true;
     if (options.scriptQuery.trim()) return true;
     if (options.hideItemsWithoutNaturalDrop !== defaults.hideItemsWithoutNaturalDrop) return true;
+    if (options.hideWithoutSprite !== defaults.hideWithoutSprite) return true;
     return false;
   }
   if (options.selectedElements.length > 0) return true;
@@ -31,6 +32,7 @@ function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): bo
   if (options.showBoss !== defaults.showBoss) return true;
   if (options.showNormal !== defaults.showNormal) return true;
   if (options.showMvp !== defaults.showMvp) return true;
+  if (options.hideWithoutSprite !== defaults.hideWithoutSprite) return true;
   return false;
 }
 
@@ -91,6 +93,11 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
   const naturalDrop = parseBoolParam(params.get('naturalDrop'));
   if (naturalDrop !== undefined) {
     options.hideItemsWithoutNaturalDrop = naturalDrop;
+  }
+
+  const hideSprite = parseBoolParam(params.get('hideNoSprite'));
+  if (hideSprite !== undefined) {
+    options.hideWithoutSprite = hideSprite;
   }
 
   options.selectedElements = parseIntList(params.get('element'));
@@ -167,6 +174,11 @@ export function buildDatabaseSearchParams(
     } else if (run) {
       params.set('naturalDrop', options.hideItemsWithoutNaturalDrop ? '1' : '0');
     }
+    if (options.hideWithoutSprite !== defaults.hideWithoutSprite) {
+      params.set('hideNoSprite', options.hideWithoutSprite ? '1' : '0');
+    } else if (run) {
+      params.set('hideNoSprite', options.hideWithoutSprite ? '1' : '0');
+    }
   }
 
   if (tab === 'mobs') {
@@ -195,6 +207,11 @@ export function buildDatabaseSearchParams(
     }
     if (options.includeInstanceSpawns !== defaults.includeInstanceSpawns) {
       params.set('includeInstances', options.includeInstanceSpawns ? '1' : '0');
+    }
+    if (options.hideWithoutSprite !== defaults.hideWithoutSprite) {
+      params.set('hideNoSprite', options.hideWithoutSprite ? '1' : '0');
+    } else if (run) {
+      params.set('hideNoSprite', options.hideWithoutSprite ? '1' : '0');
     }
   }
 

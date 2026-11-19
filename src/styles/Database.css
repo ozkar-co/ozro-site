@@ -738,6 +738,46 @@ a {
   color: #888;
 }
 
+.search-filter-actions {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(224, 224, 224, 0.5);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.search-filter-clear {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #fff;
+  color: #555;
+  cursor: pointer;
+}
+
+.search-filter-clear:hover {
+  border-color: #ff8d7f;
+  color: #333;
+}
+
+.result-card--compact {
+  padding: 0.4rem 0.65rem;
+  min-height: 0;
+}
+
+.result-card--compact .result-card-compact-text {
+  font-size: 0.85rem;
+  color: #444;
+  line-height: 1.35;
+}
+
+.result-card-compact-badge {
+  font-size: 0.72rem;
+  color: #888;
+  font-style: italic;
+}
+
 .type-checkbox {
   display: flex;
   align-items: center;

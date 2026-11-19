@@ -145,3 +145,8 @@ export async function resolveSprite(
 
   return resolveCustomAsset(category, id);
 }
+
+/** true si el id está en el manifest del atlas o tiene asset custom (no placeholder). */
+export function hasManifestSprite(resolved: SpriteRect | string | null): boolean {
+  return resolved != null;
+}

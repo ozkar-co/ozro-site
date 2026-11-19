@@ -223,6 +223,7 @@ export interface SearchOptions {
   hideMobsWithoutSpawn: boolean;
   includeInstanceSpawns: boolean;
   hideItemsWithoutNaturalDrop: boolean;
+  hideWithoutSprite: boolean;
 }
 
 export const defaultSearchOptions = (): SearchOptions => ({
@@ -238,7 +239,8 @@ export const defaultSearchOptions = (): SearchOptions => ({
   showMvp: true,
   hideMobsWithoutSpawn: true,
   includeInstanceSpawns: false,
-  hideItemsWithoutNaturalDrop: true
+  hideItemsWithoutNaturalDrop: true,
+  hideWithoutSprite: true
 });
 
 export function buildMobSearchParams(

@@ -134,9 +134,10 @@ const displayStat = (value: number | null | undefined): string => {
 
 interface MobCardProps {
   result: MobResult;
+  compact?: boolean;
 }
 
-const MobCard: React.FC<MobCardProps> = ({ result }) => {
+const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
   const [farming, setFarming] = useState<FarmingMob | null>(null);
   const [farmingOpen, setFarmingOpen] = useState(false);
   const [farmingLoading, setFarmingLoading] = useState(false);
@@ -161,6 +162,20 @@ const MobCard: React.FC<MobCardProps> = ({ result }) => {
       setFarmingLoading(false);
     }
   };
+
+  if (compact) {
+    return (
+      <div className="result-card result-card--compact">
+        <span className="result-card-compact-text">
+          <Link to={`/database?tab=mobs&q=${result.id}`}>{result.name}</Link>
+          {' · '}
+          <span className="name-details">#{result.id} · Nv. {result.lvl}</span>
+          {' · '}
+          <span className="result-card-compact-badge">sin sprite en cliente</span>
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="result-card">

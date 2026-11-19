@@ -8,7 +8,7 @@ import ItemCard, { SearchResult, ITEM_TYPES } from './ItemCard';
 import MobCard, { MobResult, MOB_SIZE, MOB_ELEMENTS, MOB_RACES } from './MobCard';
 import '../styles/Database.css';
 import { apiClient } from '../api/client';
-import { loadManifest, resolveSprite, type SpriteRect } from '../api/assets';
+import { hasManifestSprite, loadManifest, resolveSprite, type SpriteRect } from '../api/assets';
 import {
   PLACEHOLDER_ITEM_ICON,
   PLACEHOLDER_ITEM_ILLUSTRATION,
@@ -37,10 +37,13 @@ import { defaultSearchOptions } from '../api/databaseMappers';
 
 type TabType = DatabaseTab;
 
+type ItemResult = SearchResult & { hasSprite?: boolean };
+type MobResultRow = MobResult & { hasSprite?: boolean };
+
 interface SearchState {
   total: number;
   currentPage: number;
-  results: (SearchResult | MobResult)[];
+  results: (ItemResult | MobResultRow)[];
   totalPages: number;
 }
 
@@ -123,28 +126,31 @@ const Database = () => {
     return PLACEHOLDER_MOB_SPRITE;
   }, []);
 
-  const enrichMobResults = useCallback(async (mobs: MobResult[]): Promise<MobResult[]> => {
+  const enrichMobResults = useCallback(async (mobs: MobResult[]): Promise<MobResultRow[]> => {
     return Promise.all(mobs.map(async (mob) => {
-      const sprite = await getImage(mob.id, 'sprites');
+      const spriteResolved = await resolveSprite(mob.id, 'mobs/sprites');
+      const hasSprite = hasManifestSprite(spriteResolved);
+      const sprite = spriteResolved ?? PLACEHOLDER_MOB_SPRITE;
       const drop = await Promise.all(
         (mob.drop || []).map(async (entry) => ({
           ...entry,
           itemIcon: entry.id ? await getImage(String(entry.id), 'icons') : PLACEHOLDER_ITEM_ICON
         }))
       );
-      return { ...mob, sprite, drop };
+      return { ...mob, sprite, drop, hasSprite };
     }));
   }, [getImage]);
 
-  const enrichItemResults = useCallback(async (items: SearchResult[]): Promise<SearchResult[]> => {
+  const enrichItemResults = useCallback(async (items: SearchResult[]): Promise<ItemResult[]> => {
     return Promise.all(items.map(async (item) => {
-      const [icon, illustration] = await Promise.all([
-        getImage(item.id, 'icons'),
-        getImage(item.id, 'illustrations')
-      ]);
-      return { ...item, icon, illustration };
+      const iconResolved = await resolveSprite(item.id, 'items/icons');
+      const hasSprite = hasManifestSprite(iconResolved);
+      const illustrationResolved = await resolveSprite(item.id, 'items/illustrations');
+      const icon = iconResolved ?? PLACEHOLDER_ITEM_ICON;
+      const illustration = illustrationResolved ?? iconResolved ?? PLACEHOLDER_ITEM_ILLUSTRATION;
+      return { ...item, icon, illustration, hasSprite };
     }));
-  }, [getImage]);
+  }, []);
 
   const fetchSearchResults = useCallback(async (
     tab: TabType,
@@ -266,6 +272,7 @@ const Database = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    closeOptionsPanel();
     navigateToSearch(activeTab, searchTerm, 0, searchOptions, true);
   };
 
@@ -275,17 +282,32 @@ const Database = () => {
     document.querySelector('.results-section')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const closeOptionsPanel = useCallback(() => {
+    if (!isOptionsVisible) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsOptionsVisible(false);
+      setIsClosing(false);
+    }, 300);
+  }, [isOptionsVisible]);
+
   const handleOptionsToggle = () => {
     if (isOptionsVisible) {
-      setIsClosing(true);
-      setTimeout(() => {
-        setIsOptionsVisible(false);
-        setIsClosing(false);
-      }, 300);
+      closeOptionsPanel();
     } else {
       setIsOptionsVisible(true);
       setIsClosing(false);
     }
+  };
+
+  const handleClearFilters = () => {
+    const fresh = defaultSearchOptions();
+    setSearchOptions(fresh);
+    setSearchTerm('');
+    setSearchState(emptySearchState());
+    setSearchError(null);
+    closeOptionsPanel();
+    navigate({ pathname: '/database', search: `tab=${activeTab}` });
   };
 
   const handleTabChange = (tab: TabType) => {
@@ -454,6 +476,17 @@ const Database = () => {
                               />
                               Ocultar sin drop natural
                             </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.hideWithoutSprite}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  hideWithoutSprite: !prev.hideWithoutSprite
+                                }))}
+                              />
+                              Ocultar sin sprite
+                            </label>
                           </div>
                         </div>
                       </>
@@ -576,8 +609,33 @@ const Database = () => {
                             ))}
                           </div>
                         </div>
+                        <div className="search-types">
+                          <div className="search-types-title">Sprites (cliente):</div>
+                          <div className="search-types-grid">
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.hideWithoutSprite}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  hideWithoutSprite: !prev.hideWithoutSprite
+                                }))}
+                              />
+                              Ocultar sin sprite
+                            </label>
+                          </div>
+                        </div>
                       </>
                     )}
+                    <div className="search-filter-actions">
+                      <button
+                        type="button"
+                        className="search-filter-clear"
+                        onClick={handleClearFilters}
+                      >
+                        Limpiar filtros
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -594,14 +652,24 @@ const Database = () => {
             {!searchError && !isSearching && searchState.results.length > 0 && resultsTab === activeTab ? (
               <>
                 <div className="results-grid">
-                  {searchState.results.map((result) =>
-                    activeTab === 'items' ? (
-                      <ItemCard key={result.id} result={result as SearchResult} />
-                    ) : (
-                      <MobCard key={result.id} result={result as MobResult} />
-                    )
-                  )}
+                  {searchState.results
+                    .filter((result) => (
+                      !searchOptions.hideWithoutSprite || result.hasSprite !== false
+                    ))
+                    .map((result) =>
+                      activeTab === 'items' ? (
+                        <ItemCard key={result.id} result={result as SearchResult} />
+                      ) : (
+                        <MobCard key={result.id} result={result as MobResult} />
+                      )
+                    )}
                 </div>
+                {searchState.results.length > 0
+                  && searchState.results.every((r) => searchOptions.hideWithoutSprite && r.hasSprite === false) && (
+                  <div className="no-results" style={{ marginTop: '0.5rem' }}>
+                    Ningún resultado visible en esta página (ocultos sin sprite). Desactiva «Ocultar sin sprite» para verlos.
+                  </div>
+                )}
                 {searchState.totalPages > 1 && (
                   <div className="pagination">
                     <button onClick={() => handlePageChange(0)} disabled={searchState.currentPage === 0} className="pagination-button">{'<<'}</button>

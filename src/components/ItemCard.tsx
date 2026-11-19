@@ -254,9 +254,10 @@ const processColoredText = (text: string): JSX.Element[] => {
 
 interface ItemCardProps {
   result: SearchResult;
+  compact?: boolean;
 }
 
-const ItemCard: React.FC<ItemCardProps> = ({ result }) => {
+const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
   const [description, setDescription] = useState(result.description);
   const [descriptionOpen, setDescriptionOpen] = useState(Boolean(result.description));
   const [descriptionLoading, setDescriptionLoading] = useState(false);
@@ -283,6 +284,20 @@ const ItemCard: React.FC<ItemCardProps> = ({ result }) => {
       setDescriptionLoading(false);
     }
   };
+
+  if (compact) {
+    return (
+      <div className="result-card result-card--compact">
+        <span className="result-card-compact-text">
+          <Link to={`/database?tab=items&q=${result.id}`}>{result.name}</Link>
+          {' · '}
+          <span className="name-details">#{result.id} · {result.codename1}</span>
+          {' · '}
+          <span className="result-card-compact-badge">sin sprite en cliente</span>
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="result-card">
