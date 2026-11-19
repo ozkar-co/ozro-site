@@ -67,7 +67,7 @@ const sections: EncyclopediaSection[] = [
   },
   {
     id: 'simulator',
-    title: 'Simulador de tasador',
+    title: 'Simulador de mercado',
     icon: '/icons/exp.png',
     category: 'Farmeo y mapas',
   },

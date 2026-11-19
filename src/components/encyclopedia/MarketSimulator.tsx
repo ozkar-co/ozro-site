@@ -156,7 +156,7 @@ const MarketSimulator = () => {
   return (
     <section className="market-sim">
       <div className="market-sim-intro">
-        <h2>Simulador de tasador</h2>
+        <h2>Simulador de mercado</h2>
         <p>
           Estima cuánto puede valer un objeto y cuánto puede tardar en venderse.
           La rareza sube el precio, pero también baja la liquidez: un objeto caro
@@ -219,7 +219,7 @@ const MarketSimulator = () => {
                 <div>
                   <span>Venta inmediata</span>
                   <strong>{formatZeny(simulation.prices.instant)}</strong>
-                  <small>tasador / NPC</small>
+                  <small>compra inmediata NPC</small>
                 </div>
                 <div className="highlight">
                   <span>Precio justo</span>

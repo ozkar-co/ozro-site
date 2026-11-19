@@ -8,6 +8,14 @@ export interface UpdateEntry {
 /** Changelog OzRo derivado del git log de rathena (17 ene 2026 – hoy). */
 export const recentUpdates: UpdateEntry[] = [
   {
+    date: '19 de noviembre de 2026',
+    title: 'Simulador de mercado: experimento inicial',
+    paragraphs: [
+      'Se empieza a experimentar con un Simulador de mercado en la Enciclopedia para estimar precio, liquidez y tiempo de venta de los objetos.',
+      'Por ahora se simula solo el item base: precio inmediato, precio justo, precio paciente, probabilidad de venta en 7/30/90 días y curva precio/tiempo.',
+    ],
+  },
+  {
     date: '18 de noviembre de 2026',
     title: 'Enciclopedia: NPCs y tasas reales del servidor',
     paragraphs: [
