@@ -116,14 +116,20 @@ export async function simulateMarket({ itemId, refine = 0, cardIds = [], enchant
 
     const cards = cardIds.map((id) => {
         const row = rows.get(Number(id));
-        if (!row) {
-            const error = new Error(`Item de slot inválido: ${id}`);
+        if (!row || String(row.type).toLowerCase() !== 'card') {
+            const error = new Error(`Carta inválida: ${id}`);
             error.status = 400;
             throw error;
         }
         return row;
     });
 
+
+    if (cards.length > Number(base.slots || 0)) {
+        const error = new Error('La cantidad de cartas supera los slots del item');
+        error.status = 400;
+        throw error;
+    }
 
     const tier = Object.prototype.hasOwnProperty.call(config.enchant.tiers, enchantTier)
         ? enchantTier

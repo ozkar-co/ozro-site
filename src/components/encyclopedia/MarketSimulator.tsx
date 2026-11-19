@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   fetchMarketItemRaw,
   searchItems,
@@ -30,13 +30,11 @@ function formatPercent(value: number): string {
 function ItemSearch({
   label,
   placeholder,
-  onSelect,
-  type
+  onSelect
 }: {
   label: string;
   placeholder: string;
   onSelect: (item: ItemSearchResult) => void;
-  type?: string;
 }) {
   const [term, setTerm] = useState('');
   const [results, setResults] = useState<ItemSearchResult[]>([]);
@@ -50,7 +48,7 @@ function ItemSearch({
     let cancelled = false;
     const timer = window.setTimeout(() => {
       setLoading(true);
-      searchItems({ q: term.trim(), type, limit: 8 })
+      searchItems({ q: term.trim(), limit: 8 })
         .then((data) => {
           if (!cancelled) setResults(data.results);
         })
@@ -65,7 +63,7 @@ function ItemSearch({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [term, type]);
+  }, [term]);
 
   return (
     <div className="market-sim-search">
@@ -102,10 +100,6 @@ function ItemSearch({
 
 const MarketSimulator = () => {
   const [item, setItem] = useState<ItemSearchResult | null>(null);
-  const [cards, setCards] = useState<ItemSearchResult[]>([]);
-  const [refine, setRefine] = useState(0);
-  const [enchant, setEnchant] = useState('none');
-  const [randomValue, setRandomValue] = useState('');
   const [ask, setAsk] = useState('');
   const [simulation, setSimulation] = useState<MarketSimulation | null>(null);
   const [loading, setLoading] = useState(false);
@@ -115,14 +109,10 @@ const MarketSimulator = () => {
   const [rawLoading, setRawLoading] = useState(false);
   const [rawError, setRawError] = useState<string | null>(null);
 
-  const canAddCard = item ? cards.length < 4 : false;
-  const horizons = useMemo(() => simulation?.assumptions.horizons ?? [7, 30, 90], [simulation]);
+  const horizons = simulation?.assumptions.horizons ?? [7, 30, 90];
 
   useEffect(() => {
     if (!item) return;
-    setCards([]);
-    setRefine(0);
-    setRandomValue('');
     setAsk('');
     setSimulation(null);
     setError(null);
@@ -152,10 +142,6 @@ const MarketSimulator = () => {
     try {
       const result = await simulateMarket({
         itemId: item.id,
-        refine,
-        cards: cards.map((card) => card.id),
-        enchant,
-        randomValue: randomValue.trim() ? Number(randomValue) : 0,
         ask: ask.trim() ? Number(ask) : null
       });
       setSimulation(result);
@@ -193,81 +179,6 @@ const MarketSimulator = () => {
                 <span>#{item.id} · {item.type}{item.slots ? ` · ${item.slots} slots` : ''}</span>
                 <button type="button" onClick={openRaw}>Ver datos crudos</button>
                 <button type="button" onClick={() => setItem(null)}>Cambiar</button>
-              </div>
-
-              <div className="market-sim-row">
-                <label>
-                  <span>Refine</span>
-                  <select
-                    value={refine}
-                    onChange={(event) => setRefine(Number(event.target.value))}
-                    disabled={!item.refineable}
-                  >
-                    {Array.from({ length: 21 }, (_, value) => (
-                      <option key={value} value={value}>+{value}</option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  <span>Encantamiento (estimado)</span>
-                  <select value={enchant} onChange={(event) => setEnchant(event.target.value)}>
-                    <option value="none">Sin encantamiento</option>
-                    <option value="low">Bajo (+5%)</option>
-                    <option value="medium">Medio (+15%)</option>
-                    <option value="high">Alto (+35%)</option>
-                  </select>
-                </label>
-              </div>
-              <p className="market-sim-hint">
-                Encantamiento es un nivel genérico de estimación; todavía no distingue encantamientos específicos.
-              </p>
-
-              <label className="market-sim-ask">
-                <span>Random options (valor extra estimado)</span>
-                <input
-                  type="number"
-                  min="0"
-                  value={randomValue}
-                  onChange={(event) => setRandomValue(event.target.value)}
-                  placeholder="0"
-                />
-              </label>
-
-              <div className="market-sim-mailbox">
-                <h3>Restaurable por mail</h3>
-                <p>Refine, cartas/encantamientos en slots, random options, bound y amount.</p>
-                <h3>No restaurable por mail</h3>
-                <p>Enchant grade, expire time, unique ID, attribute y estado identificado.</p>
-                <p className="market-sim-hint">
-                  El tasador v1 solo debería aceptar tradeable, identificado, no bound,
-                  sin enchant grade, sin expiración y sin unique ID.
-                </p>
-              </div>
-
-              <div className="market-sim-cards">
-                  <div className="market-sim-cards-head">
-                    <span>Cartas / encantamientos en slots ({cards.length}/4)</span>
-                  </div>
-                  <div className="market-sim-chips">
-                    {cards.map((card) => (
-                      <button
-                        type="button"
-                        key={card.id}
-                        onClick={() => setCards((current) => current.filter((entry) => entry.id !== card.id))}
-                      >
-                        {card.name} ×
-                      </button>
-                    ))}
-                  </div>
-                  {canAddCard && (
-                    <ItemSearch
-                      label="Agregar carta o encantamiento"
-                      placeholder="Nombre o ID de item"
-                      onSelect={(card) => setCards((current) => (
-                        current.some((entry) => entry.id === card.id) ? current : [...current, card]
-                      ))}
-                    />
-                  )}
               </div>
 
               <label className="market-sim-ask">
@@ -329,10 +240,6 @@ const MarketSimulator = () => {
                   <div><span>Demanda</span><strong>{simulation.item.demandTier}</strong></div>
                   <div><span>Abundancia</span><strong>{simulation.item.abundanceTier}</strong></div>
                   <div><span>Stock</span><strong>{simulation.item.stockHint}</strong></div>
-                  <div><span>Cartas</span><strong>{formatPercent(simulation.liquidity.cardDepth)}</strong></div>
-                  <div><span>Refine</span><strong>{formatPercent(simulation.liquidity.refineDepth)}</strong></div>
-                  <div><span>Encantamiento</span><strong>{formatPercent(simulation.liquidity.enchantDepth)}</strong></div>
-                  <div><span>Profundidad de precio</span><strong>{formatPercent(simulation.liquidity.base)}</strong></div>
                 </div>
               </div>
 
@@ -378,14 +285,6 @@ const MarketSimulator = () => {
               </div>
 
               <div className="market-sim-breakdown">
-                <h3>Composición</h3>
-                <p>
-                  Base {formatZeny(simulation.composition.baseValue)} ·
-                  Cartas/slots {formatZeny(simulation.composition.cardValue)} ·
-                  Random options {formatZeny(simulation.composition.randomValue)} ·
-                  Encantamiento {formatZeny(simulation.composition.enchantValue)} ·
-                  Refine +{simulation.composition.refine}
-                </p>
                 <p>
                   Master: {formatZeny(simulation.item.mid)} · compra NPC {formatZeny(simulation.item.npcBuy)} ·
                   estado {simulation.item.priceStatus}

@@ -338,28 +338,6 @@
   }
 }
 
-.market-sim-mailbox {
-  border: 1px solid #e8e2da;
-  border-radius: 10px;
-  background: #faf8f5;
-  padding: 0.7rem;
-}
-
-.market-sim-mailbox h3 {
-  margin: 0 0 0.25rem;
-  color: #8a6d3b;
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.market-sim-mailbox p {
-  margin: 0 0 0.55rem;
-  color: #666;
-  font-size: 0.78rem;
-  line-height: 1.4;
-}
-
 .market-raw-overlay {
   position: fixed;
   inset: 0;
@@ -471,4 +449,15 @@
 .market-raw-table td:nth-child(3) {
   color: #666;
   min-width: 260px;
+}
+
+.market-sim-warning {
+  margin: 0;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #f0c9c2;
+  border-radius: 8px;
+  background: #fdf0ee;
+  color: #a33;
+  font-size: 0.78rem;
+  line-height: 1.4;
 }
