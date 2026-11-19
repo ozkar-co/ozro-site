@@ -278,6 +278,16 @@ function formatEquipLevelRange(min?: number, max?: number): string | null {
   return `${lo ?? '—'}/${hi ?? '—'}`;
 }
 
+function formatDropperSummary(total: number, withSpawn: number, withoutSpawn: number): string {
+  if (withSpawn === 0) {
+    return `Lo dropean: ${total} (todos sin spawn)`;
+  }
+  if (withoutSpawn === 0) {
+    return `Lo dropean: ${total} (todos con spawn)`;
+  }
+  return `Lo dropean: ${total} (${withSpawn} con spawn y ${withoutSpawn} sin spawn)`;
+}
+
 function ResultProperty({
   label,
   value
@@ -507,7 +517,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
               >
                 {dropsOpen
                   ? 'Ocultar lo que lo dropean'
-                  : `Lo dropean: ${drops.length} (${dropWithSpawn} con spawn, ${dropWithoutSpawn} sin spawn)`}
+                  : formatDropperSummary(drops.length, dropWithSpawn, dropWithoutSpawn)}
               </button>
               {dropsOpen && (
               <div className="result-card-dropped-by">
