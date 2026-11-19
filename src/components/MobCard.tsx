@@ -138,6 +138,7 @@ interface MobCardProps {
 }
 
 const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
+  const [expanded, setExpanded] = useState(false);
   const [farming, setFarming] = useState<FarmingMob | null>(null);
   const [farmingOpen, setFarmingOpen] = useState(false);
   const [farmingLoading, setFarmingLoading] = useState(false);
@@ -163,15 +164,28 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
     }
   };
 
-  if (compact) {
+  if (compact && !expanded) {
+    const kind = result.mobClass || getRaceName(result.race);
     return (
-      <div className="result-card result-card--compact">
+      <div
+        className="result-card result-card--compact result-card--compact-clickable"
+        role="button"
+        tabIndex={0}
+        onClick={() => setExpanded(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setExpanded(true);
+          }
+        }}
+      >
         <span className="result-card-compact-text">
-          <Link to={`/database?tab=mobs&q=${result.id}`}>{result.name}</Link>
+          <span className="name-title">{result.name}</span>
           {' · '}
-          <span className="name-details">#{result.id} · Nv. {result.lvl}</span>
+          <span className="result-card-id">#{result.id}</span>
           {' · '}
-          <span className="result-card-compact-badge">sin sprite en cliente</span>
+          <span className="mob-level">Nv. {result.lvl} · {kind}</span>
+          <span className="result-card-compact-hint"> · clic para desplegar</span>
         </span>
       </div>
     );

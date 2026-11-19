@@ -8,8 +8,9 @@ import ItemCard, { SearchResult, ITEM_TYPES } from './ItemCard';
 import MobCard, { MobResult, MOB_SIZE, MOB_ELEMENTS, MOB_RACES } from './MobCard';
 import '../styles/Database.css';
 import { apiClient } from '../api/client';
-import { hasManifestSprite, loadManifest, resolveSprite, type SpriteRect } from '../api/assets';
+import { loadManifest, resolveSprite, type SpriteRect } from '../api/assets';
 import {
+  isPlaceholderAsset,
   PLACEHOLDER_ITEM_ICON,
   PLACEHOLDER_ITEM_ILLUSTRATION,
   PLACEHOLDER_MOB_SPRITE
@@ -129,8 +130,8 @@ const Database = () => {
   const enrichMobResults = useCallback(async (mobs: MobResult[]): Promise<MobResultRow[]> => {
     return Promise.all(mobs.map(async (mob) => {
       const spriteResolved = await resolveSprite(mob.id, 'mobs/sprites');
-      const hasSprite = hasManifestSprite(spriteResolved);
       const sprite = spriteResolved ?? PLACEHOLDER_MOB_SPRITE;
+      const hasSprite = !isPlaceholderAsset(sprite);
       const drop = await Promise.all(
         (mob.drop || []).map(async (entry) => ({
           ...entry,
@@ -144,10 +145,10 @@ const Database = () => {
   const enrichItemResults = useCallback(async (items: SearchResult[]): Promise<ItemResult[]> => {
     return Promise.all(items.map(async (item) => {
       const iconResolved = await resolveSprite(item.id, 'items/icons');
-      const hasSprite = hasManifestSprite(iconResolved);
       const illustrationResolved = await resolveSprite(item.id, 'items/illustrations');
       const icon = iconResolved ?? PLACEHOLDER_ITEM_ICON;
       const illustration = illustrationResolved ?? iconResolved ?? PLACEHOLDER_ITEM_ILLUSTRATION;
+      const hasSprite = !isPlaceholderAsset(icon) || !isPlaceholderAsset(illustration);
       return { ...item, icon, illustration, hasSprite };
     }));
   }, []);
@@ -485,7 +486,7 @@ const Database = () => {
                                   hideWithoutSprite: !prev.hideWithoutSprite
                                 }))}
                               />
-                              Ocultar sin sprite
+                              Vista reducida sin sprite
                             </label>
                           </div>
                         </div>
@@ -621,7 +622,7 @@ const Database = () => {
                                   hideWithoutSprite: !prev.hideWithoutSprite
                                 }))}
                               />
-                              Ocultar sin sprite
+                              Vista reducida sin sprite
                             </label>
                           </div>
                         </div>
@@ -652,24 +653,23 @@ const Database = () => {
             {!searchError && !isSearching && searchState.results.length > 0 && resultsTab === activeTab ? (
               <>
                 <div className="results-grid">
-                  {searchState.results
-                    .filter((result) => (
-                      !searchOptions.hideWithoutSprite || result.hasSprite !== false
-                    ))
-                    .map((result) =>
-                      activeTab === 'items' ? (
-                        <ItemCard key={result.id} result={result as SearchResult} />
-                      ) : (
-                        <MobCard key={result.id} result={result as MobResult} />
-                      )
-                    )}
+                  {searchState.results.map((result) => {
+                    const compactView = searchOptions.hideWithoutSprite && result.hasSprite !== true;
+                    return activeTab === 'items' ? (
+                      <ItemCard
+                        key={result.id}
+                        result={result as SearchResult}
+                        compact={compactView}
+                      />
+                    ) : (
+                      <MobCard
+                        key={result.id}
+                        result={result as MobResult}
+                        compact={compactView}
+                      />
+                    );
+                  })}
                 </div>
-                {searchState.results.length > 0
-                  && searchState.results.every((r) => searchOptions.hideWithoutSprite && r.hasSprite === false) && (
-                  <div className="no-results" style={{ marginTop: '0.5rem' }}>
-                    Ningún resultado visible en esta página (ocultos sin sprite). Desactiva «Ocultar sin sprite» para verlos.
-                  </div>
-                )}
                 {searchState.totalPages > 1 && (
                   <div className="pagination">
                     <button onClick={() => handlePageChange(0)} disabled={searchState.currentPage === 0} className="pagination-button">{'<<'}</button>

@@ -766,13 +766,22 @@ a {
   min-height: 0;
 }
 
+.result-card--compact-clickable {
+  cursor: pointer;
+}
+
+.result-card--compact-clickable:hover {
+  background: rgba(255, 141, 127, 0.08);
+  border-color: rgba(255, 141, 127, 0.35);
+}
+
 .result-card--compact .result-card-compact-text {
   font-size: 0.85rem;
   color: #444;
   line-height: 1.35;
 }
 
-.result-card-compact-badge {
+.result-card-compact-hint {
   font-size: 0.72rem;
   color: #888;
   font-style: italic;

@@ -258,6 +258,7 @@ interface ItemCardProps {
 }
 
 const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
+  const [expanded, setExpanded] = useState(false);
   const [description, setDescription] = useState(result.description);
   const [descriptionOpen, setDescriptionOpen] = useState(Boolean(result.description));
   const [descriptionLoading, setDescriptionLoading] = useState(false);
@@ -285,15 +286,28 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
     }
   };
 
-  if (compact) {
+  if (compact && !expanded) {
+    const typeName = result.typeLabel || getTypeName(result.type);
     return (
-      <div className="result-card result-card--compact">
+      <div
+        className="result-card result-card--compact result-card--compact-clickable"
+        role="button"
+        tabIndex={0}
+        onClick={() => setExpanded(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setExpanded(true);
+          }
+        }}
+      >
         <span className="result-card-compact-text">
-          <Link to={`/database?tab=items&q=${result.id}`}>{result.name}</Link>
+          <span className="name-title">{result.name}</span>
           {' · '}
-          <span className="name-details">#{result.id} · {result.codename1}</span>
+          <span className="result-card-id">#{result.id}</span>
           {' · '}
-          <span className="result-card-compact-badge">sin sprite en cliente</span>
+          <span className="item-type">{typeName}</span>
+          <span className="result-card-compact-hint"> · clic para desplegar</span>
         </span>
       </div>
     );
