@@ -18,18 +18,39 @@ export function getItemDisplayName(id) {
     return itemNames.get(Number(id)) || null;
 }
 
-export function findItemIdsByDisplayName(term, limit = 1000) {
-    const needle = String(term || '').trim().toLowerCase();
-    if (!needle) return [];
+function nameMatchesTokens(name, tokens) {
+    const haystack = name.toLowerCase();
+    return tokens.every((token) => haystack.includes(token));
+}
 
-    const ids = [];
+function nameRelevanceScore(name, tokens, trimmedLower) {
+    const haystack = name.toLowerCase();
+    if (haystack === trimmedLower) return 0;
+    if (tokens.length > 0 && haystack.startsWith(tokens[0])) return 1;
+    if (tokens.length > 0 && haystack.includes(` ${tokens[0]}`)) return 2;
+    if (tokens.every((token) => haystack.includes(token))) return 3;
+    return 99;
+}
+
+export function findItemIdsByDisplayName(term, limit = 1000) {
+    const trimmed = String(term || '').trim();
+    if (!trimmed) return [];
+
+    const tokens = trimmed.toLowerCase().split(/\s+/).filter(Boolean);
+    const trimmedLower = trimmed.toLowerCase();
+
+    const ranked = [];
     for (const [id, name] of itemNames) {
-        if (name.toLowerCase().includes(needle)) {
-            ids.push(id);
-            if (ids.length >= limit) break;
-        }
+        if (!nameMatchesTokens(name, tokens)) continue;
+        ranked.push({
+            id,
+            score: nameRelevanceScore(name, tokens, trimmedLower)
+        });
+        if (ranked.length >= limit * 3) break;
     }
-    return ids;
+
+    ranked.sort((a, b) => a.score - b.score || a.id - b.id);
+    return ranked.slice(0, limit).map((entry) => entry.id);
 }
 
 function decodeLuaString(value) {

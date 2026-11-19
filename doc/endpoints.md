@@ -313,7 +313,8 @@ Búsqueda de monstruos con filtros. Usa tablas renewal (`mob_db_re` + `mob_db2_r
 | `baseExpMin` / `baseExpMax` | Rango de base exp |
 | `jobExpMin` / `jobExpMax` | Rango de job exp |
 | `attackRange` | Rango de ataque |
-| `mvp` | `true` o `false` |
+| `mvp` | `true` o `false` (ignorado si se envía `kinds`) |
+| `kinds` | Subconjunto de `normal,boss,mvp` (tipo de monstruo) |
 | `hasSpawn` | `true` = solo mobs con spawn; `false` = sin spawn |
 | `includeInstances` | `true` = incluir spawns en mapas de instancia |
 | `spawnMap` | Solo mobs que aparecen en ese mapa |
@@ -397,7 +398,9 @@ Búsqueda de objetos con filtros. Usa tablas renewal unidas (`item_db_re_usable`
 | `class` | Clases (`normal,upper,third,fourth`) |
 | `jobs` | Jobs separados por coma (`knight,mage,archer`) |
 | `jobsStrict` | `true` = no incluir items con `job_all` |
-| `script` | Keyword en columna `script` |
+| `script` | Texto en columna `script` (varias palabras = todas deben aparecer) |
+| `subtype` | Subtipos rAthena de armadura (`Head_Top,Shoes,...`), separados por coma |
+| `location` | Ubicación de equipo para cartas (`headTop,armor,shoes,...`), OR entre valores |
 | `slots` | Slots separados por coma (`0,1,2,3,4`) |
 | `hasDrop` | `true` = solo items que algún mob dropea; `false` = sin drop |
 | `hasNaturalDrop` | `true` = drop de un mob con spawn en el mundo; `false` = sin drop natural |
@@ -438,6 +441,8 @@ Opciones de filtro para objetos.
 ```json
 {
   "types": ["Armor", "Weapon", "Card"],
+  "armorSubtypes": ["Armor", "Garment", "Head_Top", "Shoes"],
+  "cardLocations": ["headTop", "armor", "garment", "shoes"],
   "classes": ["normal", "upper", "baby", "third", "third_upper", "third_baby", "fourth"],
   "jobs": ["novice", "swordman", "mage", "knight"],
   "defaults": {

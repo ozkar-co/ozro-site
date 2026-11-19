@@ -315,6 +315,17 @@ export interface MvpRadarResponse {
 export type MobSearchParams = Record<string, string | number | undefined>;
 export type ItemSearchParams = Record<string, string | number | undefined>;
 
+export interface ItemMetaResponse {
+  types: string[];
+  armorSubtypes: string[];
+  cardLocations: string[];
+  classes: string[];
+  jobs: string[];
+  defaults: {
+    types: string[];
+  };
+}
+
 function buildQuery(params: Record<string, string | number | undefined>): string {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
@@ -357,6 +368,8 @@ export const apiClient = {
 
   searchItems: (params: ItemSearchParams) =>
     apiFetch<PaginatedResponse<ItemDetail>>(`/items${buildQuery(params)}`),
+
+  getItemMeta: () => apiFetch<ItemMetaResponse>('/items/meta'),
 
   getItem: (id: number | string) => apiFetch<ItemDetail>(`/items/${id}`),
 

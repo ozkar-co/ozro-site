@@ -39,7 +39,7 @@ const SIZE_TO_API: Record<number, string> = {
   2: 'Large'
 };
 
-const ITEM_TYPE_TO_API: Record<number, string> = {
+export const ITEM_TYPE_TO_API: Record<number, string> = {
   0: 'Healing',
   2: 'Usable',
   3: 'Etc',
@@ -143,8 +143,60 @@ const SIZE_FROM_API = Object.fromEntries(
   Object.entries(SIZE_TO_API).map(([id, name]) => [name, Number(id)])
 );
 
+export const ITEM_TYPE_ARMOR = 5;
+export const ITEM_TYPE_CARD = 6;
+
+export const CARD_LOCATION_OPTIONS: Record<string, string> = {
+  headTop: 'Casco (arriba)',
+  headMid: 'Casco (medio)',
+  headLow: 'Casco (abajo)',
+  armor: 'Armadura',
+  rightHand: 'Mano derecha',
+  leftHand: 'Mano izquierda',
+  garment: 'Capa',
+  shoes: 'Calzado',
+  rightAccessory: 'Accesorio derecho',
+  leftAccessory: 'Accesorio izquierdo',
+  shadowArmor: 'Shadow armadura',
+  shadowWeapon: 'Shadow arma',
+  shadowShield: 'Shadow escudo',
+  shadowShoes: 'Shadow calzado',
+  shadowRightAccessory: 'Shadow acc. derecho',
+  shadowLeftAccessory: 'Shadow acc. izquierdo'
+};
+
+export const ARMOR_SUBTYPE_LABELS: Record<string, string> = {
+  Armor: 'Armadura',
+  Garment: 'Capa',
+  Head_Top: 'Casco (arriba)',
+  Head_Mid: 'Casco (medio)',
+  Head_Low: 'Casco (abajo)',
+  Shoes: 'Calzado',
+  Left_Accessory: 'Accesorio izquierdo',
+  Right_Accessory: 'Accesorio derecho',
+  Both_Hand: 'Dos manos (escudo)',
+  Ammo: 'Munición',
+  Shadow_Armor: 'Shadow armadura',
+  Shadow_Weapon: 'Shadow arma',
+  Shadow_Shield: 'Shadow escudo',
+  Shadow_Shoes: 'Shadow calzado',
+  Shadow_Left_Accessory: 'Shadow acc. izquierdo',
+  Shadow_Right_Accessory: 'Shadow acc. derecho',
+  Costume_Head_Top: 'Disfraz casco (arriba)',
+  Costume_Head_Mid: 'Disfraz casco (medio)',
+  Costume_Head_Low: 'Disfraz casco (abajo)',
+  Costume_Garment: 'Disfraz capa'
+};
+
+export function armorSubtypeLabel(value: string): string {
+  return ARMOR_SUBTYPE_LABELS[value] || value.replace(/_/g, ' ');
+}
+
 export interface SearchOptions {
   selectedTypes: number[];
+  selectedArmorSubtypes: string[];
+  selectedCardLocations: string[];
+  scriptQuery: string;
   selectedElements: number[];
   selectedRaces: number[];
   selectedSizes: number[];
@@ -155,6 +207,22 @@ export interface SearchOptions {
   includeInstanceSpawns: boolean;
   hideItemsWithoutNaturalDrop: boolean;
 }
+
+export const defaultSearchOptions = (): SearchOptions => ({
+  selectedTypes: [],
+  selectedArmorSubtypes: [],
+  selectedCardLocations: [],
+  scriptQuery: '',
+  selectedElements: [],
+  selectedRaces: [],
+  selectedSizes: [],
+  showBoss: true,
+  showNormal: true,
+  showMvp: true,
+  hideMobsWithoutSpawn: true,
+  includeInstanceSpawns: false,
+  hideItemsWithoutNaturalDrop: true
+});
 
 export function buildMobSearchParams(
   searchTerm: string,
@@ -189,10 +257,12 @@ export function buildMobSearchParams(
       .join(',');
   }
 
-  if (options.showMvp && !options.showNormal && !options.showBoss) {
-    params.mvp = 'true';
-  } else if (!options.showMvp && (options.showNormal || options.showBoss)) {
-    params.mvp = 'false';
+  const kinds: string[] = [];
+  if (options.showMvp) kinds.push('mvp');
+  if (options.showBoss) kinds.push('boss');
+  if (options.showNormal) kinds.push('normal');
+  if (kinds.length > 0 && kinds.length < 3) {
+    params.kinds = kinds.join(',');
   }
 
   if (options.hideMobsWithoutSpawn) {
@@ -226,6 +296,21 @@ export function buildItemSearchParams(
 
   if (options.hideItemsWithoutNaturalDrop) {
     params.hasNaturalDrop = 'true';
+  }
+
+  const armorSelected = options.selectedTypes.includes(ITEM_TYPE_ARMOR);
+  if (armorSelected && options.selectedArmorSubtypes.length > 0) {
+    params.subtype = options.selectedArmorSubtypes.join(',');
+  }
+
+  const cardSelected = options.selectedTypes.includes(ITEM_TYPE_CARD);
+  if (cardSelected && options.selectedCardLocations.length > 0) {
+    params.location = options.selectedCardLocations.join(',');
+  }
+
+  const script = options.scriptQuery.trim();
+  if (script) {
+    params.script = script;
   }
 
   return params;

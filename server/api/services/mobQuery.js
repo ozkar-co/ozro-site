@@ -26,6 +26,10 @@ import {
 import { applyMobHp } from './mobRates.js';
 import { getMobSummons } from './mobSummons.js';
 import { getItemDisplayName } from './itemInfo.js';
+import {
+    buildRelevanceOrderSql,
+    buildTokenMatchClause
+} from './textSearch.js';
 
 function mapMobSummary(row) {
     const tier = mobTierFromRow(row);
@@ -290,19 +294,60 @@ async function attachDropsToMobRows(rows) {
     });
 }
 
+function buildMobKindFilter(kinds) {
+    if (!Array.isArray(kinds) || kinds.length === 0 || kinds.length >= 3) {
+        return null;
+    }
+
+    const clauses = [];
+    if (kinds.includes('mvp')) {
+        clauses.push('(COALESCE(m.mode_mvp, 0) = 1 OR COALESCE(m.mvp_exp, 0) > 0)');
+    }
+    if (kinds.includes('boss')) {
+        clauses.push("(LOWER(COALESCE(m.class, '')) = 'boss' AND COALESCE(m.mode_mvp, 0) = 0 AND COALESCE(m.mvp_exp, 0) = 0)");
+    }
+    if (kinds.includes('normal')) {
+        clauses.push("(LOWER(COALESCE(m.class, '')) <> 'boss' AND COALESCE(m.mode_mvp, 0) = 0 AND COALESCE(m.mvp_exp, 0) = 0)");
+    }
+
+    if (clauses.length === 0) {
+        return '1 = 0';
+    }
+    return `(${clauses.join(' OR ')})`;
+}
+
 function buildMobFilters(params) {
     const conditions = [];
     const values = [];
+    let orderBy = null;
 
     if (params.q) {
         const term = params.q.trim();
         if (/^\d+$/.test(term)) {
             conditions.push('m.id = ?');
             values.push(parseInt(term, 10));
+            orderBy = buildRelevanceOrderSql(
+                'm',
+                ['m.name_english', 'm.name_aegis', 'm.name_japanese'],
+                term,
+                'm.id'
+            );
         } else {
-            conditions.push('(m.name_english LIKE ? OR m.name_aegis LIKE ?)');
-            const like = `%${term}%`;
-            values.push(like, like);
+            const tokenMatch = buildTokenMatchClause(
+                'm',
+                ['m.name_english', 'm.name_aegis', 'm.name_japanese'],
+                term
+            );
+            if (tokenMatch) {
+                conditions.push(`(${tokenMatch.clause})`);
+                values.push(...tokenMatch.values);
+            }
+            orderBy = buildRelevanceOrderSql(
+                'm',
+                ['m.name_english', 'm.name_aegis', 'm.name_japanese'],
+                term,
+                'm.id'
+            );
         }
     }
 
@@ -366,11 +411,17 @@ function buildMobFilters(params) {
         values.push(attackRange);
     }
 
-    const mvp = parseBool(params.mvp);
-    if (mvp === true) {
-        conditions.push('(m.mode_mvp = 1 OR m.mvp_exp > 0)');
-    } else if (mvp === false) {
-        conditions.push('(COALESCE(m.mode_mvp, 0) = 0 AND COALESCE(m.mvp_exp, 0) = 0)');
+    const kinds = parseCsv(params.kinds).map((k) => k.toLowerCase());
+    const kindFilter = buildMobKindFilter(kinds);
+    if (kindFilter) {
+        conditions.push(kindFilter);
+    } else {
+        const mvp = parseBool(params.mvp);
+        if (mvp === true) {
+            conditions.push('(m.mode_mvp = 1 OR m.mvp_exp > 0)');
+        } else if (mvp === false) {
+            conditions.push('(COALESCE(m.mode_mvp, 0) = 0 AND COALESCE(m.mvp_exp, 0) = 0)');
+        }
     }
 
     const hasSpawn = parseBool(params.hasSpawn);
@@ -394,13 +445,17 @@ function buildMobFilters(params) {
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-    return { whereClause, values };
+    return { whereClause, values, orderBy };
 }
 
 export async function searchMobs(params) {
     const { page, limit, offset } = parsePagination(params);
-    const { whereClause, values } = buildMobFilters(params);
+    const { whereClause, values, orderBy } = buildMobFilters(params);
     const fromSql = effectiveMobsSql('m');
+    const orderSql = orderBy?.orderSql
+        ? orderBy.orderSql
+        : 'm.name_english ASC, m.id ASC';
+    const orderValues = orderBy?.values ?? [];
 
     const [countRows, rows] = await Promise.all([
         query(
@@ -410,9 +465,9 @@ export async function searchMobs(params) {
         query(
             `SELECT m.* FROM ${fromSql}
              ${whereClause}
-             ORDER BY m.name_english ASC
+             ORDER BY ${orderSql}
              LIMIT ? OFFSET ?`,
-            [...values, limit, offset]
+            [...values, ...orderValues, limit, offset]
         )
     ]);
     const total = Number(countRows[0].total);

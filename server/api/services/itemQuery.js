@@ -2,6 +2,10 @@ import { query } from '../../services/mariadb.js';
 import { getMobsDroppingItem, getMobsDroppingItems } from './mobQuery.js';
 import { findItemIdsByDisplayName, getItemDisplayName } from './itemInfo.js';
 import {
+    buildRelevanceOrderSql,
+    buildTokenMatchClause
+} from './textSearch.js';
+import {
     effectiveMobsSql,
     effectiveItemsSql,
     isMobDataAvailable,
@@ -15,6 +19,7 @@ import {
     ITEM_TYPES,
     ITEM_CLASSES,
     ITEM_CLASS_COLUMNS,
+    ITEM_EQUIP_LOCATION_COLUMNS,
     JOB_COLUMNS
 } from './gameDb.js';
 
@@ -110,46 +115,52 @@ function buildHasDropExists() {
     return `EXISTS (SELECT 1 FROM ${effectiveMobsSql('m')} WHERE ${orConditions.join(' OR ')})`;
 }
 
-function worldSpawnMobsSql() {
-    return `(
-        SELECT m.* FROM ${effectiveMobsSql('m')}
-        WHERE EXISTS (
-            SELECT 1 FROM ${spawnTableSql('s')}
-            WHERE s.mob_id = m.id AND s.is_instance = 0
-        )
-    )`;
-}
-
 function buildHasNaturalDropFilter(hasDrop) {
-    const branches = mobDropColumns().map(
-        (col) => `SELECT w.${col.item} AS aegis
-                  FROM ${worldSpawnMobsSql()} AS w
-                  WHERE w.${col.rate} > 0 AND w.${col.item} IS NOT NULL`
-    );
-    const setSql = `(${branches.join(' UNION ')})`;
-    if (hasDrop) {
-        return `i.name_aegis IN (SELECT d.aegis FROM ${setSql} AS d)`;
-    }
-    return `NOT EXISTS (SELECT 1 FROM ${setSql} AS d WHERE d.aegis = i.name_aegis)`;
+    const dropMatch = mobDropColumns()
+        .map((col) => `(m.${col.item} = i.name_aegis AND COALESCE(m.${col.rate}, 0) > 0)`)
+        .join(' OR ');
+    const exists = `EXISTS (
+        SELECT 1 FROM ${effectiveMobsSql('m')}
+        INNER JOIN ${spawnTableSql('s')} ON s.mob_id = m.id AND s.is_instance = 0
+        WHERE ${dropMatch}
+    )`;
+    return hasDrop ? exists : `NOT ${exists}`;
 }
 
 function buildItemFilters(params) {
     const conditions = [];
     const values = [];
+    let orderBy = null;
 
     if (params.q) {
         const term = params.q.trim();
         if (/^\d+$/.test(term)) {
             conditions.push('i.id = ?');
             values.push(parseInt(term, 10));
+            orderBy = buildRelevanceOrderSql('i', ['i.name_english', 'i.name_aegis'], term, 'i.id');
         } else {
-            const like = `%${term}%`;
             const nameIds = findItemIdsByDisplayName(term);
-            const displayNameClause = nameIds.length > 0
-                ? ` OR i.id IN (${nameIds.map(() => '?').join(', ')})`
-                : '';
-            conditions.push(`(i.name_english LIKE ? OR i.name_aegis LIKE ?${displayNameClause})`);
-            values.push(like, like, ...nameIds);
+            const tokenMatch = buildTokenMatchClause(
+                'i',
+                ['i.name_english', 'i.name_aegis'],
+                term
+            );
+            const branches = [];
+            const branchValues = [];
+
+            if (tokenMatch) {
+                branches.push(`(${tokenMatch.clause})`);
+                branchValues.push(...tokenMatch.values);
+            }
+            if (nameIds.length > 0) {
+                branches.push(`i.id IN (${nameIds.map(() => '?').join(', ')})`);
+                branchValues.push(...nameIds);
+            }
+            if (branches.length > 0) {
+                conditions.push(`(${branches.join(' OR ')})`);
+                values.push(...branchValues);
+            }
+            orderBy = buildRelevanceOrderSql('i', ['i.name_english', 'i.name_aegis'], term, 'i.id');
         }
     }
 
@@ -184,9 +195,32 @@ function buildItemFilters(params) {
         }
     }
 
+    const subtypes = parseCsv(params.subtype);
+    if (subtypes.length > 0) {
+        conditions.push(`i.subtype IN (${subtypes.map(() => '?').join(', ')})`);
+        values.push(...subtypes);
+    }
+
+    const locations = parseCsv(params.location);
+    if (locations.length > 0) {
+        const locationConditions = [];
+        for (const key of locations) {
+            const column = ITEM_EQUIP_LOCATION_COLUMNS[key];
+            if (column) {
+                locationConditions.push(`i.${column} = 1`);
+            }
+        }
+        if (locationConditions.length > 0) {
+            conditions.push(`(${locationConditions.join(' OR ')})`);
+        }
+    }
+
     if (params.script) {
-        conditions.push('i.script LIKE ?');
-        values.push(`%${params.script.trim()}%`);
+        const tokenMatch = buildTokenMatchClause('i', ['i.script'], params.script);
+        if (tokenMatch) {
+            conditions.push(`(${tokenMatch.clause})`);
+            values.push(...tokenMatch.values);
+        }
     }
 
     const slots = parseCsv(params.slots);
@@ -211,13 +245,17 @@ function buildItemFilters(params) {
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-    return { whereClause, values };
+    return { whereClause, values, orderBy };
 }
 
 export async function searchItems(params) {
     const { page, limit, offset } = parsePagination(params);
-    const { whereClause, values } = buildItemFilters(params);
+    const { whereClause, values, orderBy } = buildItemFilters(params);
     const fromSql = effectiveItemsSql('i');
+    const orderSql = orderBy?.orderSql
+        ? orderBy.orderSql
+        : 'i.name_english ASC, i.id ASC';
+    const orderValues = orderBy?.values ?? [];
 
     const [countRows, rows] = await Promise.all([
         query(
@@ -227,9 +265,9 @@ export async function searchItems(params) {
         query(
             `SELECT i.* FROM ${fromSql}
              ${whereClause}
-             ORDER BY i.name_english ASC
+             ORDER BY ${orderSql}
              LIMIT ? OFFSET ?`,
-            [...values, limit, offset]
+            [...values, ...orderValues, limit, offset]
         )
     ]);
     const total = Number(countRows[0].total);
@@ -269,12 +307,19 @@ export async function getItemById(id) {
 }
 
 export async function getItemMeta() {
-    const [types] = await Promise.all([
-        query(`SELECT DISTINCT type AS value FROM ${effectiveItemsSql('i')} WHERE type IS NOT NULL ORDER BY type`)
+    const [types, armorSubtypes] = await Promise.all([
+        query(`SELECT DISTINCT type AS value FROM ${effectiveItemsSql('i')} WHERE type IS NOT NULL ORDER BY type`),
+        query(
+            `SELECT DISTINCT subtype AS value FROM ${effectiveItemsSql('i')}
+             WHERE type = 'Armor' AND COALESCE(subtype, '') <> ''
+             ORDER BY subtype`
+        )
     ]);
 
     return {
         types: types.map((r) => r.value),
+        armorSubtypes: armorSubtypes.map((r) => r.value),
+        cardLocations: Object.keys(ITEM_EQUIP_LOCATION_COLUMNS),
         classes: ITEM_CLASSES,
         jobs: Object.keys(JOB_COLUMNS),
         defaults: {

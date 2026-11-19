@@ -36,6 +36,31 @@ export const ITEM_CLASSES = [
     'normal', 'upper', 'baby', 'third', 'third_upper', 'third_baby', 'fourth'
 ];
 
+/** Equip location keys accepted by ?location= on item search (maps to item_db columns). */
+export const ITEM_EQUIP_LOCATION_COLUMNS = {
+    headTop: 'location_head_top',
+    headMid: 'location_head_mid',
+    headLow: 'location_head_low',
+    armor: 'location_armor',
+    rightHand: 'location_right_hand',
+    leftHand: 'location_left_hand',
+    garment: 'location_garment',
+    shoes: 'location_shoes',
+    rightAccessory: 'location_right_accessory',
+    leftAccessory: 'location_left_accessory',
+    costumeHeadTop: 'location_costume_head_top',
+    costumeHeadMid: 'location_costume_head_mid',
+    costumeHeadLow: 'location_costume_head_low',
+    costumeGarment: 'location_costume_garment',
+    ammo: 'location_ammo',
+    shadowArmor: 'location_shadow_armor',
+    shadowWeapon: 'location_shadow_weapon',
+    shadowShield: 'location_shadow_shield',
+    shadowShoes: 'location_shadow_shoes',
+    shadowRightAccessory: 'location_shadow_right_accessory',
+    shadowLeftAccessory: 'location_shadow_left_accessory'
+};
+
 export const ITEM_CLASS_COLUMNS = {
     normal: 'class_normal',
     upper: 'class_upper',

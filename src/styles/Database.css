@@ -677,6 +677,31 @@ a {
   gap: 0.25rem;
 }
 
+.search-filter-select {
+  width: 100%;
+  max-width: 420px;
+  font-size: 0.85rem;
+  border: 1px solid rgba(224, 224, 224, 0.9);
+  border-radius: 4px;
+  padding: 0.25rem;
+  background: #fff;
+}
+
+.search-filter-input {
+  width: 100%;
+  max-width: 420px;
+  font-size: 0.85rem;
+  border: 1px solid rgba(224, 224, 224, 0.9);
+  border-radius: 4px;
+  padding: 0.35rem 0.5rem;
+}
+
+.search-filter-hint {
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  color: #888;
+}
+
 .type-checkbox {
   display: flex;
   align-items: center;

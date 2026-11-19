@@ -15,8 +15,13 @@ import {
   PLACEHOLDER_MOB_SPRITE
 } from '../api/placeholders';
 import {
+  ARMOR_SUBTYPE_LABELS,
+  armorSubtypeLabel,
   buildItemSearchParams,
   buildMobSearchParams,
+  CARD_LOCATION_OPTIONS,
+  ITEM_TYPE_ARMOR,
+  ITEM_TYPE_CARD,
   mapItemToCard,
   mapMobToCard,
   SearchOptions
@@ -24,9 +29,11 @@ import {
 import {
   buildDatabaseSearchParams,
   getLegacyDeepLinkId,
+  hasSearchCriteria,
   parseDatabaseUrl,
   type DatabaseTab
 } from '../api/databaseUrl';
+import { defaultSearchOptions } from '../api/databaseMappers';
 
 type TabType = DatabaseTab;
 
@@ -46,19 +53,6 @@ const emptySearchState = (): SearchState => ({
   totalPages: 0
 });
 
-const defaultSearchOptions = (): SearchOptions => ({
-  selectedTypes: [],
-  selectedElements: [],
-  selectedRaces: [],
-  selectedSizes: [],
-  showBoss: true,
-  showNormal: true,
-  showMvp: true,
-  hideMobsWithoutSpawn: true,
-  includeInstanceSpawns: false,
-  hideItemsWithoutNaturalDrop: true
-});
-
 const Database = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -72,6 +66,7 @@ const Database = () => {
   const [isOptionsVisible, setIsOptionsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [searchOptions, setSearchOptions] = useState<SearchOptions>(defaultSearchOptions());
+  const [armorSubtypes, setArmorSubtypes] = useState<string[]>([]);
   const searchOptionsRef = useRef(searchOptions);
   const searchOptionsPanelRef = useRef<HTMLDivElement>(null);
 
@@ -81,18 +76,30 @@ const Database = () => {
     tab: TabType,
     q: string,
     page: number,
+    options: SearchOptions,
+    run = false,
     replace = false
   ) => {
-    const params = buildDatabaseSearchParams(tab, q, page);
+    const params = buildDatabaseSearchParams(tab, q, page, options, run);
     navigate({ pathname: '/database', search: params.toString() }, { replace });
   }, [navigate]);
 
   useEffect(() => {
     const legacy = getLegacyDeepLinkId(location.search);
     if (legacy) {
-      navigateToSearch(legacy.tab, legacy.q, 0, true);
+      navigateToSearch(legacy.tab, legacy.q, 0, defaultSearchOptions(), true, true);
     }
   }, [location.search, navigateToSearch]);
+
+  useEffect(() => {
+    if (activeTab !== 'items') return;
+    apiClient.getItemMeta()
+      .then((meta) => {
+        const list = meta.armorSubtypes ?? [];
+        setArmorSubtypes(list.length > 0 ? list : Object.keys(ARMOR_SUBTYPE_LABELS));
+      })
+      .catch(() => setArmorSubtypes(Object.keys(ARMOR_SUBTYPE_LABELS)));
+  }, [activeTab]);
 
   useEffect(() => {
     loadManifest()
@@ -204,13 +211,21 @@ const Database = () => {
   useEffect(() => {
     if (getLegacyDeepLinkId(location.search)) return;
 
-    const { tab, q, page } = parseDatabaseUrl(location.search);
-    const options = searchOptionsRef.current;
+    const urlState = parseDatabaseUrl(location.search);
+    const { tab, q, page, options } = urlState;
 
     setActiveTab(tab);
     setSearchTerm(q);
+    setSearchOptions(options);
 
     if (tab === 'maps' || tab === 'mvps') {
+      setSearchState(emptySearchState());
+      setSearchError(null);
+      setIsSearching(false);
+      return;
+    }
+
+    if (!hasSearchCriteria(urlState)) {
       setSearchState(emptySearchState());
       setSearchError(null);
       setIsSearching(false);
@@ -251,12 +266,12 @@ const Database = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    navigateToSearch(activeTab, searchTerm, 0);
+    navigateToSearch(activeTab, searchTerm, 0, searchOptions, true);
   };
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 0 || newPage >= searchState.totalPages) return;
-    navigateToSearch(activeTab, searchTerm, newPage);
+    navigateToSearch(activeTab, searchTerm, newPage, searchOptions, true);
     document.querySelector('.results-section')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -347,17 +362,83 @@ const Database = () => {
                                 <input
                                   type="checkbox"
                                   checked={searchOptions.selectedTypes.includes(Number(typeId))}
-                                  onChange={() => setSearchOptions((prev) => ({
-                                    ...prev,
-                                    selectedTypes: prev.selectedTypes.includes(Number(typeId))
-                                      ? prev.selectedTypes.filter((t) => t !== Number(typeId))
-                                      : [...prev.selectedTypes, Number(typeId)]
-                                  }))}
+                                  onChange={() => setSearchOptions((prev) => {
+                                    const id = Number(typeId);
+                                    const selected = prev.selectedTypes.includes(id);
+                                    const selectedTypes = selected
+                                      ? prev.selectedTypes.filter((t) => t !== id)
+                                      : [...prev.selectedTypes, id];
+                                    return {
+                                      ...prev,
+                                      selectedTypes,
+                                      selectedArmorSubtypes: id === ITEM_TYPE_ARMOR && selected
+                                        ? []
+                                        : prev.selectedArmorSubtypes,
+                                      selectedCardLocations: id === ITEM_TYPE_CARD && selected
+                                        ? []
+                                        : prev.selectedCardLocations
+                                    };
+                                  })}
                                 />
                                 {typeName}
                               </label>
                             ))}
                           </div>
+                        </div>
+                        {searchOptions.selectedTypes.includes(ITEM_TYPE_ARMOR) && armorSubtypes.length > 0 && (
+                          <div className="search-types">
+                            <div className="search-types-title">Subtipo de armadura:</div>
+                            <select
+                              className="search-filter-select"
+                              multiple
+                              size={Math.min(8, armorSubtypes.length)}
+                              value={searchOptions.selectedArmorSubtypes}
+                              onChange={(e) => {
+                                const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
+                                setSearchOptions((prev) => ({ ...prev, selectedArmorSubtypes: selected }));
+                              }}
+                            >
+                              {armorSubtypes.map((subtype) => (
+                                <option key={subtype} value={subtype}>
+                                  {armorSubtypeLabel(subtype)}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="search-filter-hint">Ctrl+clic para varios</div>
+                          </div>
+                        )}
+                        {searchOptions.selectedTypes.includes(ITEM_TYPE_CARD) && (
+                          <div className="search-types">
+                            <div className="search-types-title">Ubicación de carta:</div>
+                            <select
+                              className="search-filter-select"
+                              multiple
+                              size={Math.min(8, Object.keys(CARD_LOCATION_OPTIONS).length)}
+                              value={searchOptions.selectedCardLocations}
+                              onChange={(e) => {
+                                const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
+                                setSearchOptions((prev) => ({ ...prev, selectedCardLocations: selected }));
+                              }}
+                            >
+                              {Object.entries(CARD_LOCATION_OPTIONS).map(([key, label]) => (
+                                <option key={key} value={key}>{label}</option>
+                              ))}
+                            </select>
+                            <div className="search-filter-hint">Ctrl+clic para varios</div>
+                          </div>
+                        )}
+                        <div className="search-types">
+                          <div className="search-types-title">Texto en script del objeto:</div>
+                          <input
+                            type="text"
+                            className="search-filter-input"
+                            value={searchOptions.scriptQuery}
+                            onChange={(e) => setSearchOptions((prev) => ({
+                              ...prev,
+                              scriptQuery: e.target.value
+                            }))}
+                            placeholder="Ej: bonus bStr, heal"
+                          />
                         </div>
                         <div className="search-types">
                           <div className="search-types-title">Fuente de obtención:</div>
@@ -535,7 +616,17 @@ const Database = () => {
               </>
             ) : (
               !searchError && !isSearching && (
-                <div className="no-results">No se encontraron resultados</div>
+                <div className="no-results">
+                  {hasSearchCriteria({
+                    tab: activeTab,
+                    q: searchTerm,
+                    page: 0,
+                    run: parseDatabaseUrl(location.search).run,
+                    options: searchOptions
+                  })
+                    ? 'No se encontraron resultados'
+                    : 'Escribe un nombre o ID, o aplica filtros y pulsa Buscar.'}
+                </div>
               )
             )}
           </div>
