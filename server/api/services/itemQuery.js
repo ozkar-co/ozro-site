@@ -6,16 +6,18 @@ import {
     buildTokenMatchClause
 } from './textSearch.js';
 import {
+    isNaturalDropIndexReady,
+    naturalDropFilterClause
+} from './naturalDropIndex.js';
+import {
     effectiveMobsSql,
     effectiveItemsSql,
     isMobDataAvailable,
     isSpawnDataAvailable,
-    mobDropColumns,
     parsePagination,
     parseCsv,
     parseBool,
     parseIntParam,
-    spawnTableSql,
     ITEM_TYPES,
     ITEM_CLASSES,
     ITEM_CLASS_COLUMNS,
@@ -115,17 +117,6 @@ function buildHasDropExists() {
     return `EXISTS (SELECT 1 FROM ${effectiveMobsSql('m')} WHERE ${orConditions.join(' OR ')})`;
 }
 
-function buildHasNaturalDropFilter(hasDrop) {
-    const dropMatch = mobDropColumns()
-        .map((col) => `(m.${col.item} = i.name_aegis AND COALESCE(m.${col.rate}, 0) > 0)`)
-        .join(' OR ');
-    const exists = `EXISTS (
-        SELECT 1 FROM ${effectiveMobsSql('m')}
-        INNER JOIN ${spawnTableSql('s')} ON s.mob_id = m.id AND s.is_instance = 0
-        WHERE ${dropMatch}
-    )`;
-    return hasDrop ? exists : `NOT ${exists}`;
-}
 
 function buildItemFilters(params) {
     const conditions = [];
@@ -241,7 +232,12 @@ function buildItemFilters(params) {
 
     const hasNaturalDrop = parseBool(params.hasNaturalDrop);
     if (hasNaturalDrop !== null && isSpawnDataAvailable()) {
-        conditions.push(buildHasNaturalDropFilter(hasNaturalDrop));
+        const naturalClause = naturalDropFilterClause('i', hasNaturalDrop);
+        if (naturalClause) {
+            conditions.push(naturalClause);
+        } else if (!isNaturalDropIndexReady()) {
+            console.warn('Filtro hasNaturalDrop ignorado: índice de drop natural aún no listo');
+        }
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -257,19 +253,17 @@ export async function searchItems(params) {
         : 'i.name_english ASC, i.id ASC';
     const orderValues = orderBy?.values ?? [];
 
-    const [countRows, rows] = await Promise.all([
-        query(
-            `SELECT COUNT(*) AS total FROM ${fromSql} ${whereClause}`,
-            values
-        ),
-        query(
-            `SELECT i.* FROM ${fromSql}
-             ${whereClause}
-             ORDER BY ${orderSql}
-             LIMIT ? OFFSET ?`,
-            [...values, ...orderValues, limit, offset]
-        )
-    ]);
+    const countRows = await query(
+        `SELECT COUNT(*) AS total FROM ${fromSql} ${whereClause}`,
+        values
+    );
+    const rows = await query(
+        `SELECT i.* FROM ${fromSql}
+         ${whereClause}
+         ORDER BY ${orderSql}
+         LIMIT ? OFFSET ?`,
+        [...values, ...orderValues, limit, offset]
+    );
     const total = Number(countRows[0].total);
 
     const results = rows.map(mapItemDetail);

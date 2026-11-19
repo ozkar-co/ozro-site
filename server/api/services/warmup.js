@@ -10,10 +10,10 @@ export async function warmResponseCaches() {
 
     if (isItemDataAvailable()) {
         tasks.push(
-            searchItems({ page: 1, limit: 10, hasNaturalDrop: 'true' })
+            searchItems({ page: 1, limit: 10 })
                 .then((body) => primeResponseCache(
                     'items',
-                    '/api/items?page=1&limit=10&hasNaturalDrop=true',
+                    '/api/items?page=1&limit=10',
                     body,
                     WARM_TTL
                 ))

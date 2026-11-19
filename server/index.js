@@ -5,6 +5,7 @@ import { initializeGameDb } from './api/services/gameDb.js';
 import { initializeItemInfoIndex } from './api/services/itemInfo.js';
 import { initializeFarmingIndex } from './api/services/farmingIndex.js';
 import { warmResponseCaches } from './api/services/warmup.js';
+import { initializeNaturalDropIndex } from './api/services/naturalDropIndex.js';
 import { initializeBackupTask } from './tasks/backup.js';
 
 async function main() {
@@ -13,6 +14,7 @@ async function main() {
     try {
         await initializeMariaDB();
         await initializeGameDb();
+        await initializeNaturalDropIndex();
         await initializeItemInfoIndex();
         try {
             await initializeFarmingIndex();
