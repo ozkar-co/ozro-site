@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  fetchMarketItemRaw,
   searchItems,
   simulateMarket,
   type ItemSearchResult,
+  type MarketRawItem,
   type MarketSimulation
 } from '../../api/market';
+import MarketRawDataModal from './MarketRawDataModal';
 import '../../styles/MarketSimulator.css';
 
 function formatZeny(value: number): string {
@@ -107,6 +110,10 @@ const MarketSimulator = () => {
   const [simulation, setSimulation] = useState<MarketSimulation | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rawOpen, setRawOpen] = useState(false);
+  const [rawData, setRawData] = useState<MarketRawItem | null>(null);
+  const [rawLoading, setRawLoading] = useState(false);
+  const [rawError, setRawError] = useState<string | null>(null);
 
   const canAddCard = item ? cards.length < 4 : false;
   const horizons = useMemo(() => simulation?.assumptions.horizons ?? [7, 30, 90], [simulation]);
@@ -119,7 +126,24 @@ const MarketSimulator = () => {
     setAsk('');
     setSimulation(null);
     setError(null);
+    setRawData(null);
+    setRawOpen(false);
   }, [item]);
+
+  const openRaw = async () => {
+    if (!item) return;
+    setRawOpen(true);
+    setRawLoading(true);
+    setRawError(null);
+    setRawData(null);
+    try {
+      setRawData(await fetchMarketItemRaw(item.id));
+    } catch (loadError) {
+      setRawError(loadError instanceof Error ? loadError.message : 'No se pudieron cargar los datos');
+    } finally {
+      setRawLoading(false);
+    }
+  };
 
   const run = async () => {
     if (!item) return;
@@ -167,6 +191,7 @@ const MarketSimulator = () => {
               <div className="market-sim-selected">
                 <strong>{item.name}</strong>
                 <span>#{item.id} · {item.type}{item.slots ? ` · ${item.slots} slots` : ''}</span>
+                <button type="button" onClick={openRaw}>Ver datos crudos</button>
                 <button type="button" onClick={() => setItem(null)}>Cambiar</button>
               </div>
 
@@ -273,7 +298,7 @@ const MarketSimulator = () => {
         <div className="market-sim-output">
           {!simulation && !loading && (
             <div className="market-sim-empty">
-              Elegí un item para ver precio, liquidez y tiempo estimado de venta.
+              Elige un item para ver precio, liquidez y tiempo estimado de venta.
             </div>
           )}
 
@@ -314,7 +339,7 @@ const MarketSimulator = () => {
               <div className="market-sim-section">
                 <h3>Venta con tu precio</h3>
                 <p className="market-sim-hint">
-                  Pedís {formatZeny(simulation.sale.ask)}. Mediana: {formatDays(simulation.sale.medianDays)}.
+                  Pides {formatZeny(simulation.sale.ask)}. Mediana: {formatDays(simulation.sale.medianDays)}.
                 </p>
                 <div className="market-sim-probabilities">
                   {horizons.map((days) => (
@@ -371,6 +396,15 @@ const MarketSimulator = () => {
           )}
         </div>
       </div>
+
+      <MarketRawDataModal
+        open={rawOpen}
+        itemName={item?.name ?? ''}
+        data={rawData}
+        loading={rawLoading}
+        error={rawError}
+        onClose={() => setRawOpen(false)}
+      />
     </section>
   );
 };

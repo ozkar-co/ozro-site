@@ -1,7 +1,18 @@
 import { Router } from 'express';
-import { simulateMarket } from '../services/marketSimulator.js';
+import { getMarketItemRaw, simulateMarket } from '../services/marketSimulator.js';
 
 const router = Router();
+
+router.get('/item/:id', async (req, res) => {
+    try {
+        const itemId = Number.parseInt(req.params.id, 10);
+        res.json(await getMarketItemRaw(itemId));
+    } catch (error) {
+        const status = error.status || 500;
+        if (status >= 500) console.error('Error al leer item del master:', error);
+        res.status(status).json({ error: error.message || 'Error al leer item del master' });
+    }
+});
 
 router.get('/simulate', async (req, res) => {
     try {

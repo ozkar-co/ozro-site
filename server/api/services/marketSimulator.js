@@ -67,6 +67,32 @@ async function fetchRows(itemIds) {
     return new Map(rows.map((row) => [Number(row.item_id), row]));
 }
 
+export async function getMarketItemRaw(itemId) {
+    const id = Number(itemId);
+    if (!Number.isFinite(id) || id <= 0) {
+        const error = new Error('itemId inválido');
+        error.status = 400;
+        throw error;
+    }
+    const rows = await query(
+        'SELECT * FROM `ozro_market_item` WHERE item_id = ?',
+        [id]
+    );
+    if (rows.length === 0) {
+        const error = new Error('Item no encontrado en el master de mercado');
+        error.status = 404;
+        throw error;
+    }
+    const tags = await query(
+        'SELECT tag FROM `ozro_market_item_tag` WHERE item_id = ? ORDER BY tag',
+        [id]
+    );
+    return {
+        item: rows[0],
+        tags: tags.map((row) => row.tag)
+    };
+}
+
 export async function simulateMarket({ itemId, refine = 0, cardIds = [], enchantTier = 'none', randomValue = 0, ask = null }) {
     const baseId = Number(itemId);
     if (!Number.isFinite(baseId) || baseId <= 0) {

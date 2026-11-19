@@ -84,6 +84,11 @@ export interface MarketSimulation {
   };
 }
 
+export interface MarketRawItem {
+  item: Record<string, unknown>;
+  tags: string[];
+}
+
 export interface SimulateMarketParams {
   itemId: number;
   refine?: number;
@@ -115,6 +120,10 @@ export function searchItems(params: {
   if (params.page) search.set('page', String(params.page));
   const query = search.toString();
   return fetchJson<ItemSearchResponse>(`/items${query ? `?${query}` : ''}`);
+}
+
+export function fetchMarketItemRaw(itemId: number): Promise<MarketRawItem> {
+  return fetchJson<MarketRawItem>(`/market/item/${encodeURIComponent(String(itemId))}`);
 }
 
 export function simulateMarket(params: SimulateMarketParams): Promise<MarketSimulation> {

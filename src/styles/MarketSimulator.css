@@ -359,3 +359,116 @@
   font-size: 0.78rem;
   line-height: 1.4;
 }
+
+.market-raw-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(24, 20, 16, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.market-raw-modal {
+  width: min(980px, 100%);
+  max-height: min(82vh, 900px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+.market-raw-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.market-raw-head h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.15rem;
+}
+
+.market-raw-head p {
+  margin: 0.2rem 0 0;
+  color: #777;
+  font-size: 0.8rem;
+}
+
+.market-raw-head button {
+  border: 0;
+  background: #f4efea;
+  color: #555;
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.market-raw-state {
+  padding: 1rem 1.1rem;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.market-raw-error {
+  color: #a33;
+}
+
+.market-raw-table-wrap {
+  overflow: auto;
+}
+
+.market-raw-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.market-raw-table th,
+.market-raw-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid #f0ece7;
+}
+
+.market-raw-table th {
+  position: sticky;
+  top: 0;
+  background: #faf8f5;
+  color: #666;
+  font-weight: 600;
+  z-index: 1;
+}
+
+.market-raw-table td:nth-child(1),
+.market-raw-table td:nth-child(2) {
+  white-space: nowrap;
+}
+
+.market-raw-table code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.74rem;
+  color: #444;
+}
+
+.market-raw-table td:nth-child(2) code {
+  color: #8a4d42;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.market-raw-table td:nth-child(3) {
+  color: #666;
+  min-width: 260px;
+}
