@@ -1,0 +1,30 @@
+import { Router } from 'express';
+import { simulateMarket } from '../services/marketSimulator.js';
+
+const router = Router();
+
+router.get('/simulate', async (req, res) => {
+    try {
+        const itemId = Number.parseInt(req.query.itemId, 10);
+        const refine = Number.parseInt(req.query.refine, 10) || 0;
+        const enchantTier = typeof req.query.enchant === 'string' ? req.query.enchant : 'none';
+        const ask = req.query.ask == null || req.query.ask === '' ? null : Number(req.query.ask);
+        const cardIds = typeof req.query.cards === 'string' && req.query.cards.trim()
+            ? req.query.cards.split(',').map((value) => Number.parseInt(value, 10)).filter((value) => Number.isFinite(value))
+            : [];
+
+        const result = await simulateMarket({ itemId, refine, cardIds, enchantTier, ask });
+        res.json(result);
+    } catch (error) {
+        const status = error.status || 500;
+        if (status >= 500) {
+            console.error('Error al simular tasación:', error);
+        }
+        res.status(status).json({
+            error: error.message || 'Error al simular tasación',
+            hint: status === 500 ? 'Verifica que ozro_market_item esté importada' : undefined
+        });
+    }
+});
+
+export default router;

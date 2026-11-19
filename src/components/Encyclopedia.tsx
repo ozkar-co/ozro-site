@@ -8,6 +8,7 @@ import CustomNpcs from './encyclopedia/CustomNpcs';
 import CustomQuests from './encyclopedia/CustomQuests';
 import NpcMapBrowser from './encyclopedia/NpcMapBrowser';
 import FarmingCalculator from './encyclopedia/FarmingCalculator';
+import MarketSimulator from './encyclopedia/MarketSimulator';
 import WorldMap from './encyclopedia/WorldMap';
 import TransportMap from './encyclopedia/TransportMap';
 import References from './encyclopedia/References';
@@ -62,6 +63,12 @@ const sections: EncyclopediaSection[] = [
     id: 'farming',
     title: 'Calculadora de farmeo',
     icon: '/icons/drop.png',
+    category: 'Farmeo y mapas',
+  },
+  {
+    id: 'simulator',
+    title: 'Simulador de tasador',
+    icon: '/icons/exp.png',
     category: 'Farmeo y mapas',
   },
   {
@@ -202,6 +209,7 @@ const Encyclopedia = () => {
               )}
 
               {selectedSection === 'farming' && <FarmingCalculator />}
+              {selectedSection === 'simulator' && <MarketSimulator />}
               {selectedSection === 'worldmap' && <WorldMap />}
               {selectedSection === 'transport' && <TransportMap />}
               {selectedSection === 'references' && <References />}

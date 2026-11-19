@@ -9,6 +9,7 @@ import mobsRouter from './routes/mobs.js';
 import itemsRouter from './routes/items.js';
 import mvpsRouter from './routes/mvps.js';
 import farmingRouter from './routes/farming.js';
+import marketRouter from './routes/market.js';
 import { BANK_VAULT_KEY, bankVaultValueSql, effectiveMobsSql, excludeInternalAccountsSql, isMobDataAvailable, statsPlayerAccountSql, statsPlayerAccountWhereClause } from './services/gameDb.js';
 import { getCardCatalogIndex } from './services/cardCatalog.js';
 
@@ -41,6 +42,7 @@ api.use('/mobs', mobsRouter);
 api.use('/items', itemsRouter);
 api.use('/mvps', mvpsRouter);
 api.use('/farming', farmingRouter);
+api.use('/market', marketRouter);
 
 app.use('/api', api);
 

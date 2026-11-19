@@ -1,0 +1,333 @@
+.market-sim {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+}
+
+.market-sim-intro h2 {
+  margin: 0 0 0.35rem;
+  color: #333;
+  font-size: 1.6rem;
+}
+
+.market-sim-intro p {
+  margin: 0 0 1rem;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.market-sim-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.2fr);
+  gap: 1.25rem;
+}
+
+.market-sim-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.market-sim-search label,
+.market-sim-row label,
+.market-sim-ask {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.market-sim-search label span,
+.market-sim-row label span,
+.market-sim-ask span,
+.market-sim-cards-head span {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #666;
+  font-weight: 600;
+}
+
+.market-sim input,
+.market-sim select {
+  border: 1px solid #d8d2ca;
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  font: inherit;
+  color: #333;
+  background: #fff;
+}
+
+.market-sim input:focus,
+.market-sim select:focus {
+  outline: 2px solid rgba(255, 141, 127, 0.35);
+  border-color: #ff8d7f;
+}
+
+.market-sim-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+}
+
+.market-sim-selected {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
+  background: #fff7f4;
+  border: 1px solid #f3d1c8;
+  border-radius: 10px;
+  padding: 0.7rem;
+}
+
+.market-sim-selected strong {
+  color: #333;
+}
+
+.market-sim-selected span {
+  color: #777;
+  font-size: 0.8rem;
+}
+
+.market-sim-selected button {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: #c15a4b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+.market-sim-cards {
+  border-top: 1px solid #eee;
+  padding-top: 0.8rem;
+}
+
+.market-sim-cards-head {
+  margin-bottom: 0.4rem;
+}
+
+.market-sim-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.market-sim-chips button {
+  border: 1px solid #f3d1c8;
+  background: #fff7f4;
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  color: #8a4d42;
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.market-sim-results {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e4ded6;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.market-sim-results button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  border: 0;
+  border-bottom: 1px solid #f0ece7;
+  background: #fff;
+  padding: 0.5rem 0.65rem;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.market-sim-results button:last-child {
+  border-bottom: 0;
+}
+
+.market-sim-results button:hover {
+  background: #fff7f4;
+}
+
+.market-sim-results span {
+  color: #888;
+  font-size: 0.72rem;
+}
+
+.market-sim-run {
+  border: 0;
+  border-radius: 8px;
+  background: #ff8d7f;
+  color: #fff;
+  padding: 0.7rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.market-sim-run:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.market-sim-output {
+  min-width: 0;
+}
+
+.market-sim-empty {
+  color: #777;
+  font-size: 0.9rem;
+  padding: 1rem 0;
+}
+
+.market-sim-error {
+  color: #a33;
+  font-size: 0.85rem;
+}
+
+.market-sim-prices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.market-sim-prices > div {
+  border: 1px solid #e8e2da;
+  border-radius: 10px;
+  padding: 0.7rem;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.market-sim-prices .highlight {
+  border-color: #ff8d7f;
+  background: #fff7f4;
+}
+
+.market-sim-prices span {
+  color: #777;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.market-sim-prices strong {
+  color: #333;
+  font-size: 1.05rem;
+}
+
+.market-sim-prices small {
+  color: #888;
+  font-size: 0.72rem;
+}
+
+.market-sim-section {
+  border-top: 1px solid #eee;
+  padding-top: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+.market-sim-section h3,
+.market-sim-breakdown h3 {
+  margin: 0 0 0.5rem;
+  color: #444;
+  font-size: 0.95rem;
+}
+
+.market-sim-hint {
+  margin: 0.2rem 0;
+  color: #777;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.market-sim-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.market-sim-metrics div,
+.market-sim-probabilities div {
+  background: #faf8f5;
+  border: 1px solid #eee8e0;
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.market-sim-metrics span,
+.market-sim-probabilities span {
+  color: #777;
+  font-size: 0.7rem;
+}
+
+.market-sim-metrics strong,
+.market-sim-probabilities strong {
+  color: #333;
+  font-size: 0.85rem;
+}
+
+.market-sim-probabilities {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.market-sim-curve table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.market-sim-curve th,
+.market-sim-curve td {
+  text-align: left;
+  padding: 0.4rem 0.35rem;
+  border-bottom: 1px solid #eee;
+}
+
+.market-sim-curve th {
+  color: #777;
+  font-weight: 600;
+}
+
+.market-sim-breakdown {
+  border-top: 1px solid #eee;
+  padding-top: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+.market-sim-breakdown p {
+  margin: 0.2rem 0;
+  color: #666;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 900px) {
+  .market-sim-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .market-sim-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
