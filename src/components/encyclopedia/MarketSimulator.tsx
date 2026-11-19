@@ -175,21 +175,24 @@ const MarketSimulator = () => {
                     onChange={(event) => setRefine(Number(event.target.value))}
                     disabled={!item.refineable}
                   >
-                    {Array.from({ length: 11 }, (_, value) => (
+                    {Array.from({ length: 21 }, (_, value) => (
                       <option key={value} value={value}>+{value}</option>
                     ))}
                   </select>
                 </label>
                 <label>
-                  <span>Encantamiento</span>
+                  <span>Encantamiento (estimado)</span>
                   <select value={enchant} onChange={(event) => setEnchant(event.target.value)}>
                     <option value="none">Sin encantamiento</option>
-                    <option value="low">Bajo</option>
-                    <option value="medium">Medio</option>
-                    <option value="high">Alto</option>
+                    <option value="low">Bajo (+5%)</option>
+                    <option value="medium">Medio (+15%)</option>
+                    <option value="high">Alto (+35%)</option>
                   </select>
                 </label>
               </div>
+              <p className="market-sim-hint">
+                Encantamiento es un nivel genérico de estimación; todavía no distingue encantamientos específicos.
+              </p>
 
               {item.slots > 0 && (
                 <div className="market-sim-cards">
