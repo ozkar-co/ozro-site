@@ -306,7 +306,6 @@ const Database = () => {
     setSearchTerm('');
     setSearchState(emptySearchState());
     setSearchError(null);
-    closeOptionsPanel();
     navigate({ pathname: '/database', search: `tab=${activeTab}` });
   };
 
@@ -368,6 +367,15 @@ const Database = () => {
                   </button>
                 </div>
               </form>
+              <div className="search-toolbar-secondary">
+                <button
+                  type="button"
+                  className="search-action-button"
+                  onClick={handleClearFilters}
+                >
+                  Limpiar filtros
+                </button>
+              </div>
               <div className="search-options-container" ref={searchOptionsPanelRef}>
                 <button className="search-options-toggle" onClick={handleOptionsToggle}>
                   <i className={`arrow-icon ${isOptionsVisible ? 'up' : 'down'}`}></i>
@@ -627,15 +635,6 @@ const Database = () => {
                         </div>
                       </>
                     )}
-                    <div className="search-filter-actions">
-                      <button
-                        type="button"
-                        className="search-filter-clear"
-                        onClick={handleClearFilters}
-                      >
-                        Limpiar filtros
-                      </button>
-                    </div>
                   </div>
                 )}
               </div>

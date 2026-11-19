@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import type { SpriteRect } from '../api/assets';
 import { apiClient, type MobSpawnMapSummary } from '../api/client';
@@ -252,6 +252,50 @@ const processColoredText = (text: string): JSX.Element[] => {
   return elements;
 };
 
+function formatNpcPrices(buy: number, sell: number): string | null {
+  let resolvedBuy = buy > 0 ? buy : null;
+  let resolvedSell = sell > 0 ? sell : null;
+  if (resolvedBuy === null && resolvedSell !== null) resolvedBuy = resolvedSell * 2;
+  if (resolvedSell === null && resolvedBuy !== null) resolvedSell = Math.floor(resolvedBuy / 2);
+  if (!resolvedBuy && !resolvedSell) return null;
+  return `${resolvedBuy ?? 0}/${resolvedSell ?? 0}`;
+}
+
+function formatAtkMatkPair(atk: number, matk: number): string | null {
+  const hasAtk = atk > 0;
+  const hasMatk = matk > 0;
+  if (!hasAtk && !hasMatk) return null;
+  return `${hasAtk ? atk : '—'}/${hasMatk ? matk : '—'}`;
+}
+
+function formatEquipLevelRange(min?: number, max?: number): string | null {
+  if (min == null && max == null) return null;
+  const lo = min != null && min > 0 ? min : null;
+  const hi = max != null && max > 0 ? max : null;
+  if (lo === null && hi === null) return null;
+  return `${lo ?? '—'}/${hi ?? '—'}`;
+}
+
+function ResultProperty({
+  label,
+  value
+}: {
+  label: string;
+  value: ReactNode;
+}) {
+  if (value === null || value === undefined || value === false) return null;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed === '' || trimmed === 'NA' || trimmed === '???') return null;
+  }
+  return (
+    <div className="result-card-property">
+      <span className="property-label">{label}</span>
+      <span className="property-value">{value}</span>
+    </div>
+  );
+}
+
 interface ItemCardProps {
   result: SearchResult;
   compact?: boolean;
@@ -260,9 +304,25 @@ interface ItemCardProps {
 const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
   const [expanded, setExpanded] = useState(false);
   const [description, setDescription] = useState(result.description);
-  const [descriptionOpen, setDescriptionOpen] = useState(Boolean(result.description));
+  const [descriptionOpen, setDescriptionOpen] = useState(false);
   const [descriptionLoading, setDescriptionLoading] = useState(false);
   const [descriptionError, setDescriptionError] = useState(false);
+  const [dropsOpen, setDropsOpen] = useState(false);
+
+  const drops = result.droppedBy ?? [];
+  const dropWithSpawn = drops.filter((mob) => mob.hasWorldSpawn === true).length;
+  const dropWithoutSpawn = drops.length - dropWithSpawn;
+  const equipLocationsText = result.equip_locations?.length
+    ? getEquipLocationsText(result.equip_locations)
+    : null;
+  const priceText = formatNpcPrices(result.price_buy, result.price_sell);
+  const atkMatkText = formatAtkMatkPair(result.atk, result.matk);
+  const equipLevelText = formatEquipLevelRange(result.equip_level_min, result.equip_level_max);
+  const defenceText = result.defence > 0 ? String(result.defence) : null;
+  const weightText = result.weight > 0 ? String(result.weight) : null;
+  const weaponLevelText = result.weapon_level != null && result.weapon_level > 0
+    ? String(result.weapon_level)
+    : null;
 
   const toggleDescription = async () => {
     if (descriptionOpen) {
@@ -358,50 +418,25 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
               </div>
             </div>
           </div>
+          {(atkMatkText || defenceText || priceText || weightText) && (
           <div className="result-card-section">
             <div className="result-card-properties">
-              <div className="result-card-property">
-                <span className="property-label">ATK/MATK</span>
-                <span className="property-value">{`${result.atk || 'NA'}/${result.matk || 'NA'}`}</span>
-              </div>
-              <div className="result-card-property">
-                <span className="property-label">DEF</span>
-                <span className="property-value">{result.defence || 'NA'}</span>
-              </div>
-              <div className="result-card-property">
-                <span className="property-label">Precio</span>
-                <span className="property-value">{`${result.price_buy || 'NA'}/${result.price_sell || 'NA'}`}</span>
-              </div>
-              <div className="result-card-property">
-                <span className="property-label">Peso</span>
-                <span className="property-value">{result.weight || 'NA'}</span>
-              </div>
+              <ResultProperty label="ATK/MATK" value={atkMatkText} />
+              <ResultProperty label="DEF" value={defenceText} />
+              <ResultProperty label="Precio" value={priceText} />
+              <ResultProperty label="Peso" value={weightText} />
             </div>
           </div>
+          )}
           {Number(result.type) === 4 && (
             <div className="result-card-section">
               <div className="result-card-properties">
-                <div className="result-card-property">
-                  <span className="property-label">Slots</span>
-                  <span className="property-value">{result.slots || 0}</span>
-                </div>
-                <div className="result-card-property">
-                  <span className="property-label">Nivel Equip</span>
-                  <span className="property-value">{`${result.equip_level_min || 1}/${result.equip_level_max || 1}`}</span>
-                </div>
-                <div className="result-card-property">
-                  <span className="property-label">Refinable</span>
-                  <span className="property-value">{result.refineable ? 'Sí' : 'No'}</span>
-                </div>
-                <div className="result-card-property">
-                  <span className="property-label">Nivel Arma</span>
-                  <span className="property-value">{result.weapon_level || 1}</span>
-                </div>
+                <ResultProperty label="Slots" value={result.slots != null ? String(result.slots) : null} />
+                <ResultProperty label="Nivel Equip" value={equipLevelText} />
+                <ResultProperty label="Refinable" value={result.refineable ? 'Sí' : 'No'} />
+                <ResultProperty label="Nivel Arma" value={weaponLevelText} />
                 {result.range != null && result.range > 0 && (
-                  <div className="result-card-property">
-                    <span className="property-label">Alcance</span>
-                    <span className="property-value">{result.range}</span>
-                  </div>
+                  <ResultProperty label="Alcance" value={String(result.range)} />
                 )}
               </div>
             </div>
@@ -409,22 +444,13 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
           {Number(result.type) === 5 && (
             <div className="result-card-section">
               <div className="result-card-properties">
-                <div className="result-card-property">
-                  <span className="property-label">Slots</span>
-                  <span className="property-value">{result.slots || 0}</span>
-                </div>
-                <div className="result-card-property">
-                  <span className="property-label">Nivel Equip</span>
-                  <span className="property-value">{`${result.equip_level_min || 1}/${result.equip_level_max || 1}`}</span>
-                </div>
-                <div className="result-card-property">
-                  <span className="property-label">Refinable</span>
-                  <span className="property-value">{result.refineable ? 'Sí' : 'No'}</span>
-                </div>
-                <div className="result-card-property" title={result.equip_locations ? getEquipLocationsText(result.equip_locations) : ''}>
-                  <span className="property-label">Ubicación</span>
-                  <span className="property-value">{result.equip_locations ? getEquipLocationsText(result.equip_locations) : 'NA'}</span>
-                </div>
+                <ResultProperty label="Slots" value={result.slots != null ? String(result.slots) : null} />
+                <ResultProperty label="Nivel Equip" value={equipLevelText} />
+                <ResultProperty label="Refinable" value={result.refineable ? 'Sí' : 'No'} />
+                <ResultProperty
+                  label="Ubicación"
+                  value={equipLocationsText}
+                />
               </div>
             </div>
           )}
@@ -458,11 +484,21 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
               </div>
             </div>
           )}
-          {result.droppedBy && result.droppedBy.length > 0 && (
-            <div className="result-card-section">
-              <div className="result-card-script-header">Lo dropean:</div>
+          {drops.length > 0 && (
+            <div className="result-card-section result-card-collapsible-actions">
+              <button
+                type="button"
+                className="result-card-toggle"
+                onClick={() => setDropsOpen((open) => !open)}
+                aria-expanded={dropsOpen}
+              >
+                {dropsOpen
+                  ? 'Ocultar lo que lo dropean'
+                  : `Lo dropean: ${drops.length} (${dropWithSpawn} con spawn, ${dropWithoutSpawn} sin spawn)`}
+              </button>
+              {dropsOpen && (
               <div className="result-card-dropped-by">
-                {result.droppedBy.map((mob) => {
+                {drops.map((mob) => {
                   const pct = mob.chancePercent ?? (mob.rate != null ? Math.min(mob.rate, 10000) / 100 : null);
                   return (
                     <div key={mob.id} className="dropped-by-item">
@@ -491,9 +527,10 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
                   );
                 })}
               </div>
+              )}
             </div>
           )}
-          <div className="result-card-section">
+          <div className="result-card-section result-card-collapsible-actions">
             <button
               type="button"
               className="result-card-toggle"

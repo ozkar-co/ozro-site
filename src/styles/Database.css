@@ -187,6 +187,36 @@ a {
   cursor: not-allowed;
 }
 
+.search-toolbar-secondary {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+  margin-bottom: 0.15rem;
+}
+
+.search-action-button {
+  padding: 0.45rem 1rem;
+  min-width: 0;
+  background: #ff8d7f;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-weight: 500;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.search-action-button:hover:not(:disabled) {
+  background: #ff7a6a;
+}
+
+.search-action-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .search-options-container {
   position: relative;
   width: 100%;
@@ -498,21 +528,30 @@ a {
   display: none;
 }
 
-/* Botón para expandir/colapsar secciones */
+/* Botón para expandir/colapsar secciones (misma familia que Buscar) */
 .result-card-toggle {
-  background: transparent;
+  padding: 0.45rem 1rem;
+  min-width: 0;
+  background: #ff8d7f;
   border: none;
-  color: #666;
-  font-size: 0.9rem;
-  padding: 0.25rem 0.5rem;
+  color: white;
+  border-radius: 6px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+  transition: background-color 0.2s ease;
+  font-weight: 500;
+  font-size: 0.85rem;
+  text-align: left;
 }
 
 .result-card-toggle:hover {
-  color: #333;
+  background: #ff7a6a;
+}
+
+.result-card-collapsible-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
 }
 
 /* Estilos para diferentes tipos de valores */
