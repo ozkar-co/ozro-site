@@ -25,6 +25,8 @@ const LEVEL_PENALTY_PATH = path.join(ASSETS_DIR, 'farming/levelPenalty.json');
 const WORLDVIEW_PATH = path.join(ASSETS_DIR, 'world/worldview.json');
 const WORLD_ACCESS_PATH = path.join(ASSETS_DIR, 'world/access.json');
 const MIN_MZW = 10;
+const INSTANCE_MAP_RE = /^(?:\d+@|@)|_i$/i;
+const EVENT_MAP_RE = /^(?:evt|event|quiz|que_|job_)/i;
 
 let ready = false;
 let mobs = [];
@@ -66,6 +68,10 @@ function mapAccess(map) {
         accessDepth: access.depth,
         accessLabel: access.label === 'Sin ruta' ? 'NPC/Quest' : (access.label || 'NPC/Quest')
     };
+}
+
+function isEventOrInstanceMap(map) {
+    return INSTANCE_MAP_RE.test(map) || EVENT_MAP_RE.test(map);
 }
 
 function mapNameFor(map) {
@@ -168,15 +174,17 @@ function buildMob(row, itemByAegis, spawnsByMob) {
 
     const hp = applyMobHp(Number(row.hp) || 0, tier);
 
-    const spawnMaps = (spawnsByMob.get(Number(row.id)) || []).map((spawn) => {
-        const access = mapAccess(spawn.map);
-        return {
-            ...spawn,
-            ...access,
-            accessLabel: spawn.instance ? 'Instancia' : access.accessLabel,
-            accessDepth: spawn.instance ? null : access.accessDepth
-        };
-    });
+    const spawnMaps = (spawnsByMob.get(Number(row.id)) || [])
+        .filter((spawn) => !isEventOrInstanceMap(spawn.map))
+        .map((spawn) => {
+            const access = mapAccess(spawn.map);
+            return {
+                ...spawn,
+                ...access,
+                accessLabel: spawn.instance ? 'Instancia' : access.accessLabel,
+                accessDepth: spawn.instance ? null : access.accessDepth
+            };
+        });
     const bestWorldSpawn = spawnMaps
         .filter((spawn) => !spawn.instance && spawn.accessDepth !== null)
         .sort((a, b) => a.accessDepth - b.accessDepth)[0];
@@ -214,7 +222,7 @@ function buildMaps(spawnRows, mobById) {
     const byMap = new Map();
 
     for (const row of spawnRows) {
-        if (Number(row.instance) === 1) continue;
+        if (Number(row.instance) === 1 || isEventOrInstanceMap(row.map)) continue;
         const mob = mobById.get(Number(row.mob_id));
         if (!mob) continue;
 
@@ -558,6 +566,7 @@ export function getFarmingMobById(id, params = {}) {
 }
 
 export function getFarmingMapByName(mapName, params = {}) {
+    if (isEventOrInstanceMap(mapName)) return null;
     const map = maps.find((entry) => entry.map === mapName);
     if (!map) return null;
     const level = parseIntParam(params.level);

@@ -328,6 +328,7 @@ const FarmingCalculator = () => {
           Valor de venta esperado por kill, usando todos los drops y los rates del servidor.
           Usa el precio de Garrett si el item está en su mesa; si no, el precio de compra NPC del master de mercado.
           Los items sin precio se ignoran y los mobs con MZW menor a 10 no se listan.
+          Los mapas de evento e instancia se ocultan.
           En mapas, el MZW es un promedio ponderado por cantidad de spawn.
           {' '}
           <Link to="/encyclopedia?tab=worldmap">Ver mapa del mundo</Link>
