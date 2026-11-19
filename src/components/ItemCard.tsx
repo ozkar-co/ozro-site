@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import type { SpriteRect } from '../api/assets';
 import { apiClient, type MobSpawnMapSummary } from '../api/client';
@@ -305,7 +306,7 @@ interface ItemCardProps {
 const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
   const [expanded, setExpanded] = useState(false);
   const [description, setDescription] = useState(result.description);
-  const [descriptionOpen, setDescriptionOpen] = useState(false);
+  const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
   const [descriptionLoading, setDescriptionLoading] = useState(false);
   const [descriptionError, setDescriptionError] = useState(false);
   const [dropsOpen, setDropsOpen] = useState(false);
@@ -326,13 +327,12 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
     : null;
   const nameDetailsText = formatItemNameDetails(result.nameAegis, result.nameEnglish);
 
-  const toggleDescription = async () => {
-    if (descriptionOpen) {
-      setDescriptionOpen(false);
-      return;
-    }
+  const closeDescriptionModal = useCallback(() => {
+    setDescriptionModalOpen(false);
+  }, []);
 
-    setDescriptionOpen(true);
+  const openDescriptionModal = async () => {
+    setDescriptionModalOpen(true);
     if (description || descriptionLoading) return;
 
     setDescriptionLoading(true);
@@ -347,6 +347,15 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
       setDescriptionLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!descriptionModalOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeDescriptionModal();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [descriptionModalOpen, closeDescriptionModal]);
 
   if (compact && !expanded) {
     const typeName = result.typeLabel || getTypeName(result.type);
@@ -538,15 +547,41 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
             <button
               type="button"
               className="result-card-toggle"
-              onClick={toggleDescription}
-              aria-expanded={descriptionOpen}
+              onClick={openDescriptionModal}
             >
-              {descriptionOpen ? 'Ocultar descripción' : 'Ver descripción'}
+              Ver descripción
             </button>
-            {descriptionOpen && (
-              <>
-                <div className="result-card-description-header">Descripción:</div>
-                <div className="result-card-description">
+          </div>
+          {descriptionModalOpen && createPortal(
+            <div
+              className="item-desc-modal-backdrop"
+              role="presentation"
+              onMouseDown={(event) => {
+                if (event.target === event.currentTarget) closeDescriptionModal();
+              }}
+            >
+              <div
+                className="item-desc-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={`item-desc-title-${result.id}`}
+                onMouseDown={(event) => event.stopPropagation()}
+              >
+                <div className="item-desc-modal-head">
+                  <div>
+                    <h4 id={`item-desc-title-${result.id}`}>Descripción</h4>
+                    <p className="item-desc-modal-subtitle">{result.name} (#{result.id})</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="item-desc-modal-close"
+                    onClick={closeDescriptionModal}
+                    aria-label="Cerrar"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+                <div className="result-card-description item-desc-modal-body">
                   <div className="result-card-description-content">
                     {descriptionLoading
                       ? 'Cargando descripción...'
@@ -557,9 +592,10 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
                           : 'Sin descripción disponible.'}
                   </div>
                 </div>
-              </>
-            )}
-          </div>
+              </div>
+            </div>,
+            document.body
+          )}
           {result.script && (
             <div className="result-card-section">
               <div className="result-card-script-header">Al usar:</div>

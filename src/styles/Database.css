@@ -187,13 +187,6 @@ a {
   cursor: not-allowed;
 }
 
-.search-toolbar-secondary {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 0.5rem;
-  margin-bottom: 0.15rem;
-}
-
 .search-action-button {
   padding: 0.45rem 1rem;
   min-width: 0;
@@ -783,6 +776,7 @@ a {
   border-top: 1px solid rgba(224, 224, 224, 0.5);
   display: flex;
   justify-content: flex-end;
+  gap: 0.5rem;
 }
 
 .search-filter-clear {
@@ -909,6 +903,86 @@ a {
 .mode-tag-active {
   background: #d4edda;
   color: #155724;
+}
+
+.item-desc-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(18, 21, 26, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.item-desc-modal {
+  width: min(520px, 100%);
+  max-height: min(80vh, 560px);
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28);
+  border-top: 3px solid #ff8d7f;
+  animation: item-desc-modal-in 0.16s ease;
+}
+
+@keyframes item-desc-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.item-desc-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem 0.65rem;
+  border-bottom: 1px solid #eee;
+}
+
+.item-desc-modal-head h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #333;
+}
+
+.item-desc-modal-subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.82rem;
+  color: #777;
+}
+
+.item-desc-modal-close {
+  flex-shrink: 0;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  background: #ff8d7f;
+  color: #fff;
+  cursor: pointer;
+}
+
+.item-desc-modal-close:hover {
+  background: #ff7a6a;
+}
+
+.item-desc-modal-body {
+  margin: 0 1.1rem 1.1rem;
+  max-height: none;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .result-card-description-header {
