@@ -146,6 +146,23 @@ const SIZE_FROM_API = Object.fromEntries(
 export const ITEM_TYPE_ARMOR = 5;
 export const ITEM_TYPE_CARD = 6;
 
+/** Debe coincidir con server/api/services/gameDb.js ITEM_ARMOR_DB_TYPES */
+export const ITEM_ARMOR_DB_TYPES = ['Armor', 'Armor2', 'Shadowgear'] as const;
+
+function itemTypesForApi(selectedTypes: number[]): string[] {
+  const names: string[] = [];
+  for (const id of selectedTypes) {
+    const api = ITEM_TYPE_TO_API[id];
+    if (!api) continue;
+    if (id === ITEM_TYPE_ARMOR) {
+      names.push(...ITEM_ARMOR_DB_TYPES);
+    } else {
+      names.push(api);
+    }
+  }
+  return [...new Set(names)];
+}
+
 export const CARD_LOCATION_OPTIONS: Record<string, string> = {
   headTop: 'Casco (arriba)',
   headMid: 'Casco (medio)',
@@ -288,18 +305,16 @@ export function buildItemSearchParams(
   }
 
   if (options.selectedTypes.length > 0) {
-    params.type = options.selectedTypes
-      .map((id) => ITEM_TYPE_TO_API[id])
-      .filter(Boolean)
-      .join(',');
+    params.type = itemTypesForApi(options.selectedTypes).join(',');
+  } else if (options.selectedArmorSubtypes.length > 0) {
+    params.type = ITEM_ARMOR_DB_TYPES.join(',');
   }
 
   if (options.hideItemsWithoutNaturalDrop) {
     params.hasNaturalDrop = 'true';
   }
 
-  const armorSelected = options.selectedTypes.includes(ITEM_TYPE_ARMOR);
-  if (armorSelected && options.selectedArmorSubtypes.length > 0) {
+  if (options.selectedArmorSubtypes.length > 0) {
     params.subtype = options.selectedArmorSubtypes.join(',');
   }
 

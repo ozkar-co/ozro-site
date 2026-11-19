@@ -32,6 +32,21 @@ export const ITEM_TYPES = [
     'Shadowgear', 'Armor2'
 ];
 
+/** UI "Armor" (id 5) debe buscar todos los tipos de equipo en renewal. */
+export const ITEM_ARMOR_DB_TYPES = ['Armor', 'Armor2', 'Shadowgear'];
+
+/** Subtipo rAthena → columna location cuando subtype viene vacío o distinto. */
+export const ARMOR_SUBTYPE_LOCATION_COLUMNS = {
+    Head_Top: 'location_head_top',
+    Head_Mid: 'location_head_mid',
+    Head_Low: 'location_head_low',
+    Shoes: 'location_shoes',
+    Garment: 'location_garment',
+    Armor: 'location_armor',
+    Left_Accessory: 'location_left_accessory',
+    Right_Accessory: 'location_right_accessory'
+};
+
 export const ITEM_CLASSES = [
     'normal', 'upper', 'baby', 'third', 'third_upper', 'third_baby', 'fourth'
 ];

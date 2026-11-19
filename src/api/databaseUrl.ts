@@ -74,12 +74,14 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
   if (typeNames) {
     const reverseType: Record<string, number> = {};
     for (const [id, name] of Object.entries(ITEM_TYPE_TO_API)) {
-      reverseType[name] = Number(id);
+      reverseType[name.toLowerCase()] = Number(id);
     }
     options.selectedTypes = typeNames
       .split(',')
-      .map((name) => reverseType[name.trim()])
+      .map((name) => reverseType[name.trim().toLowerCase()])
       .filter((n) => n !== undefined);
+  } else if (params.get('subtype')) {
+    options.selectedTypes = [5];
   }
 
   options.selectedArmorSubtypes = parseCsvList(params.get('subtype'));

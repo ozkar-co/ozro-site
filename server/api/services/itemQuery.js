@@ -21,6 +21,8 @@ import {
     ITEM_TYPES,
     ITEM_CLASSES,
     ITEM_CLASS_COLUMNS,
+    ITEM_ARMOR_DB_TYPES,
+    ARMOR_SUBTYPE_LOCATION_COLUMNS,
     ITEM_EQUIP_LOCATION_COLUMNS,
     JOB_COLUMNS
 } from './gameDb.js';
@@ -157,8 +159,17 @@ function buildItemFilters(params) {
 
     const types = parseCsv(params.type);
     if (types.length > 0) {
-        conditions.push(`i.type IN (${types.map(() => '?').join(', ')})`);
-        values.push(...types);
+        const expandedTypes = [];
+        for (const typeName of types) {
+            if (typeName === 'Armor') {
+                expandedTypes.push(...ITEM_ARMOR_DB_TYPES);
+            } else {
+                expandedTypes.push(typeName);
+            }
+        }
+        const uniqueTypes = [...new Set(expandedTypes)];
+        conditions.push(`i.type IN (${uniqueTypes.map(() => '?').join(', ')})`);
+        values.push(...uniqueTypes);
     }
 
     const classes = parseCsv(params.class);
@@ -188,8 +199,19 @@ function buildItemFilters(params) {
 
     const subtypes = parseCsv(params.subtype);
     if (subtypes.length > 0) {
-        conditions.push(`i.subtype IN (${subtypes.map(() => '?').join(', ')})`);
-        values.push(...subtypes);
+        const locationCols = subtypes
+            .map((st) => ARMOR_SUBTYPE_LOCATION_COLUMNS[st])
+            .filter(Boolean);
+        if (locationCols.length > 0) {
+            const locationSql = locationCols
+                .map((col) => `i.${col} = 1`)
+                .join(' OR ');
+            conditions.push(`(i.subtype IN (${subtypes.map(() => '?').join(', ')}) OR (${locationSql}))`);
+            values.push(...subtypes);
+        } else {
+            conditions.push(`i.subtype IN (${subtypes.map(() => '?').join(', ')})`);
+            values.push(...subtypes);
+        }
     }
 
     const locations = parseCsv(params.location);
@@ -305,8 +327,10 @@ export async function getItemMeta() {
         query(`SELECT DISTINCT type AS value FROM ${effectiveItemsSql('i')} WHERE type IS NOT NULL ORDER BY type`),
         query(
             `SELECT DISTINCT subtype AS value FROM ${effectiveItemsSql('i')}
-             WHERE type = 'Armor' AND COALESCE(subtype, '') <> ''
-             ORDER BY subtype`
+             WHERE type IN (${ITEM_ARMOR_DB_TYPES.map(() => '?').join(', ')})
+               AND COALESCE(subtype, '') <> ''
+             ORDER BY subtype`,
+            ITEM_ARMOR_DB_TYPES
         )
     ]);
 
