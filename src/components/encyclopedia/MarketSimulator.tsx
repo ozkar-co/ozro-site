@@ -102,18 +102,20 @@ const MarketSimulator = () => {
   const [cards, setCards] = useState<ItemSearchResult[]>([]);
   const [refine, setRefine] = useState(0);
   const [enchant, setEnchant] = useState('none');
+  const [randomValue, setRandomValue] = useState('');
   const [ask, setAsk] = useState('');
   const [simulation, setSimulation] = useState<MarketSimulation | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canAddCard = item ? cards.length < item.slots : false;
+  const canAddCard = item ? cards.length < 4 : false;
   const horizons = useMemo(() => simulation?.assumptions.horizons ?? [7, 30, 90], [simulation]);
 
   useEffect(() => {
     if (!item) return;
     setCards([]);
     setRefine(0);
+    setRandomValue('');
     setAsk('');
     setSimulation(null);
     setError(null);
@@ -129,6 +131,7 @@ const MarketSimulator = () => {
         refine,
         cards: cards.map((card) => card.id),
         enchant,
+        randomValue: randomValue.trim() ? Number(randomValue) : 0,
         ask: ask.trim() ? Number(ask) : null
       });
       setSimulation(result);
@@ -194,10 +197,31 @@ const MarketSimulator = () => {
                 Encantamiento es un nivel genérico de estimación; todavía no distingue encantamientos específicos.
               </p>
 
-              {item.slots > 0 && (
-                <div className="market-sim-cards">
+              <label className="market-sim-ask">
+                <span>Random options (valor extra estimado)</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={randomValue}
+                  onChange={(event) => setRandomValue(event.target.value)}
+                  placeholder="0"
+                />
+              </label>
+
+              <div className="market-sim-mailbox">
+                <h3>Restaurable por mail</h3>
+                <p>Refine, cartas/encantamientos en slots, random options, bound y amount.</p>
+                <h3>No restaurable por mail</h3>
+                <p>Enchant grade, expire time, unique ID, attribute y estado identificado.</p>
+                <p className="market-sim-hint">
+                  El tasador v1 solo debería aceptar tradeable, identificado, no bound,
+                  sin enchant grade, sin expiración y sin unique ID.
+                </p>
+              </div>
+
+              <div className="market-sim-cards">
                   <div className="market-sim-cards-head">
-                    <span>Cartas ({cards.length}/{item.slots})</span>
+                    <span>Cartas / encantamientos en slots ({cards.length}/4)</span>
                   </div>
                   <div className="market-sim-chips">
                     {cards.map((card) => (
@@ -212,16 +236,14 @@ const MarketSimulator = () => {
                   </div>
                   {canAddCard && (
                     <ItemSearch
-                      label="Agregar carta"
-                      placeholder="Nombre o ID de carta"
-                      type="Card"
+                      label="Agregar carta o encantamiento"
+                      placeholder="Nombre o ID de item"
                       onSelect={(card) => setCards((current) => (
                         current.some((entry) => entry.id === card.id) ? current : [...current, card]
                       ))}
                     />
                   )}
-                </div>
-              )}
+              </div>
 
               <label className="market-sim-ask">
                 <span>Precio pedido (opcional)</span>
@@ -334,7 +356,8 @@ const MarketSimulator = () => {
                 <h3>Composición</h3>
                 <p>
                   Base {formatZeny(simulation.composition.baseValue)} ·
-                  Cartas {formatZeny(simulation.composition.cardValue)} ·
+                  Cartas/slots {formatZeny(simulation.composition.cardValue)} ·
+                  Random options {formatZeny(simulation.composition.randomValue)} ·
                   Encantamiento {formatZeny(simulation.composition.enchantValue)} ·
                   Refine +{simulation.composition.refine}
                 </p>

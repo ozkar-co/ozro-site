@@ -54,6 +54,7 @@ export interface MarketSimulation {
     refineFactor: number;
     baseValue: number;
     cardValue: number;
+    randomValue: number;
     enchantTier: string;
     enchantValue: number;
     fair: number;
@@ -88,6 +89,7 @@ export interface SimulateMarketParams {
   refine?: number;
   cards?: number[];
   enchant?: string;
+  randomValue?: number;
   ask?: number | null;
 }
 
@@ -121,6 +123,7 @@ export function simulateMarket(params: SimulateMarketParams): Promise<MarketSimu
   if (params.refine) search.set('refine', String(params.refine));
   if (params.cards?.length) search.set('cards', params.cards.join(','));
   if (params.enchant && params.enchant !== 'none') search.set('enchant', params.enchant);
+  if (params.randomValue) search.set('randomValue', String(params.randomValue));
   if (params.ask) search.set('ask', String(params.ask));
   return fetchJson<MarketSimulation>(`/market/simulate?${search.toString()}`);
 }

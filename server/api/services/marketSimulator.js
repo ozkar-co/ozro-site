@@ -67,7 +67,7 @@ async function fetchRows(itemIds) {
     return new Map(rows.map((row) => [Number(row.item_id), row]));
 }
 
-export async function simulateMarket({ itemId, refine = 0, cardIds = [], enchantTier = 'none', ask = null }) {
+export async function simulateMarket({ itemId, refine = 0, cardIds = [], enchantTier = 'none', randomValue = 0, ask = null }) {
     const baseId = Number(itemId);
     if (!Number.isFinite(baseId) || baseId <= 0) {
         const error = new Error('itemId inválido');
@@ -90,19 +90,14 @@ export async function simulateMarket({ itemId, refine = 0, cardIds = [], enchant
 
     const cards = cardIds.map((id) => {
         const row = rows.get(Number(id));
-        if (!row || String(row.type).toLowerCase() !== 'card') {
-            const error = new Error(`Carta inválida: ${id}`);
+        if (!row) {
+            const error = new Error(`Item de slot inválido: ${id}`);
             error.status = 400;
             throw error;
         }
         return row;
     });
 
-    if (cards.length > Number(base.slots || 0)) {
-        const error = new Error('La cantidad de cartas supera los slots del item');
-        error.status = 400;
-        throw error;
-    }
 
     const tier = Object.prototype.hasOwnProperty.call(config.enchant.tiers, enchantTier)
         ? enchantTier
@@ -112,7 +107,8 @@ export async function simulateMarket({ itemId, refine = 0, cardIds = [], enchant
     const refineFactor = config.refineFactors[safeRefine];
     const baseValue = Number(base.mid) * refineFactor;
     const cardValue = cards.reduce((sum, card) => sum + Number(card.mid), 0) * config.cardDiscount;
-    const subtotal = baseValue + cardValue;
+    const randomOptionsValue = Math.max(0, Number(randomValue) || 0);
+    const subtotal = baseValue + cardValue + randomOptionsValue;
     const enchantValue = subtotal * config.enchant.tiers[tier];
     const fair = subtotal + enchantValue;
 
@@ -166,6 +162,7 @@ export async function simulateMarket({ itemId, refine = 0, cardIds = [], enchant
             refineFactor,
             baseValue: Math.round(baseValue),
             cardValue: Math.round(cardValue),
+            randomValue: Math.round(randomOptionsValue),
             enchantTier: tier,
             enchantValue: Math.round(enchantValue),
             fair: Math.round(fair)

@@ -9,11 +9,12 @@ router.get('/simulate', async (req, res) => {
         const refine = Number.parseInt(req.query.refine, 10) || 0;
         const enchantTier = typeof req.query.enchant === 'string' ? req.query.enchant : 'none';
         const ask = req.query.ask == null || req.query.ask === '' ? null : Number(req.query.ask);
+        const randomValue = req.query.randomValue == null || req.query.randomValue === '' ? 0 : Number(req.query.randomValue);
         const cardIds = typeof req.query.cards === 'string' && req.query.cards.trim()
             ? req.query.cards.split(',').map((value) => Number.parseInt(value, 10)).filter((value) => Number.isFinite(value))
             : [];
 
-        const result = await simulateMarket({ itemId, refine, cardIds, enchantTier, ask });
+        const result = await simulateMarket({ itemId, refine, cardIds, enchantTier, randomValue, ask });
         res.json(result);
     } catch (error) {
         const status = error.status || 500;
