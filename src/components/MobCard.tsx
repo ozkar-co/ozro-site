@@ -4,6 +4,7 @@ import type { SpriteRect } from '../api/assets';
 import type { MobSpawnMapSummary, MobSpawnPoint } from '../api/client';
 import AtlasSprite from './AtlasSprite';
 import { fetchFarmingMob, type FarmingMob } from '../api/farming';
+import { formatMobNameDetails } from '../utils/nameDetails';
 
 interface MobDrop {
   id: number;
@@ -24,7 +25,8 @@ interface MobSummon {
 interface MobResult {
   id: string;
   name: string;
-  name2: string;
+  nameJapanese?: string | null;
+  nameAegis?: string;
   sprite: SpriteRect | string;
   hp: number;
   lvl: number;
@@ -50,7 +52,6 @@ interface MobResult {
   attack2?: number;
   sp?: number;
   walkSpeed?: number;
-  code_name?: string;
   spawns?: MobSpawnPoint[];
   spawnMaps?: MobSpawnMapSummary[];
   spawnMapCount?: number;
@@ -191,6 +192,8 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
     );
   }
 
+  const nameDetailsText = formatMobNameDetails(result.nameJapanese, result.nameAegis);
+
   return (
     <div className="result-card">
       <div className="result-card-content">
@@ -210,10 +213,12 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
                   <h3>
                     <span className="name-title"><Link to={`/database?tab=mobs&q=${result.id}`}>{result.name}</Link></span>
                     {' '}
-                    <span className="name-details">
-                      [{result.name2} / {result.code_name}]
-                    </span>
-                    {' '}
+                    {nameDetailsText && (
+                      <>
+                        <span className="name-details">{nameDetailsText}</span>
+                        {' '}
+                      </>
+                    )}
                     <span className="result-card-id">(#{result.id})</span>
                   </h3>
                   <span className="mob-level">

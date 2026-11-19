@@ -214,6 +214,7 @@ export interface ItemSummary {
   id: number;
   name: string;
   nameAegis: string;
+  nameEnglish?: string | null;
   type: string;
   subtype?: string;
   attack?: number;

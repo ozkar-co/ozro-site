@@ -82,6 +82,7 @@ function mapItemSummary(row) {
         id: row.id,
         name: getItemDisplayName(row.id) || row.name_english || row.name_aegis,
         nameAegis: row.name_aegis,
+        nameEnglish: row.name_english,
         type: row.type,
         subtype: row.subtype,
         attack: row.attack,

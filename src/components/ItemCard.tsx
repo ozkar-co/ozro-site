@@ -7,6 +7,7 @@ import {
   PLACEHOLDER_ITEM_ICON,
   PLACEHOLDER_ITEM_ILLUSTRATION
 } from '../api/placeholders';
+import { formatItemNameDetails } from '../utils/nameDetails';
 
 interface SearchResult {
   id: string;
@@ -18,8 +19,8 @@ interface SearchResult {
   price_buy: number;
   price_sell: number;
   weight: number;
-  codename1: string;
-  codename2: string;
+  nameAegis?: string | null;
+  nameEnglish?: string | null;
   script: string;
   name: string;
   description: string;
@@ -323,6 +324,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
   const weaponLevelText = result.weapon_level != null && result.weapon_level > 0
     ? String(result.weapon_level)
     : null;
+  const nameDetailsText = formatItemNameDetails(result.nameAegis, result.nameEnglish);
 
   const toggleDescription = async () => {
     if (descriptionOpen) {
@@ -397,10 +399,12 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
                   <h3>
                     <span className="name-title"><Link to={`/database?tab=items&q=${result.id}`}>{result.name}</Link></span>
                     {' '}
-                    <span className="name-details">
-                      [{result.codename1}/{result.codename2 || '???'}]
-                    </span>
-                    {' '}
+                    {nameDetailsText && (
+                      <>
+                        <span className="name-details">{nameDetailsText}</span>
+                        {' '}
+                      </>
+                    )}
                     <span className="result-card-id">(#{result.id})</span>
                   </h3>
                   <span className="item-type">
