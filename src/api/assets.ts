@@ -47,7 +47,10 @@ async function findCustomAsset(category: AssetCategory, id: string): Promise<str
     const url = assetUrl(`${dir}/${id}.${extension}`);
     try {
       const response = await fetch(url, { method: 'HEAD' });
-      if (response.ok) return url;
+      if (!response.ok) continue;
+      const contentType = response.headers.get('content-type') ?? '';
+      if (!/^image\//i.test(contentType)) continue;
+      return url;
     } catch {
       // Keep trying the next extension.
     }

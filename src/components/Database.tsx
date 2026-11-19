@@ -8,9 +8,8 @@ import ItemCard, { SearchResult, ITEM_TYPES } from './ItemCard';
 import MobCard, { MobResult, MOB_SIZE, MOB_ELEMENTS, MOB_RACES } from './MobCard';
 import '../styles/Database.css';
 import { apiClient } from '../api/client';
-import { loadManifest, resolveSprite, type SpriteRect } from '../api/assets';
+import { hasManifestSprite, loadManifest, resolveSprite, type SpriteRect } from '../api/assets';
 import {
-  isPlaceholderAsset,
   PLACEHOLDER_ITEM_ICON,
   PLACEHOLDER_ITEM_ILLUSTRATION,
   PLACEHOLDER_MOB_SPRITE
@@ -131,7 +130,7 @@ const Database = () => {
     return Promise.all(mobs.map(async (mob) => {
       const spriteResolved = await resolveSprite(mob.id, 'mobs/sprites');
       const sprite = spriteResolved ?? PLACEHOLDER_MOB_SPRITE;
-      const hasSprite = !isPlaceholderAsset(sprite);
+      const hasSprite = hasManifestSprite(spriteResolved);
       const drop = await Promise.all(
         (mob.drop || []).map(async (entry) => ({
           ...entry,
@@ -148,7 +147,7 @@ const Database = () => {
       const illustrationResolved = await resolveSprite(item.id, 'items/illustrations');
       const icon = iconResolved ?? PLACEHOLDER_ITEM_ICON;
       const illustration = illustrationResolved ?? iconResolved ?? PLACEHOLDER_ITEM_ILLUSTRATION;
-      const hasSprite = !isPlaceholderAsset(icon) || !isPlaceholderAsset(illustration);
+      const hasSprite = hasManifestSprite(illustrationResolved ?? iconResolved);
       return { ...item, icon, illustration, hasSprite };
     }));
   }, []);
