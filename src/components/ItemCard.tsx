@@ -320,6 +320,12 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
   const [descriptionLoading, setDescriptionLoading] = useState(false);
   const [descriptionError, setDescriptionError] = useState(false);
   const [dropsOpen, setDropsOpen] = useState(false);
+  const [scriptsOpen, setScriptsOpen] = useState(false);
+
+  const scriptMain = result.script?.trim() || '';
+  const scriptEquip = result.equipScript?.trim() || '';
+  const scriptUnequip = result.unequipScript?.trim() || '';
+  const hasScripts = Boolean(scriptMain || scriptEquip || scriptUnequip);
 
   const drops = result.droppedBy ?? [];
   const dropWithSpawn = drops.filter((mob) => mob.hasWorldSpawn === true).length;
@@ -553,7 +559,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
               )}
             </div>
           )}
-          <div className="result-card-section result-card-collapsible-actions">
+          <div className="result-card-section result-card-collapsible-actions result-card-action-row">
             <button
               type="button"
               className="result-card-toggle"
@@ -561,7 +567,36 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
             >
               Ver descripción
             </button>
+            {hasScripts && (
+              <button
+                type="button"
+                className="result-card-toggle"
+                onClick={() => setScriptsOpen((open) => !open)}
+                aria-expanded={scriptsOpen}
+              >
+                {scriptsOpen ? 'Ocultar script' : 'Ver script'}
+              </button>
+            )}
           </div>
+          {scriptsOpen && hasScripts && (
+            <div className="result-card-section result-card-script-block">
+              {scriptMain && (
+                <pre className="result-card-script">{scriptMain}</pre>
+              )}
+              {scriptEquip && (
+                <>
+                  <div className="result-card-script-header">Al equipar:</div>
+                  <pre className="result-card-script">{scriptEquip}</pre>
+                </>
+              )}
+              {scriptUnequip && (
+                <>
+                  <div className="result-card-script-header">Al desequipar:</div>
+                  <pre className="result-card-script">{scriptUnequip}</pre>
+                </>
+              )}
+            </div>
+          )}
           {descriptionModalOpen && createPortal(
             <div
               className="item-desc-modal-backdrop"
@@ -591,38 +626,24 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
                     Cerrar
                   </button>
                 </div>
-                <div className="result-card-description item-desc-modal-body">
-                  <div className="result-card-description-content">
-                    {descriptionLoading
-                      ? 'Cargando descripción...'
-                      : descriptionError
+                {descriptionLoading ? (
+                  <div className="item-desc-modal-loading" aria-busy="true" aria-live="polite">
+                    <img src="/logo.png" alt="Cargando descripción…" className="loading-logo" />
+                  </div>
+                ) : (
+                  <div className="result-card-description item-desc-modal-body">
+                    <div className="result-card-description-content">
+                      {descriptionError
                         ? 'No se pudo cargar la descripción.'
                         : description
                           ? processColoredText(description)
                           : 'Sin descripción disponible.'}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>,
             document.body
-          )}
-          {result.script && (
-            <div className="result-card-section">
-              <div className="result-card-script-header">Al usar:</div>
-              <pre className="result-card-script">{result.script}</pre>
-            </div>
-          )}
-          {result.equipScript && (
-            <div className="result-card-section">
-              <div className="result-card-script-header">Al equipar:</div>
-              <pre className="result-card-script">{result.equipScript}</pre>
-            </div>
-          )}
-          {result.unequipScript && (
-            <div className="result-card-section">
-              <div className="result-card-script-header">Al desequipar:</div>
-              <pre className="result-card-script">{result.unequipScript}</pre>
-            </div>
           )}
         </div>
       </div>

@@ -547,6 +547,13 @@ a {
   gap: 0.5rem;
 }
 
+.result-card-collapsible-actions.result-card-action-row {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.65rem;
+}
+
 /* Estilos para diferentes tipos de valores */
 .value-positive { color: #2ecc71; }
 .value-negative { color: #e74c3c; }
@@ -919,7 +926,8 @@ a {
 
 .item-desc-modal {
   width: min(520px, 100%);
-  max-height: min(80vh, 560px);
+  max-height: 85vh;
+  height: auto;
   display: flex;
   flex-direction: column;
   background: #fff;
@@ -927,6 +935,7 @@ a {
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28);
   border-top: 3px solid #ff8d7f;
   animation: item-desc-modal-in 0.16s ease;
+  overflow: hidden;
 }
 
 @keyframes item-desc-modal-in {
@@ -977,11 +986,25 @@ a {
   background: #ff7a6a;
 }
 
+.item-desc-modal-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem 3rem;
+  flex: 0 0 auto;
+}
+
+.item-desc-modal-loading .loading-logo {
+  width: 96px;
+  height: 96px;
+}
+
 .item-desc-modal-body {
   margin: 0 1.1rem 1.1rem;
-  max-height: none;
-  flex: 1;
+  margin-bottom: 1.1rem;
+  flex: 0 1 auto;
   min-height: 0;
+  max-height: calc(85vh - 5.25rem);
   overflow-y: auto;
 }
 
