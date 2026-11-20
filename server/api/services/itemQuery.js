@@ -198,21 +198,39 @@ function buildItemFilters(params) {
         }
     }
 
-    const subtypes = parseCsv(params.subtype);
-    if (subtypes.length > 0) {
-        const locationCols = subtypes
+    const armorSubtypes = parseCsv(params.subtype);
+    const weaponSubtypes = parseCsv(params.weaponSubtype);
+    const subtypeParts = [];
+
+    if (armorSubtypes.length > 0) {
+        const locationCols = armorSubtypes
             .map((st) => ARMOR_SUBTYPE_LOCATION_COLUMNS[st])
             .filter(Boolean);
         if (locationCols.length > 0) {
             const locationSql = locationCols
                 .map((col) => `i.${col} = 1`)
                 .join(' OR ');
-            conditions.push(`(i.subtype IN (${subtypes.map(() => '?').join(', ')}) OR (${locationSql}))`);
-            values.push(...subtypes);
+            subtypeParts.push(
+                `(i.subtype IN (${armorSubtypes.map(() => '?').join(', ')}) OR (${locationSql}))`
+            );
+            values.push(...armorSubtypes);
         } else {
-            conditions.push(`i.subtype IN (${subtypes.map(() => '?').join(', ')})`);
-            values.push(...subtypes);
+            subtypeParts.push(`i.subtype IN (${armorSubtypes.map(() => '?').join(', ')})`);
+            values.push(...armorSubtypes);
         }
+    }
+
+    if (weaponSubtypes.length > 0) {
+        subtypeParts.push(
+            `(i.type = 'Weapon' AND i.subtype IN (${weaponSubtypes.map(() => '?').join(', ')}))`
+        );
+        values.push(...weaponSubtypes);
+    }
+
+    if (subtypeParts.length === 1) {
+        conditions.push(subtypeParts[0]);
+    } else if (subtypeParts.length > 1) {
+        conditions.push(`(${subtypeParts.join(' OR ')})`);
     }
 
     const locations = parseCsv(params.location);
@@ -324,7 +342,7 @@ export async function getItemById(id) {
 }
 
 export async function getItemMeta() {
-    const [types, armorSubtypes] = await Promise.all([
+    const [types, armorSubtypes, weaponSubtypes] = await Promise.all([
         query(`SELECT DISTINCT type AS value FROM ${effectiveItemsSql('i')} WHERE type IS NOT NULL ORDER BY type`),
         query(
             `SELECT DISTINCT subtype AS value FROM ${effectiveItemsSql('i')}
@@ -332,12 +350,18 @@ export async function getItemMeta() {
                AND COALESCE(subtype, '') <> ''
              ORDER BY subtype`,
             ITEM_ARMOR_DB_TYPES
+        ),
+        query(
+            `SELECT DISTINCT subtype AS value FROM ${effectiveItemsSql('i')}
+             WHERE type = 'Weapon' AND COALESCE(subtype, '') <> ''
+             ORDER BY subtype`
         )
     ]);
 
     return {
         types: types.map((r) => r.value),
         armorSubtypes: armorSubtypes.map((r) => r.value),
+        weaponSubtypes: weaponSubtypes.map((r) => r.value),
         cardLocations: Object.keys(ITEM_EQUIP_LOCATION_COLUMNS),
         classes: ITEM_CLASSES,
         jobs: Object.keys(JOB_COLUMNS),

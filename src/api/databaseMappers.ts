@@ -143,6 +143,7 @@ const SIZE_FROM_API = Object.fromEntries(
   Object.entries(SIZE_TO_API).map(([id, name]) => [name, Number(id)])
 );
 
+export const ITEM_TYPE_WEAPON = 4;
 export const ITEM_TYPE_ARMOR = 5;
 export const ITEM_TYPE_CARD = 6;
 
@@ -209,9 +210,40 @@ export function armorSubtypeLabel(value: string): string {
   return ARMOR_SUBTYPE_LABELS[value] || value.replace(/_/g, ' ');
 }
 
+export const WEAPON_SUBTYPE_LABELS: Record<string, string> = {
+  Fist: 'Puño',
+  Dagger: 'Daga',
+  '1hSword': 'Espada 1 mano',
+  '2hSword': 'Espada 2 manos',
+  '1hSpear': 'Lanza 1 mano',
+  '2hSpear': 'Lanza 2 manos',
+  '1hAxe': 'Hacha 1 mano',
+  '2hAxe': 'Hacha 2 manos',
+  Mace: 'Maza',
+  Staff: 'Bastón',
+  Bow: 'Arco',
+  Knuckle: 'Puños',
+  Musical: 'Instrumento',
+  Whip: 'Látigo',
+  Book: 'Libro',
+  Katar: 'Katar',
+  Revolver: 'Revólver',
+  Rifle: 'Rifle',
+  Gatling: 'Gatling',
+  Shotgun: 'Escopeta',
+  Grenade: 'Granada',
+  Huuma: 'Huuma',
+  '2hStaff': 'Bastón 2 manos'
+};
+
+export function weaponSubtypeLabel(value: string): string {
+  return WEAPON_SUBTYPE_LABELS[value] || value.replace(/_/g, ' ');
+}
+
 export interface SearchOptions {
   selectedTypes: number[];
   selectedArmorSubtypes: string[];
+  selectedWeaponSubtypes: string[];
   selectedCardLocations: string[];
   scriptQuery: string;
   selectedElements: number[];
@@ -229,6 +261,7 @@ export interface SearchOptions {
 export const defaultSearchOptions = (): SearchOptions => ({
   selectedTypes: [],
   selectedArmorSubtypes: [],
+  selectedWeaponSubtypes: [],
   selectedCardLocations: [],
   scriptQuery: '',
   selectedElements: [],
@@ -310,6 +343,8 @@ export function buildItemSearchParams(
     params.type = itemTypesForApi(options.selectedTypes).join(',');
   } else if (options.selectedArmorSubtypes.length > 0) {
     params.type = ITEM_ARMOR_DB_TYPES.join(',');
+  } else if (options.selectedWeaponSubtypes.length > 0) {
+    params.type = 'Weapon';
   }
 
   if (options.hideItemsWithoutNaturalDrop) {
@@ -318,6 +353,10 @@ export function buildItemSearchParams(
 
   if (options.selectedArmorSubtypes.length > 0) {
     params.subtype = options.selectedArmorSubtypes.join(',');
+  }
+
+  if (options.selectedWeaponSubtypes.length > 0) {
+    params.weaponSubtype = options.selectedWeaponSubtypes.join(',');
   }
 
   const cardSelected = options.selectedTypes.includes(ITEM_TYPE_CARD);

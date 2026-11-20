@@ -18,6 +18,7 @@ function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): bo
   if (tab === 'items') {
     if (options.selectedTypes.length > 0) return true;
     if (options.selectedArmorSubtypes.length > 0) return true;
+    if (options.selectedWeaponSubtypes.length > 0) return true;
     if (options.selectedCardLocations.length > 0) return true;
     if (options.scriptQuery.trim()) return true;
     if (options.hideItemsWithoutNaturalDrop !== defaults.hideItemsWithoutNaturalDrop) return true;
@@ -84,9 +85,12 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
       .filter((n) => n !== undefined);
   } else if (params.get('subtype')) {
     options.selectedTypes = [5];
+  } else if (params.get('weaponSubtype')) {
+    options.selectedTypes = [4];
   }
 
   options.selectedArmorSubtypes = parseCsvList(params.get('subtype'));
+  options.selectedWeaponSubtypes = parseCsvList(params.get('weaponSubtype'));
   options.selectedCardLocations = parseCsvList(params.get('location'));
   options.scriptQuery = params.get('script') ?? '';
 
@@ -163,6 +167,9 @@ export function buildDatabaseSearchParams(
     }
     if (options.selectedArmorSubtypes.length > 0) {
       params.set('subtype', options.selectedArmorSubtypes.join(','));
+    }
+    if (options.selectedWeaponSubtypes.length > 0) {
+      params.set('weaponSubtype', options.selectedWeaponSubtypes.join(','));
     }
     if (options.selectedCardLocations.length > 0) {
       params.set('location', options.selectedCardLocations.join(','));

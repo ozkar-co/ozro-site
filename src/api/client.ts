@@ -319,6 +319,7 @@ export type ItemSearchParams = Record<string, string | number | undefined>;
 export interface ItemMetaResponse {
   types: string[];
   armorSubtypes: string[];
+  weaponSubtypes: string[];
   cardLocations: string[];
   classes: string[];
   jobs: string[];

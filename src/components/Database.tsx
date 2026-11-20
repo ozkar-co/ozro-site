@@ -22,6 +22,9 @@ import {
   CARD_LOCATION_OPTIONS,
   ITEM_TYPE_ARMOR,
   ITEM_TYPE_CARD,
+  ITEM_TYPE_WEAPON,
+  WEAPON_SUBTYPE_LABELS,
+  weaponSubtypeLabel,
   mapItemToCard,
   mapMobToCard,
   SearchOptions
@@ -70,6 +73,7 @@ const Database = () => {
   const [isClosing, setIsClosing] = useState(false);
   const [searchOptions, setSearchOptions] = useState<SearchOptions>(defaultSearchOptions());
   const [armorSubtypes, setArmorSubtypes] = useState<string[]>([]);
+  const [weaponSubtypes, setWeaponSubtypes] = useState<string[]>([]);
   const searchOptionsRef = useRef(searchOptions);
   const searchOptionsPanelRef = useRef<HTMLDivElement>(null);
 
@@ -98,10 +102,15 @@ const Database = () => {
     if (activeTab !== 'items') return;
     apiClient.getItemMeta()
       .then((meta) => {
-        const list = meta.armorSubtypes ?? [];
-        setArmorSubtypes(list.length > 0 ? list : Object.keys(ARMOR_SUBTYPE_LABELS));
+        const armorList = meta.armorSubtypes ?? [];
+        setArmorSubtypes(armorList.length > 0 ? armorList : Object.keys(ARMOR_SUBTYPE_LABELS));
+        const weaponList = meta.weaponSubtypes ?? [];
+        setWeaponSubtypes(weaponList.length > 0 ? weaponList : Object.keys(WEAPON_SUBTYPE_LABELS));
       })
-      .catch(() => setArmorSubtypes(Object.keys(ARMOR_SUBTYPE_LABELS)));
+      .catch(() => {
+        setArmorSubtypes(Object.keys(ARMOR_SUBTYPE_LABELS));
+        setWeaponSubtypes(Object.keys(WEAPON_SUBTYPE_LABELS));
+      });
   }, [activeTab]);
 
   useEffect(() => {
@@ -395,6 +404,9 @@ const Database = () => {
                                       selectedArmorSubtypes: id === ITEM_TYPE_ARMOR && selected
                                         ? []
                                         : prev.selectedArmorSubtypes,
+                                      selectedWeaponSubtypes: id === ITEM_TYPE_WEAPON && selected
+                                        ? []
+                                        : prev.selectedWeaponSubtypes,
                                       selectedCardLocations: id === ITEM_TYPE_CARD && selected
                                         ? []
                                         : prev.selectedCardLocations
@@ -422,6 +434,28 @@ const Database = () => {
                               {armorSubtypes.map((subtype) => (
                                 <option key={subtype} value={subtype}>
                                   {armorSubtypeLabel(subtype)}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="search-filter-hint">Ctrl+clic para varios</div>
+                          </div>
+                        )}
+                        {searchOptions.selectedTypes.includes(ITEM_TYPE_WEAPON) && weaponSubtypes.length > 0 && (
+                          <div className="search-types">
+                            <div className="search-types-title">Subtipo de arma:</div>
+                            <select
+                              className="search-filter-select"
+                              multiple
+                              size={Math.min(8, weaponSubtypes.length)}
+                              value={searchOptions.selectedWeaponSubtypes}
+                              onChange={(e) => {
+                                const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
+                                setSearchOptions((prev) => ({ ...prev, selectedWeaponSubtypes: selected }));
+                              }}
+                            >
+                              {weaponSubtypes.map((subtype) => (
+                                <option key={subtype} value={subtype}>
+                                  {weaponSubtypeLabel(subtype)}
                                 </option>
                               ))}
                             </select>
