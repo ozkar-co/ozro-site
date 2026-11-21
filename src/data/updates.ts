@@ -8,6 +8,14 @@ export interface UpdateEntry {
 /** Changelog OzRo derivado del git log de rathena (17 ene 2026 – hoy). */
 export const recentUpdates: UpdateEntry[] = [
   {
+    date: '21 de noviembre de 2026',
+    title: 'Cliente: archivos faltantes reconstruidos',
+    paragraphs: [
+      'Se inventarió el cliente activo frente al servidor y se reconstruyeron en el parche recursos que faltaban: sprites y sonidos de monstruos, NPCs nuevos y referencias de identidad necesarias para mostrarlos.',
+      'El objetivo es un cliente más estable al spawnear contenido reciente, sin errores de sprite o sonido por archivos ausentes.',
+    ],
+  },
+  {
     date: '20 de noviembre de 2026',
     title: 'Battlegrounds y PvP desactivados',
     paragraphs: [
