@@ -8,6 +8,14 @@ export interface UpdateEntry {
 /** Changelog OzRo derivado del git log de rathena (17 ene 2026 – hoy). */
 export const recentUpdates: UpdateEntry[] = [
   {
+    date: '20 de noviembre de 2026',
+    title: 'Más estilos para Vesper',
+    paragraphs: [
+      'Vesper admite más colores de ropa según las paletas reales del cliente.',
+      'Se retiraron recursos de stylist que no se usaban y eran incompatibles con el cliente.',
+    ],
+  },
+  {
     date: '19 de noviembre de 2026',
     title: 'Simulador de mercado: experimento inicial',
     paragraphs: [
