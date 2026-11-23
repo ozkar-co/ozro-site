@@ -3,27 +3,19 @@ import '../../styles/DropCalculator.css';
 
 const numberFormat = new Intl.NumberFormat('es', { maximumFractionDigits: 2 });
 
-function formatKills(value: number): string {
+function formatPlain(value: number): string {
   if (!Number.isFinite(value)) return '—';
-  const rounded = Math.ceil(value);
-  if (rounded >= 1_000_000_000) {
-    return `${numberFormat.format(rounded / 1_000_000_000)} mil millones`;
-  }
-  if (rounded >= 1_000_000) {
-    return `${numberFormat.format(rounded / 1_000_000)} millones`;
-  }
-  if (rounded >= 10_000) {
-    return `${numberFormat.format(rounded / 1_000)} mil`;
-  }
-  return numberFormat.format(rounded);
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000_000) return `${numberFormat.format(value / 1_000_000_000)} mil millones`;
+  if (abs >= 1_000_000) return `${numberFormat.format(value / 1_000_000)} millones`;
+  if (abs >= 10_000) return `${numberFormat.format(value / 1_000)} mil`;
+  return numberFormat.format(value);
 }
 
 function formatCount(value: number): string {
   if (!Number.isFinite(value)) return '—';
   if (value >= 100) return numberFormat.format(Math.round(value));
-  if (value >= 10) {
-    return value.toLocaleString('es', { maximumFractionDigits: 1 });
-  }
+  if (value >= 10) return value.toLocaleString('es', { maximumFractionDigits: 1 });
   return value.toLocaleString('es', { maximumFractionDigits: 2 });
 }
 
@@ -33,7 +25,22 @@ function formatChance(probability: number): string {
   const percent = probability * 100;
   if (percent < 0.01) return '< 0,01%';
   if (percent > 99.99) return '> 99,99%';
-  return `${percent.toLocaleString('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+  const whole = Math.abs(percent - Math.round(percent)) < 1e-9;
+  return `${percent.toLocaleString('es', {
+    minimumFractionDigits: whole ? 0 : 2,
+    maximumFractionDigits: whole ? 0 : 2
+  })}%`;
+}
+
+function formatSpread(sd: number): string | null {
+  if (!Number.isFinite(sd) || sd < 0.05) return null;
+  if (sd < 1) return sd.toLocaleString('es', { maximumFractionDigits: 2 });
+  return Math.round(sd).toLocaleString('es');
+}
+
+function withSpread(mean: number, sd: number): string {
+  const spread = formatSpread(sd);
+  return spread ? `${formatCount(mean)} ± ${spread}` : formatCount(mean);
 }
 
 function normalCdf(z: number): number {
@@ -75,13 +82,17 @@ function chanceAtLeastOne(n: number, p: number): number {
   return Math.min(1, Math.max(0, 1 - Math.exp(n * Math.log(1 - p))));
 }
 
+function chanceNone(n: number, p: number): number {
+  if (n <= 0 || p <= 0) return 1;
+  if (p >= 1) return 0;
+  return Math.exp(n * Math.log(1 - p));
+}
+
 /** Kills en los que la mitad de los intentos ya consiguió la cantidad. */
 function medianKills(quantity: number, p: number): number {
   if (p >= 1) return quantity;
   if (!(p > 0) || quantity / p > 1e15) return Infinity;
-  if (quantity <= 1) {
-    return Math.ceil(Math.log(0.5) / Math.log(1 - p));
-  }
+  if (quantity <= 1) return Math.ceil(Math.log(0.5) / Math.log(1 - p));
 
   let lo = quantity;
   let hi = Math.ceil(quantity / p + 8 * Math.sqrt(quantity * (1 - p) / (p * p)) + quantity);
@@ -109,51 +120,29 @@ const DropCalculator = () => {
   const quantity = Number.isFinite(parsedQty) && parsedQty >= 1 ? parsedQty : null;
   const killCount = Math.max(0, Math.floor(Number(kills) || 0));
 
-  const perItem = p > 0 ? 1 / p : Infinity;
-  const expectedKills = quantity !== null && p > 0 ? quantity / p : Infinity;
-  const median = quantity !== null ? medianKills(quantity, p) : Infinity;
+  const meanOne = p > 0 ? 1 / p : Infinity;
+  const sampleKills = p > 0 && p < 1 ? Math.max(1, Math.round(meanOne)) : p >= 1 ? 1 : 0;
+  const medianOne = p > 0 ? medianKills(1, p) : Infinity;
+  const sampleHit = p > 0 ? chanceAtLeastOne(sampleKills, p) : 0;
+  const meanQty = quantity !== null && p > 0 ? quantity / p : Infinity;
+  const medianQty = quantity !== null && p > 0 ? medianKills(quantity, p) : Infinity;
   const expectedItems = killCount * p;
-  const spread = expectedItems >= 1
-    ? Math.round(Math.sqrt(killCount * p * (1 - p)))
-    : 0;
+  const itemSpread = Math.sqrt(Math.max(0, killCount * p * (1 - p)));
   const atLeastOne = chanceAtLeastOne(killCount, p);
-  const atLeastQty = quantity !== null ? probAtLeast(killCount, quantity, p) : 0;
-  const showSkewNote = Number.isFinite(median) && Number.isFinite(expectedKills) && expectedKills > median + 1;
-
-  let balance = 'Indica una probabilidad y una cantidad.';
-  if (p <= 0) {
-    balance = 'Con 0% no sale ninguno.';
-  } else if (killCount <= 0) {
-    balance = 'Con 0 kills no sale ninguno.';
-  } else if (quantity !== null) {
-    const diff = expectedItems - quantity;
-    const target = quantity === 1
-      ? 'el que quieres'
-      : `los ${quantity.toLocaleString('es')} que quieres`;
-    if (Math.abs(diff) < 0.05) {
-      balance = 'El promedio da justo con la cantidad que quieres. Igual no es seguro.';
-    } else if (diff > 0) {
-      balance = `Para ${target}, en promedio te sobran unos ${formatCount(diff)}.`;
-    } else {
-      balance = `Para ${target}, en promedio te faltan unos ${formatCount(-diff)}.`;
-    }
-  }
+  const none = chanceNone(killCount, p);
 
   return (
     <div className="drop-panel">
       <div className="drop-intro">
         <h2>Calculadora de drops</h2>
         <p>
-          Cada kill es un intento nuevo: el juego no acumula los que fallaron.
-          Estos números son promedios para planear el farmeo. No aseguran que el
-          objeto salga en esa cantidad de kills.
+          La probabilidad se escribe una vez. Cada fila usa ese dato y, si corresponde,
+          solo el número de esa fila.
         </p>
       </div>
 
       <section className="drop-card">
-        <h3>¿Cuántos kills para conseguir lo que buscas?</h3>
-
-        <div className="drop-controls">
+        <div className="drop-row">
           <label className="drop-field">
             <span>Probabilidad por kill (%)</span>
             <input
@@ -165,6 +154,23 @@ const DropCalculator = () => {
               onChange={(event) => setChance(event.target.value)}
             />
           </label>
+          <div className="drop-readout">
+            {p <= 0 && <p>Con esta probabilidad no sale.</p>}
+            {p >= 1 && <p>Sale en cada kill.</p>}
+            {p > 0 && p < 1 && (
+              <>
+                <p>El primero sale, en promedio, a los <strong>{formatPlain(meanOne)} kills</strong>.</p>
+                <p>La mitad de las veces ya salió en <strong>{formatPlain(medianOne)} kills</strong> o menos.</p>
+                <p>
+                  Si haces esos <strong>{sampleKills.toLocaleString('es')}</strong>, la chance de sacarlo es{' '}
+                  <strong>{formatChance(sampleHit)}</strong>.
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="drop-row">
           <label className="drop-field">
             <span>Cantidad que quieres</span>
             <input
@@ -175,6 +181,28 @@ const DropCalculator = () => {
               onChange={(event) => setAmount(event.target.value)}
             />
           </label>
+          <div className="drop-readout">
+            {quantity === null && <p>Indica cuántos quieres.</p>}
+            {quantity !== null && p <= 0 && <p>Con esta probabilidad no llegas a esa cantidad.</p>}
+            {quantity !== null && p >= 1 && (
+              <p>Hacen falta <strong>{quantity.toLocaleString('es')} kills</strong>.</p>
+            )}
+            {quantity !== null && p > 0 && p < 1 && (
+              <>
+                <p>
+                  Para conseguir {quantity.toLocaleString('es')} hacen falta, en promedio,{' '}
+                  <strong>{formatPlain(meanQty)} kills</strong>.
+                </p>
+                <p>
+                  La mitad de las veces {quantity === 1 ? 'lo consigues' : 'los juntas'} en{' '}
+                  <strong>{formatPlain(medianQty)} kills</strong> o menos.
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="drop-row">
           <label className="drop-field">
             <span>Kills que vas a hacer</span>
             <input
@@ -185,63 +213,20 @@ const DropCalculator = () => {
               onChange={(event) => setKills(event.target.value)}
             />
           </label>
-        </div>
-
-        <div className="drop-results">
-          <div>
-            <span>Por objeto</span>
-            <strong>{p >= 1 ? 'Sale en cada kill' : p > 0 ? `1 cada ${formatKills(perItem)} kills` : 'No sale'}</strong>
-          </div>
-          <div>
-            <span>
-              {quantity !== null
-                ? `Para conseguir ${quantity.toLocaleString('es')}`
-                : 'Para conseguirlos'}
-            </span>
-            <strong>
-              {quantity !== null && p > 0
-                ? `${formatKills(expectedKills)} kills en promedio`
-                : '—'}
-            </strong>
-          </div>
-          <div>
-            <span>La mitad de las veces</span>
-            <strong>
-              {quantity !== null && p > 0
-                ? `en ${formatKills(median)} kills o menos`
-                : '—'}
-            </strong>
-          </div>
-        </div>
-
-        {showSkewNote && (
-          <p className="drop-note">
-            El promedio no es una garantía. Si el drop se atrasa, a veces se atrasa
-            mucho, y eso deja el promedio por encima de la mitad de las veces.
-          </p>
-        )}
-
-        <div className="drop-simulation">
-          <p>
-            Si haces <strong>{killCount.toLocaleString('es')} kills</strong>, en promedio sacas{' '}
-            <strong>{formatCount(expectedItems)}</strong>.
-            {spread >= 1 && (
+          <div className="drop-readout">
+            {killCount <= 0 && <p>Con 0 kills no sale ninguno.</p>}
+            {killCount > 0 && p <= 0 && <p>En promedio sacas <strong>0</strong>.</p>}
+            {killCount > 0 && p >= 1 && (
+              <p>Sacas <strong>{killCount.toLocaleString('es')}</strong>.</p>
+            )}
+            {killCount > 0 && p > 0 && p < 1 && (
               <>
-                {' '}Lo normal es quedar cerca de ese número: puede subir o bajar alrededor de{' '}
-                <strong>{spread.toLocaleString('es')}</strong>.
+                <p>En promedio sacas <strong>{withSpread(expectedItems, itemSpread)}</strong>.</p>
+                <p>Chance de sacar al menos uno: <strong>{formatChance(atLeastOne)}</strong>.</p>
+                <p>Chance de no sacar ninguno: <strong>{formatChance(none)}</strong>.</p>
               </>
             )}
-          </p>
-          <p>
-            Chance de sacar al menos uno: <strong>{formatChance(atLeastOne)}</strong>.
-            {quantity !== null && quantity > 1 && (
-              <>
-                {' '}Chance de juntar los {quantity.toLocaleString('es')}:{' '}
-                <strong>{formatChance(atLeastQty)}</strong>.
-              </>
-            )}
-          </p>
-          <p>{balance}</p>
+          </div>
         </div>
       </section>
     </div>
