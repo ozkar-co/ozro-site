@@ -88,23 +88,23 @@ function chanceNone(n: number, p: number): number {
   return Math.exp(n * Math.log(1 - p));
 }
 
-/** Kills en los que la mitad de los intentos ya consiguió la cantidad. */
-function medianKills(quantity: number, p: number): number {
+/** Primer número de kills en el que ya se consiguió la cantidad con chance `target`. */
+function killsForChance(quantity: number, p: number, target: number): number {
   if (p >= 1) return quantity;
   if (!(p > 0) || quantity / p > 1e15) return Infinity;
-  if (quantity <= 1) return Math.ceil(Math.log(0.5) / Math.log(1 - p));
+  if (quantity <= 1) return Math.ceil(Math.log(1 - target) / Math.log(1 - p));
 
   let lo = quantity;
   let hi = Math.ceil(quantity / p + 8 * Math.sqrt(quantity * (1 - p) / (p * p)) + quantity);
   let guard = 0;
-  const half = 0.5 - 1e-9;
-  while (probAtLeast(hi, quantity, p) < half && guard < 40) {
+  const mark = target - 1e-9;
+  while (probAtLeast(hi, quantity, p) < mark && guard < 40) {
     hi = Math.ceil(hi * 1.6) + quantity;
     guard += 1;
   }
   while (lo < hi) {
     const mid = Math.floor((lo + hi) / 2);
-    if (probAtLeast(mid, quantity, p) >= half) hi = mid;
+    if (probAtLeast(mid, quantity, p) >= mark) hi = mid;
     else lo = mid + 1;
   }
   return lo;
@@ -120,12 +120,10 @@ const DropCalculator = () => {
   const quantity = Number.isFinite(parsedQty) && parsedQty >= 1 ? parsedQty : null;
   const killCount = Math.max(0, Math.floor(Number(kills) || 0));
 
-  const meanOne = p > 0 ? 1 / p : Infinity;
-  const sampleKills = p > 0 && p < 1 ? Math.max(1, Math.round(meanOne)) : p >= 1 ? 1 : 0;
-  const medianOne = p > 0 ? medianKills(1, p) : Infinity;
-  const sampleHit = p > 0 ? chanceAtLeastOne(sampleKills, p) : 0;
-  const meanQty = quantity !== null && p > 0 ? quantity / p : Infinity;
-  const medianQty = quantity !== null && p > 0 ? medianKills(quantity, p) : Infinity;
+  const halfOne = p > 0 ? killsForChance(1, p, 0.5) : Infinity;
+  const likelyOne = p > 0 ? killsForChance(1, p, 0.8) : Infinity;
+  const halfQty = quantity !== null && p > 0 ? killsForChance(quantity, p, 0.5) : Infinity;
+  const likelyQty = quantity !== null && p > 0 ? killsForChance(quantity, p, 0.8) : Infinity;
   const expectedItems = killCount * p;
   const itemSpread = Math.sqrt(Math.max(0, killCount * p * (1 - p)));
   const atLeastOne = chanceAtLeastOne(killCount, p);
@@ -159,12 +157,8 @@ const DropCalculator = () => {
             {p >= 1 && <p>Sale en cada kill.</p>}
             {p > 0 && p < 1 && (
               <>
-                <p>El primero sale, en promedio, a los <strong>{formatPlain(meanOne)} kills</strong>.</p>
-                <p>La mitad de las veces ya salió en <strong>{formatPlain(medianOne)} kills</strong> o menos.</p>
-                <p>
-                  Si haces esos <strong>{sampleKills.toLocaleString('es')}</strong>, la chance de sacarlo es{' '}
-                  <strong>{formatChance(sampleHit)}</strong>.
-                </p>
+                <p>Lo más probable es que el primero te salga en <strong>{formatPlain(likelyOne)} kills</strong> o menos.</p>
+                <p>La mitad de las veces saldrá en <strong>{formatPlain(halfOne)} kills</strong> o menos.</p>
               </>
             )}
           </div>
@@ -190,12 +184,12 @@ const DropCalculator = () => {
             {quantity !== null && p > 0 && p < 1 && (
               <>
                 <p>
-                  Para conseguir {quantity.toLocaleString('es')} hacen falta, en promedio,{' '}
-                  <strong>{formatPlain(meanQty)} kills</strong>.
+                  Lo más probable es que {quantity === 1 ? 'te salga' : `te salgan los ${quantity.toLocaleString('es')}`} en{' '}
+                  <strong>{formatPlain(likelyQty)} kills</strong> o menos.
                 </p>
                 <p>
-                  La mitad de las veces {quantity === 1 ? 'lo consigues' : 'los juntas'} en{' '}
-                  <strong>{formatPlain(medianQty)} kills</strong> o menos.
+                  La mitad de las veces {quantity === 1 ? 'saldrá' : 'saldrán'} en{' '}
+                  <strong>{formatPlain(halfQty)} kills</strong> o menos.
                 </p>
               </>
             )}
