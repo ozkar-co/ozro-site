@@ -77,7 +77,7 @@ const contentMap: Record<string, ReactNode> = {
           <li>Healing: 10x</li>
           <li>Usable: 10x</li>
           <li>Equipment: 15x</li>
-          <li>Card: 10x</li>
+          <li>Card: 50x</li>
         </ul>
         <h3>Boss (no MVP)</h3>
         <ul>

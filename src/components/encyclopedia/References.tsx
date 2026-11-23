@@ -1,98 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   loadLevelPenalty,
   penaltyRate,
   type LevelPenaltyData
 } from '../../api/penaltyData';
 import '../../styles/References.css';
-
-const numberFormat = new Intl.NumberFormat('es', { maximumFractionDigits: 2 });
-
-function formatKills(value: number): string {
-  if (!Number.isFinite(value)) return '—';
-  if (value >= 1_000_000) return `${numberFormat.format(Math.round(value / 1000))}k`;
-  return numberFormat.format(Math.ceil(value));
-}
-
-function DropChanceCalculator() {
-  const [chance, setChance] = useState('1');
-  const [kills, setKills] = useState('100');
-
-  const p = Math.max(0, Math.min(1, Number(chance) / 100 || 0));
-  const killCount = Math.max(0, Math.floor(Number(kills) || 0));
-
-  const expected = p > 0 ? 1 / p : Infinity;
-  const probabilityAfter = p >= 1
-    ? 1
-    : p > 0
-      ? 1 - Math.pow(1 - p, killCount)
-      : 0;
-
-  const killsFor = (target: number): number => {
-    if (p >= 1) return 1;
-    if (p <= 0) return Infinity;
-    return Math.ceil(Math.log(1 - target) / Math.log(1 - p));
-  };
-
-  return (
-    <section className="ref-card">
-      <h3>¿Cuántos kills para obtener un objeto?</h3>
-      <p>
-        Los drops son eventos independientes. La probabilidad de obtener al menos uno
-        después de N kills es <code>1 - (1 - p)^N</code>; nunca llega a 100%.
-      </p>
-
-      <div className="ref-controls">
-        <label className="ref-field">
-          <span>Chance por kill (%)</span>
-          <input
-            type="number"
-            min="0"
-            max="100"
-            step="0.01"
-            value={chance}
-            onChange={(event) => setChance(event.target.value)}
-          />
-        </label>
-        <label className="ref-field">
-          <span>Kills a simular</span>
-          <input
-            type="number"
-            min="0"
-            step="1"
-            value={kills}
-            onChange={(event) => setKills(event.target.value)}
-          />
-        </label>
-      </div>
-
-      <div className="ref-results">
-        <div>
-          <span>Media esperada</span>
-          <strong>{formatKills(expected)} kills</strong>
-        </div>
-        <div>
-          <span>95% de certeza</span>
-          <strong>{formatKills(killsFor(0.95))} kills</strong>
-        </div>
-        <div>
-          <span>98% de certeza</span>
-          <strong>{formatKills(killsFor(0.98))} kills</strong>
-        </div>
-        <div>
-          <span>99% de certeza</span>
-          <strong>{formatKills(killsFor(0.99))} kills</strong>
-        </div>
-      </div>
-
-      <div className="ref-simulation">
-        Con {killCount.toLocaleString('es')} kills tienes{' '}
-        <strong>{(probabilityAfter * 100).toFixed(2)}%</strong> de probabilidad de
-        obtener al menos uno.
-      </div>
-    </section>
-  );
-}
 
 function LevelPenaltyReference() {
   const [data, setData] = useState<LevelPenaltyData | null>(null);
@@ -209,11 +122,11 @@ const References = () => (
     <div className="ref-intro">
       <h2>Referencias</h2>
       <p>
-        Tablas y cálculos auxiliares para interpretar los datos de farmeo. La tabla
-        de penalización se genera desde el código y la configuración de rAthena.
+        Tabla de penalización por diferencia de nivel, generada desde el código y
+        la configuración de rAthena. Para estimar kills y drops, usa la{' '}
+        <Link to="/encyclopedia?tab=drops">calculadora de drops</Link>.
       </p>
     </div>
-    <DropChanceCalculator />
     <LevelPenaltyReference />
   </div>
 );

@@ -145,7 +145,7 @@ const drops = [
   ['Healing', '10x', '10x', '1x'],
   ['Usable', '10x', '10x', '1x'],
   ['Equipment', '15x', '15x', '1x'],
-  ['Card', '10x', '100x', '100x'],
+  ['Card', '50x', '100x', '100x'],
   ['Recompensa MVP directa', '—', '—', '5x'],
   ['Tesoros WoE', '5x', '—', '—'],
 ];

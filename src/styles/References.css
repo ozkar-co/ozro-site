@@ -25,6 +25,16 @@
   line-height: 1.5;
 }
 
+.ref-intro a {
+  color: #b85a4b;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ref-intro a:hover {
+  text-decoration: underline;
+}
+
 .ref-card {
   background: rgba(255, 255, 255, 0.94);
   border: 1px solid #e0e0e0;

@@ -8,6 +8,14 @@ export interface UpdateEntry {
 /** Changelog OzRo derivado del git log de rathena (17 ene 2026 – hoy). */
 export const recentUpdates: UpdateEntry[] = [
   {
+    date: '22 de noviembre de 2026',
+    title: 'Cartas de monstruos normales a 50x',
+    paragraphs: [
+      'Cartas de monstruos normales: 50x (antes 10x). Las de jefe y de MVP siguen en 100x.',
+      'En Renewal la base no es 0.01% para todas. La mayoría de las cartas de campo sale de 0.01%, un grupo chico de 0.10% y las de inicio (Poring, Drops, Lunatic, Fabre, Picky, Chonchon, Hornet, Thief Bug) de 0.20%. Con 10x, la base mayoritaria quedaba en 0.10%. A 50x pasa a 0.50%; las bases de 0.10% y 0.20% quedan en 5% y 10%.',
+    ],
+  },
+  {
     date: '21 de noviembre de 2026',
     title: 'Cliente: archivos faltantes reconstruidos',
     paragraphs: [
