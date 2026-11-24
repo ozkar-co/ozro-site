@@ -7,38 +7,6 @@ import {
   PLACEHOLDER_MOB_SPRITE
 } from './placeholders';
 
-const ELEMENT_TO_API: Record<number, string> = {
-  0: 'Neutral',
-  1: 'Water',
-  2: 'Earth',
-  3: 'Fire',
-  4: 'Wind',
-  5: 'Poison',
-  6: 'Holy',
-  7: 'Shadow',
-  8: 'Ghost',
-  9: 'Undead'
-};
-
-const RACE_TO_API: Record<number, string> = {
-  0: 'Formless',
-  1: 'Undead',
-  2: 'Brute',
-  3: 'Plant',
-  4: 'Insect',
-  5: 'Fish',
-  6: 'Demon',
-  7: 'Demi-Human',
-  8: 'Angel',
-  9: 'Dragon'
-};
-
-const SIZE_TO_API: Record<number, string> = {
-  0: 'Small',
-  1: 'Medium',
-  2: 'Large'
-};
-
 /** @deprecated Prefer API type strings; kept for legacy numeric card fields. */
 export const ITEM_TYPE_TO_API: Record<number, string> = {
   0: 'Healing',
@@ -111,19 +79,6 @@ const LOCATION_LABELS: Record<string, string> = {
   shadowRightAccessory: 'Shadow Acc. R', shadowLeftAccessory: 'Shadow Acc. L'
 };
 
-const MOB_MODE_LABELS: Record<string, string> = {
-  canmove: 'Can Move', looter: 'Looter', aggressive: 'Agresivo', assist: 'Assist',
-  castsensoridle: 'Cast Sensor', norandomwalk: 'No Random Walk', nocast: 'No Cast',
-  canattack: 'Can Attack', castsensorchase: 'Cast Chase', changechase: 'Change Chase',
-  angry: 'Angry', changetargetmelee: 'Change Target Melee',
-  changetargetchase: 'Change Target Chase', targetweak: 'Target Weak',
-  randomtarget: 'Random Target', ignoremelee: 'Ignore Melee',
-  ignoremagic: 'Ignore Magic', ignoreranged: 'Ignore Ranged',
-  mvp: 'MVP', ignoremisc: 'Ignore Misc', knockbackimmune: 'No Knockback',
-  teleportblock: 'No Teleport', fixeditemdrop: 'Fixed Drop', detector: 'Detector',
-  statusimmune: 'Status Immune', skillimmune: 'Skill Immune'
-};
-
 function formatJobs(jobs?: ItemDetail['jobs']): string {
   if (!jobs) return '';
   if (jobs.all) return 'Todos';
@@ -143,18 +98,6 @@ function formatLocations(locations?: Record<string, boolean>): string {
     .map(([key]) => LOCATION_LABELS[key] || key)
     .join(', ');
 }
-
-const ELEMENT_FROM_API = Object.fromEntries(
-  Object.entries(ELEMENT_TO_API).map(([id, name]) => [name, Number(id)])
-);
-
-const RACE_FROM_API = Object.fromEntries(
-  Object.entries(RACE_TO_API).map(([id, name]) => [name, Number(id)])
-);
-
-const SIZE_FROM_API = Object.fromEntries(
-  Object.entries(SIZE_TO_API).map(([id, name]) => [name, Number(id)])
-);
 
 export const ITEM_TYPE_WEAPON = 'Weapon';
 export const ITEM_TYPE_ARMOR = 'Armor';
@@ -192,9 +135,9 @@ export interface SearchOptions {
   selectedClasses: string[];
   scriptQuery: string;
   selectedAcquisitionSources: string[];
-  selectedElements: number[];
-  selectedRaces: number[];
-  selectedSizes: number[];
+  selectedElements: string[];
+  selectedRaces: string[];
+  selectedSizes: string[];
   showBoss: boolean;
   showNormal: boolean;
   showMvp: boolean;
@@ -241,24 +184,15 @@ export function buildMobSearchParams(
   }
 
   if (options.selectedElements.length > 0) {
-    params.element = options.selectedElements
-      .map((id) => ELEMENT_TO_API[id])
-      .filter(Boolean)
-      .join(',');
+    params.element = options.selectedElements.join(',');
   }
 
   if (options.selectedRaces.length > 0) {
-    params.race = options.selectedRaces
-      .map((id) => RACE_TO_API[id])
-      .filter(Boolean)
-      .join(',');
+    params.race = options.selectedRaces.join(',');
   }
 
   if (options.selectedSizes.length > 0) {
-    params.size = options.selectedSizes
-      .map((id) => SIZE_TO_API[id])
-      .filter(Boolean)
-      .join(',');
+    params.size = options.selectedSizes.join(',');
   }
 
   const kinds: string[] = [];
@@ -354,52 +288,51 @@ export function buildItemSearchParams(
   return params;
 }
 
-function numericElement(element: string, elementLevel = 1): number {
-  const base = ELEMENT_FROM_API[element] ?? 0;
-  return base + (Math.max(1, elementLevel) - 1) * 20;
-}
-
 export function mapMobToCard(mob: MobSummary | MobDetail, sprite = PLACEHOLDER_MOB_SPRITE): MobResult {
   const detail = mob as MobDetail;
+  const drops = detail.drops || [];
   return {
     id: String(mob.id),
     name: mob.name,
     nameJapanese: mob.nameJapanese ?? null,
     nameAegis: mob.nameAegis,
     sprite,
-    hp: mob.hp ?? 0,
-    lvl: mob.level ?? 0,
-    def: mob.defense ?? 0,
-    mdef: mob.magicDefense ?? 0,
-    atk: mob.attack ?? 0,
-    str: detail.str ?? 0,
-    agi: detail.agi ?? 0,
-    vit: detail.vit ?? 0,
-    int: detail.int ?? 0,
-    dex: detail.dex ?? 0,
-    luk: detail.luk ?? 0,
-    exp: mob.baseExp ?? 0,
-    jexp: mob.jobExp ?? 0,
-    mexp: mob.mvpExp ?? 0,
-    element: numericElement(mob.element, mob.elementLevel),
-    size: SIZE_FROM_API[mob.size] ?? 0,
-    race: RACE_FROM_API[mob.race] ?? 0,
-    drop: (detail.drops || []).map((drop) => ({
-      id: drop.itemId ?? 0,
-      type: drop.type === 'mvp' ? 'mvp' as const : drop.itemAegis?.includes('_C') ? 'card' as const : 'normal' as const,
-      per: drop.rate ?? 0,
-      itemName: drop.itemName,
-      itemIcon: PLACEHOLDER_ITEM_ICON
-    })),
-    mobClass: mob.class || undefined,
+    hp: mob.hp ?? null,
+    lvl: mob.level ?? null,
+    def: mob.defense ?? null,
+    mdef: mob.magicDefense ?? null,
+    atk: mob.attack ?? null,
+    str: detail.str ?? null,
+    agi: detail.agi ?? null,
+    vit: detail.vit ?? null,
+    int: detail.int ?? null,
+    dex: detail.dex ?? null,
+    luk: detail.luk ?? null,
+    exp: mob.baseExp ?? null,
+    jexp: mob.jobExp ?? null,
+    mexp: mob.mvpExp ?? null,
+    element: mob.element ?? null,
+    elementLevel: mob.elementLevel ?? null,
+    size: mob.size ?? null,
+    race: mob.race ?? null,
+    isMvp: mob.isMvp ?? null,
+    drop: drops
+      .filter((drop) => drop.itemId != null && drop.rate != null)
+      .map((drop) => ({
+        id: drop.itemId as number,
+        type: drop.type || null,
+        per: drop.rate as number,
+        chancePercent: drop.chancePercent ?? null,
+        itemName: drop.itemName || drop.itemAegis || `#${drop.itemId}`,
+        itemIcon: PLACEHOLDER_ITEM_ICON
+      })),
+    mobClass: mob.class || null,
     activeModes: detail.modes
-      ? Object.entries(detail.modes)
-        .filter(([, active]) => active)
-        .map(([key]) => MOB_MODE_LABELS[key] || key)
-      : undefined,
-    attack2: detail.attack2 ?? undefined,
-    sp: detail.sp ?? undefined,
-    walkSpeed: detail.walkSpeed ?? undefined,
+      ? Object.keys(detail.modes).map((key) => formatFilterLabel(key))
+      : null,
+    attack2: detail.attack2 ?? null,
+    sp: detail.sp ?? null,
+    walkSpeed: detail.walkSpeed ?? null,
     spawns: detail.spawns,
     spawnMaps: mob.spawnMaps,
     spawnMapCount: mob.spawnMapCount,

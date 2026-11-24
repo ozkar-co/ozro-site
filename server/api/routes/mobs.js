@@ -21,7 +21,9 @@ router.get('/meta', async (req, res) => {
         res.json(meta);
     } catch (error) {
         console.error('Error al obtener meta de monstruos:', error);
-        res.status(500).json({ error: 'Error al obtener meta de monstruos' });
+        res.status(error.status || 500).json({
+            error: error.message || 'Error al obtener meta de monstruos'
+        });
     }
 });
 

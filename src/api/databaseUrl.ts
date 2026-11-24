@@ -52,14 +52,6 @@ export function hasSearchCriteria(state: DatabaseUrlState): boolean {
   return Boolean(state.q.trim()) || optionsDifferFromDefaults(state.options, state.tab);
 }
 
-function parseIntList(value: string | null): number[] {
-  if (!value) return [];
-  return value
-    .split(',')
-    .map((part) => parseInt(part.trim(), 10))
-    .filter((n) => !Number.isNaN(n));
-}
-
 function parseCsvList(value: string | null): string[] {
   if (!value) return [];
   return value.split(',').map((part) => part.trim()).filter(Boolean);
@@ -126,9 +118,9 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
     options.hideWithoutSprite = hideSprite;
   }
 
-  options.selectedElements = parseIntList(params.get('element'));
-  options.selectedRaces = parseIntList(params.get('race'));
-  options.selectedSizes = parseIntList(params.get('size'));
+  options.selectedElements = parseCsvList(params.get('element'));
+  options.selectedRaces = parseCsvList(params.get('race'));
+  options.selectedSizes = parseCsvList(params.get('size'));
 
   const kinds = params.get('kinds');
   if (kinds) {

@@ -5,7 +5,7 @@ import Footer from './Footer';
 import Maps from './Maps';
 import Mvps from './Mvps';
 import ItemCard, { SearchResult } from './ItemCard';
-import MobCard, { MobResult, MOB_SIZE, MOB_ELEMENTS, MOB_RACES } from './MobCard';
+import MobCard, { MobResult } from './MobCard';
 import '../styles/Database.css';
 import { apiClient } from '../api/client';
 import { hasManifestSprite, loadManifest, resolveSprite, type SpriteRect } from '../api/assets';
@@ -83,6 +83,11 @@ const Database = () => {
   const [itemTypeFilters, setItemTypeFilters] = useState<string[]>([]);
   const [itemMetaError, setItemMetaError] = useState<string | null>(null);
   const [itemMetaLoading, setItemMetaLoading] = useState(false);
+  const [mobElements, setMobElements] = useState<string[]>([]);
+  const [mobRaces, setMobRaces] = useState<string[]>([]);
+  const [mobSizes, setMobSizes] = useState<string[]>([]);
+  const [mobMetaError, setMobMetaError] = useState<string | null>(null);
+  const [mobMetaLoading, setMobMetaLoading] = useState(false);
   const searchOptionsRef = useRef(searchOptions);
   const searchOptionsPanelRef = useRef<HTMLDivElement>(null);
 
@@ -159,6 +164,40 @@ const Database = () => {
       })
       .finally(() => {
         if (!cancelled) setItemMetaLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== 'mobs') return;
+    let cancelled = false;
+    setMobMetaLoading(true);
+    setMobMetaError(null);
+    apiClient.getMobMeta()
+      .then((meta) => {
+        if (cancelled) return;
+        if (!Array.isArray(meta.elements) || meta.elements.length === 0
+          || !Array.isArray(meta.races) || meta.races.length === 0
+          || !Array.isArray(meta.sizes) || meta.sizes.length === 0) {
+          throw new Error('mobs/meta incompleto: elements/races/sizes vacío (sin fallback)');
+        }
+        setMobElements(meta.elements);
+        setMobRaces(meta.races);
+        setMobSizes(meta.sizes);
+        setMobMetaError(null);
+      })
+      .catch((error: Error) => {
+        if (cancelled) return;
+        console.error('Fallo cargando mobs/meta', error);
+        setMobElements([]);
+        setMobRaces([]);
+        setMobSizes([]);
+        setMobMetaError(error?.message || String(error));
+      })
+      .finally(() => {
+        if (!cancelled) setMobMetaLoading(false);
       });
     return () => {
       cancelled = true;
@@ -796,66 +835,81 @@ const Database = () => {
                             </label>
                           </div>
                         </div>
-                        <div className="search-types">
-                          <div className="search-types-title">Filtrar por elemento:</div>
-                          <div className="search-types-grid">
-                            {Object.entries(MOB_ELEMENTS).map(([elementId, elementName]) => (
-                              <label key={elementId} className="type-checkbox">
-                                <input
-                                  type="checkbox"
-                                  checked={searchOptions.selectedElements.includes(Number(elementId))}
-                                  onChange={() => setSearchOptions((prev) => ({
-                                    ...prev,
-                                    selectedElements: prev.selectedElements.includes(Number(elementId))
-                                      ? prev.selectedElements.filter((e) => e !== Number(elementId))
-                                      : [...prev.selectedElements, Number(elementId)]
-                                  }))}
-                                />
-                                {elementName}
-                              </label>
-                            ))}
+                        {mobMetaLoading && (
+                          <div className="search-meta-status">Cargando filtros desde ozro_mobs…</div>
+                        )}
+                        {mobMetaError && (
+                          <div className="search-meta-error" role="alert">
+                            <strong>Meta de monstruos falló (sin fallback):</strong>
+                            <div>{mobMetaError}</div>
                           </div>
-                        </div>
-                        <div className="search-types">
-                          <div className="search-types-title">Filtrar por raza:</div>
-                          <div className="search-types-grid">
-                            {Object.entries(MOB_RACES).map(([raceId, raceName]) => (
-                              <label key={raceId} className="type-checkbox">
-                                <input
-                                  type="checkbox"
-                                  checked={searchOptions.selectedRaces.includes(Number(raceId))}
-                                  onChange={() => setSearchOptions((prev) => ({
-                                    ...prev,
-                                    selectedRaces: prev.selectedRaces.includes(Number(raceId))
-                                      ? prev.selectedRaces.filter((r) => r !== Number(raceId))
-                                      : [...prev.selectedRaces, Number(raceId)]
-                                  }))}
-                                />
-                                {raceName}
-                              </label>
-                            ))}
+                        )}
+                        {mobElements.length > 0 && (
+                          <div className="search-types">
+                            <div className="search-types-title">Filtrar por elemento:</div>
+                            <div className="search-types-grid">
+                              {mobElements.map((element) => (
+                                <label key={element} className="type-checkbox">
+                                  <input
+                                    type="checkbox"
+                                    checked={searchOptions.selectedElements.includes(element)}
+                                    onChange={() => setSearchOptions((prev) => ({
+                                      ...prev,
+                                      selectedElements: prev.selectedElements.includes(element)
+                                        ? prev.selectedElements.filter((e) => e !== element)
+                                        : [...prev.selectedElements, element]
+                                    }))}
+                                  />
+                                  {formatFilterLabel(element)}
+                                </label>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                        <div className="search-types">
-                          <div className="search-types-title">Filtrar por tamaño:</div>
-                          <div className="search-types-grid">
-                            {Object.entries(MOB_SIZE).map(([sizeId, sizeName]) => (
-                              <label key={sizeId} className="type-checkbox">
-                                <input
-                                  type="checkbox"
-                                  checked={searchOptions.selectedSizes.includes(Number(sizeId))}
-                                  onChange={() => setSearchOptions((prev) => ({
-                                    ...prev,
-                                    selectedSizes: prev.selectedSizes.includes(Number(sizeId))
-                                      ? prev.selectedSizes.filter((s) => s !== Number(sizeId))
-                                      : [...prev.selectedSizes, Number(sizeId)]
-                                  }))}
-                                />
-                                {sizeName}
-                              </label>
-                            ))}
+                        )}
+                        {mobRaces.length > 0 && (
+                          <div className="search-types">
+                            <div className="search-types-title">Filtrar por raza:</div>
+                            <div className="search-types-grid">
+                              {mobRaces.map((race) => (
+                                <label key={race} className="type-checkbox">
+                                  <input
+                                    type="checkbox"
+                                    checked={searchOptions.selectedRaces.includes(race)}
+                                    onChange={() => setSearchOptions((prev) => ({
+                                      ...prev,
+                                      selectedRaces: prev.selectedRaces.includes(race)
+                                        ? prev.selectedRaces.filter((r) => r !== race)
+                                        : [...prev.selectedRaces, race]
+                                    }))}
+                                  />
+                                  {formatFilterLabel(race)}
+                                </label>
+                              ))}
+                            </div>
                           </div>
-                        </div>
+                        )}
+                        {mobSizes.length > 0 && (
+                          <div className="search-types">
+                            <div className="search-types-title">Filtrar por tamaño:</div>
+                            <div className="search-types-grid">
+                              {mobSizes.map((size) => (
+                                <label key={size} className="type-checkbox">
+                                  <input
+                                    type="checkbox"
+                                    checked={searchOptions.selectedSizes.includes(size)}
+                                    onChange={() => setSearchOptions((prev) => ({
+                                      ...prev,
+                                      selectedSizes: prev.selectedSizes.includes(size)
+                                        ? prev.selectedSizes.filter((s) => s !== size)
+                                        : [...prev.selectedSizes, size]
+                                    }))}
+                                  />
+                                  {formatFilterLabel(size)}
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                         <div className="search-types">
                           <div className="search-types-title">Sprites (cliente):</div>
                           <div className="search-types-grid">

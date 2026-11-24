@@ -11,10 +11,7 @@ import {
     parseIntParam,
     parseJsonColumn,
     chanceToPercent,
-    isWorldSpawnSql,
-    MOB_ELEMENTS,
-    MOB_RACES,
-    MOB_SIZES
+    isWorldSpawnSql
 } from './gameDb.js';
 import { getItemDisplayName } from './itemInfo.js';
 import {
@@ -23,53 +20,57 @@ import {
 } from './textSearch.js';
 
 function parseStats(row) {
-    return parseJsonColumn(row.stats, {}) || {};
+    const stats = parseJsonColumn(row.stats, null);
+    return stats && typeof stats === 'object' ? stats : null;
 }
 
 function parseModes(row) {
     const raw = parseJsonColumn(row.modes, null);
-    if (!raw || typeof raw !== 'object') return {};
+    if (!raw || typeof raw !== 'object') return null;
     const modes = {};
+    let any = false;
     for (const [key, value] of Object.entries(raw)) {
+        if (!value) continue;
         const normalized = String(key).replace(/^mode_/i, '').toLowerCase();
-        modes[normalized] = Boolean(value);
+        modes[normalized] = true;
+        any = true;
     }
-    return modes;
+    return any ? modes : null;
 }
 
 function num(value) {
-    if (value == null) return null;
+    if (value == null || value === '') return null;
     const n = Number(value);
     return Number.isFinite(n) ? n : null;
 }
 
 function mapMobSummary(row) {
     const stats = parseStats(row);
-    const isMvp = Boolean(row.is_mvp) || Number(row.mvp_exp_effective || row.mvp_exp_base || 0) > 0;
     return {
         id: num(row.mob_id),
         name: row.name,
         nameAegis: row.aegis_name,
-        nameJapanese: row.japanese_name,
+        nameJapanese: row.japanese_name || null,
         level: num(row.level),
         hp: num(row.hp_effective),
         hpBase: num(row.hp_base),
-        hpStatus: row.hp_status,
+        hpStatus: row.hp_status || null,
         sp: num(row.sp),
-        baseExp: num(row.base_exp_effective ?? row.base_exp_base),
-        jobExp: num(row.job_exp_effective ?? row.job_exp_base),
-        mvpExp: num(row.mvp_exp_effective ?? row.mvp_exp_base),
+        // Effective only — no silent fallback to base (would invent post-rate values).
+        baseExp: num(row.base_exp_effective),
+        jobExp: num(row.job_exp_effective),
+        mvpExp: num(row.mvp_exp_effective),
         attack: num(row.attack),
         attack2: num(row.attack2),
         defense: num(row.defense),
         magicDefense: num(row.magic_defense),
-        attackRange: num(stats.attack_range),
-        element: row.element,
+        attackRange: stats ? num(stats.attack_range) : null,
+        element: row.element || null,
         elementLevel: num(row.element_level),
-        race: row.race,
-        size: row.size,
-        isMvp,
-        class: row.mob_class,
+        race: row.race || null,
+        size: row.size || null,
+        isMvp: row.is_mvp == null ? null : Boolean(row.is_mvp),
+        class: row.mob_class || null,
         summons: []
     };
 }
@@ -78,39 +79,46 @@ function mapMobDetailFromRow(row, drops = []) {
     const stats = parseStats(row);
     return {
         ...mapMobSummary(row),
-        str: stats.str ?? null,
-        agi: stats.agi ?? null,
-        vit: stats.vit ?? null,
-        int: stats.int ?? null,
-        dex: stats.dex ?? null,
-        luk: stats.luk ?? null,
-        walkSpeed: stats.walk_speed ?? null,
-        attackDelay: stats.attack_delay ?? null,
-        skillRange: stats.skill_range ?? null,
-        chaseRange: stats.chase_range ?? null,
-        ai: stats.ai ?? null,
+        str: stats ? num(stats.str) : null,
+        agi: stats ? num(stats.agi) : null,
+        vit: stats ? num(stats.vit) : null,
+        int: stats ? num(stats.int) : null,
+        dex: stats ? num(stats.dex) : null,
+        luk: stats ? num(stats.luk) : null,
+        walkSpeed: stats ? num(stats.walk_speed) : null,
+        attackDelay: stats ? num(stats.attack_delay) : null,
+        skillRange: stats ? num(stats.skill_range) : null,
+        chaseRange: stats ? num(stats.chase_range) : null,
+        ai: stats && stats.ai != null ? String(stats.ai) : null,
         modes: parseModes(row),
         drops
     };
 }
 
+function mapDropCategory(row) {
+    const cat = String(row.drop_category || '').toLowerCase();
+    if (cat.includes('mvp')) return 'mvp';
+    if (String(row.item_type || '').toLowerCase() === 'card') return 'card';
+    if (cat) return cat;
+    return null;
+}
+
 function mapDropRow(row) {
-    const rate = Number(row.chance_effective) || 0;
-    const baseRate = Number(row.chance_base) || 0;
-    const dropType = String(row.drop_category || 'normal').toLowerCase().includes('mvp')
-        ? 'mvp'
-        : 'normal';
+    const rate = num(row.chance_effective);
+    const rateUnit = row.rate_unit || null;
     return {
-        itemId: row.item_id,
-        itemName: getItemDisplayName(row.item_id) ?? row.item_name ?? row.item_aegis_name,
-        itemAegis: row.item_aegis_name,
-        itemType: row.item_type ?? null,
-        baseRate,
+        itemId: num(row.item_id),
+        itemName: getItemDisplayName(row.item_id) || row.item_name || row.item_aegis_name || null,
+        itemAegis: row.item_aegis_name || null,
+        itemType: row.item_type || null,
+        baseRate: num(row.chance_base),
         rate,
-        type: dropType,
-        chancePercent: chanceToPercent(rate, row.rate_unit),
-        rateUnit: row.rate_unit,
-        isMapBonus: Boolean(row.is_map_bonus)
+        type: mapDropCategory(row),
+        chancePercent: rate != null && rateUnit
+            ? chanceToPercent(rate, rateUnit)
+            : null,
+        rateUnit,
+        isMapBonus: row.is_map_bonus == null ? null : Boolean(row.is_map_bonus)
     };
 }
 
@@ -272,18 +280,19 @@ function buildMobKindFilter(kinds) {
         return null;
     }
 
+    // Kind filters use DB flags/class only — no inventing MVP from exp.
     const clauses = [];
     if (kinds.includes('mvp')) {
-        clauses.push('(COALESCE(m.is_mvp, 0) = 1 OR COALESCE(m.mvp_exp_effective, m.mvp_exp_base, 0) > 0)');
+        clauses.push('COALESCE(m.is_mvp, 0) = 1');
     }
     if (kinds.includes('boss')) {
         clauses.push(
-            "(LOWER(COALESCE(m.mob_class, '')) = 'boss' AND COALESCE(m.is_mvp, 0) = 0 AND COALESCE(m.mvp_exp_effective, m.mvp_exp_base, 0) = 0)"
+            "(LOWER(COALESCE(m.mob_class, '')) = 'boss' AND COALESCE(m.is_mvp, 0) = 0)"
         );
     }
     if (kinds.includes('normal')) {
         clauses.push(
-            "(LOWER(COALESCE(m.mob_class, '')) <> 'boss' AND COALESCE(m.is_mvp, 0) = 0 AND COALESCE(m.mvp_exp_effective, m.mvp_exp_base, 0) = 0)"
+            "(LOWER(COALESCE(m.mob_class, '')) <> 'boss' AND COALESCE(m.is_mvp, 0) = 0)"
         );
     }
 
@@ -358,25 +367,25 @@ function buildMobFilters(params) {
 
     const baseExpMin = parseIntParam(params.baseExpMin);
     if (baseExpMin !== null) {
-        conditions.push('COALESCE(m.base_exp_effective, m.base_exp_base) >= ?');
+        conditions.push('m.base_exp_effective >= ?');
         values.push(baseExpMin);
     }
 
     const baseExpMax = parseIntParam(params.baseExpMax);
     if (baseExpMax !== null) {
-        conditions.push('COALESCE(m.base_exp_effective, m.base_exp_base) <= ?');
+        conditions.push('m.base_exp_effective <= ?');
         values.push(baseExpMax);
     }
 
     const jobExpMin = parseIntParam(params.jobExpMin);
     if (jobExpMin !== null) {
-        conditions.push('COALESCE(m.job_exp_effective, m.job_exp_base) >= ?');
+        conditions.push('m.job_exp_effective >= ?');
         values.push(jobExpMin);
     }
 
     const jobExpMax = parseIntParam(params.jobExpMax);
     if (jobExpMax !== null) {
-        conditions.push('COALESCE(m.job_exp_effective, m.job_exp_base) <= ?');
+        conditions.push('m.job_exp_effective <= ?');
         values.push(jobExpMax);
     }
 
@@ -387,9 +396,9 @@ function buildMobFilters(params) {
     } else {
         const mvp = parseBool(params.mvp);
         if (mvp === true) {
-            conditions.push('(m.is_mvp = 1 OR COALESCE(m.mvp_exp_effective, m.mvp_exp_base, 0) > 0)');
+            conditions.push('COALESCE(m.is_mvp, 0) = 1');
         } else if (mvp === false) {
-            conditions.push('(COALESCE(m.is_mvp, 0) = 0 AND COALESCE(m.mvp_exp_effective, m.mvp_exp_base, 0) = 0)');
+            conditions.push('COALESCE(m.is_mvp, 0) = 0');
         }
     }
 
@@ -468,21 +477,29 @@ export async function getMobById(id) {
 }
 
 export async function getMobMeta() {
-    const [elements, races, sizes] = await Promise.all([
-        query(`SELECT DISTINCT element AS value FROM \`${T.MOBS}\` WHERE element IS NOT NULL ORDER BY element`),
-        query(`SELECT DISTINCT race AS value FROM \`${T.MOBS}\` WHERE race IS NOT NULL ORDER BY race`),
-        query(`SELECT DISTINCT size AS value FROM \`${T.MOBS}\` WHERE size IS NOT NULL ORDER BY size`)
+    const [elements, races, sizes, classes] = await Promise.all([
+        query(`SELECT DISTINCT element AS value FROM \`${T.MOBS}\` WHERE COALESCE(element, '') <> '' ORDER BY element`),
+        query(`SELECT DISTINCT race AS value FROM \`${T.MOBS}\` WHERE COALESCE(race, '') <> '' ORDER BY race`),
+        query(`SELECT DISTINCT size AS value FROM \`${T.MOBS}\` WHERE COALESCE(size, '') <> '' ORDER BY size`),
+        query(`SELECT DISTINCT mob_class AS value FROM \`${T.MOBS}\` WHERE COALESCE(mob_class, '') <> '' ORDER BY mob_class`)
     ]);
 
+    const elementValues = elements.map((r) => r.value).filter(Boolean);
+    const raceValues = races.map((r) => r.value).filter(Boolean);
+    const sizeValues = sizes.map((r) => r.value).filter(Boolean);
+    if (elementValues.length === 0 || raceValues.length === 0 || sizeValues.length === 0) {
+        const err = new Error(
+            'ozro_mobs meta incompleto: DISTINCT element/race/size vacío — sin fallback'
+        );
+        err.status = 500;
+        throw err;
+    }
+
     return {
-        elements: elements.map((r) => r.value),
-        races: races.map((r) => r.value),
-        sizes: sizes.map((r) => r.value),
-        defaults: {
-            elements: MOB_ELEMENTS,
-            races: MOB_RACES,
-            sizes: MOB_SIZES
-        }
+        elements: elementValues,
+        races: raceValues,
+        sizes: sizeValues,
+        classes: classes.map((r) => r.value).filter(Boolean)
     };
 }
 
@@ -519,20 +536,21 @@ async function buildDroppedByList(itemIdsOrAegis, { byAegis = false } = {}) {
     const mobMeta = new Map(mobs.map((m) => [m.id, m]));
 
     const mapRow = (row) => {
-        const dropType = String(row.drop_category || 'normal').toLowerCase().includes('mvp')
-            ? 'mvp'
-            : 'normal';
-        const rate = Number(row.chance_effective) || 0;
+        const rate = num(row.chance_effective);
+        const rateUnit = row.rate_unit || null;
+        const cat = String(row.drop_category || '').toLowerCase();
         const mob = mobMeta.get(row.id) || {};
         return {
             id: row.id,
             name: row.name,
             nameAegis: row.nameAegis,
-            level: row.level,
-            baseRate: Number(row.chance_base) || 0,
+            level: num(row.level),
+            baseRate: num(row.chance_base),
             rate,
-            dropType,
-            chancePercent: chanceToPercent(rate, row.rate_unit),
+            dropType: cat.includes('mvp') ? 'mvp' : (cat || null),
+            chancePercent: rate != null && rateUnit
+                ? chanceToPercent(rate, rateUnit)
+                : null,
             spawnMaps: mob.spawnMaps,
             spawnMapCount: mob.spawnMapCount,
             spawnAmount: mob.spawnAmount,

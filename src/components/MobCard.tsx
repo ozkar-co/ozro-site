@@ -1,15 +1,19 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import type { SpriteRect } from '../api/assets';
 import type { MobSpawnMapSummary, MobSpawnPoint } from '../api/client';
 import AtlasSprite from './AtlasSprite';
 import { fetchFarmingMob, type FarmingMob } from '../api/farming';
+import { formatFilterLabel } from '../api/databaseMappers';
 import { formatMobNameDetails } from '../utils/nameDetails';
+import { isPlaceholderAsset } from '../api/placeholders';
 
 interface MobDrop {
   id: number;
-  type: 'normal' | 'card' | 'mvp';
+  type: string | null;
   per: number;
+  chancePercent?: number | null;
   itemName: string;
   itemIcon: SpriteRect | string;
 }
@@ -28,30 +32,31 @@ interface MobResult {
   nameJapanese?: string | null;
   nameAegis?: string;
   sprite: SpriteRect | string;
-  hp: number;
-  lvl: number;
-  def: number;
-  mdef: number;
-  atk: number;
-  str: number;
-  agi: number;
-  vit: number;
-  int: number;
-  dex: number;
-  luk: number;
-  exp: number;
-  jexp: number;
-  mexp: number;
-  element: number;
-  size: number;
-  race: number;
+  hp: number | null;
+  lvl: number | null;
+  def: number | null;
+  mdef: number | null;
+  atk: number | null;
+  str: number | null;
+  agi: number | null;
+  vit: number | null;
+  int: number | null;
+  dex: number | null;
+  luk: number | null;
+  exp: number | null;
+  jexp: number | null;
+  mexp: number | null;
+  element: string | null;
+  elementLevel?: number | null;
+  size: string | null;
+  race: string | null;
+  isMvp?: boolean | null;
   drop: MobDrop[];
-  mode?: number[];
-  activeModes?: string[];
-  mobClass?: string;
-  attack2?: number;
-  sp?: number;
-  walkSpeed?: number;
+  activeModes?: string[] | null;
+  mobClass?: string | null;
+  attack2?: number | null;
+  sp?: number | null;
+  walkSpeed?: number | null;
   spawns?: MobSpawnPoint[];
   spawnMaps?: MobSpawnMapSummary[];
   spawnMapCount?: number;
@@ -60,77 +65,15 @@ interface MobResult {
   summons?: MobSummon[];
 }
 
-const MOB_SIZE = {
-  0: "Pequeño",
-  1: "Mediano",
-  2: "Grande"
-} as const;
-
-
-const MOB_MODES = {
-  0: "CANMOVE",
-  1: "LOOTER",
-  2: "AGGRESSIVE",
-  3: "ASSIST",
-  4: "CASTSENSOR",
-  5: "BOSS",
-  6: "PLANT",
-  7: "CANATTACK",
-  8: "DETECTOR",
-  //9: "CASTSENSOR_CHASE",
-  10: "CHANGECHASE",
-  //11: "ANGRY",
-  //12: "CHANGETARGET_MELEE",
-  //13: "CHANGETARGET_CHASE",
-  //14: "TARGETWEAK",
-  15: "NOKNOCKBACK",
-  //16: "RANDOMTARGET",
-} as const;
-
-const MOB_RACES = {
-  0: "Amorfo",
-  1: "No-Muerto",
-  2: "Bestia",
-  3: "Planta",
-  4: "Insecto",
-  5: "Pez",
-  6: "Demonio",
-  7: "Humanoide",
-  8: "Angel",
-  9: "Dragón"
-} as const;
-
-const MOB_ELEMENTS = {
-  0: "Neutral",
-  1: "Agua",
-  2: "Tierra",
-  3: "Fuego",
-  4: "Viento",
-  5: "Veneno",
-  6: "Sagrado",
-  7: "Oscuridad",
-  8: "Fantasma",
-  9: "No-Muerto"
-} as const;
-
-const getSizeName = (size: number): string => {
-  return MOB_SIZE[size as keyof typeof MOB_SIZE] || `Unknown (${size})`;
-};
-
-const getRaceName = (race: number): string => {
-  return MOB_RACES[race as keyof typeof MOB_RACES] || `Unknown (${race})`;
-};
-
-const getElementName = (element: number): string => {
-  const level = Math.floor(element / 20) + 1;
-  const elementId = element - ((level - 1) * 20);
-  const elementName = MOB_ELEMENTS[elementId as keyof typeof MOB_ELEMENTS];
-  return elementName ? `${elementName} ${level}` : `Unknown (${element})`;
-};
-
-const displayStat = (value: number | null | undefined): string => {
-  if (value === null || value === undefined) return 'NA';
+const displayStat = (value: number | null | undefined): string | null => {
+  if (value === null || value === undefined) return null;
   return value.toLocaleString();
+};
+
+const formatElement = (element: string | null | undefined, level: number | null | undefined): string | null => {
+  if (!element) return null;
+  const label = formatFilterLabel(element);
+  return level != null ? `${label} ${level}` : label;
 };
 
 interface MobCardProps {
@@ -138,12 +81,18 @@ interface MobCardProps {
   compact?: boolean;
 }
 
+const MOB_SPRITE_FIT = { maxWidth: 96, maxHeight: 96 };
+
 const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
   const [expanded, setExpanded] = useState(false);
+  const [spriteModalOpen, setSpriteModalOpen] = useState(false);
   const [farming, setFarming] = useState<FarmingMob | null>(null);
   const [farmingOpen, setFarmingOpen] = useState(false);
   const [farmingLoading, setFarmingLoading] = useState(false);
   const [farmingError, setFarmingError] = useState<string | null>(null);
+
+  const closeSpriteModal = useCallback(() => setSpriteModalOpen(false), []);
+  const canOpenSprite = !isPlaceholderAsset(result.sprite);
 
   const toggleFarming = async () => {
     if (farmingOpen) {
@@ -166,7 +115,7 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
   };
 
   if (compact && !expanded) {
-    const kind = result.mobClass || getRaceName(result.race);
+    const kind = result.mobClass || (result.race ? formatFilterLabel(result.race) : null);
     return (
       <div
         className="result-card result-card--compact result-card--compact-clickable"
@@ -185,7 +134,7 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
           {' · '}
           <span className="result-card-id">#{result.id}</span>
           {' · '}
-          <span className="mob-level">Nv. {result.lvl} · {kind}</span>
+          <span className="mob-level">Nv. {result.lvl ?? '?'}{kind ? ` · ${kind}` : ''}</span>
           <span className="result-card-compact-hint"> · clic para desplegar</span>
         </span>
       </div>
@@ -198,12 +147,27 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
     <div className="result-card">
       <div className="result-card-content">
         <div className="result-card-image">
-            {result.mexp > 0 && (
+            {result.isMvp === true && (
             <div className="mvp-icon">
               <img src="/icons/mvp.gif" alt="MVP" />
             </div>
             )}
-            <AtlasSprite sprite={result.sprite} alt={result.name} />
+            <button
+              type="button"
+              className={`result-card-image-button${canOpenSprite ? '' : ' is-static'}`}
+              onClick={() => {
+                if (canOpenSprite) setSpriteModalOpen(true);
+              }}
+              disabled={!canOpenSprite}
+              aria-label={canOpenSprite ? `Ver sprite de ${result.name}` : undefined}
+              title={canOpenSprite ? 'Ver sprite completo' : undefined}
+            >
+              <AtlasSprite
+                sprite={result.sprite}
+                alt={result.name}
+                fit={MOB_SPRITE_FIT}
+              />
+            </button>
         </div>
         <div className="result-card-info">
           <div className="result-card-header">
@@ -222,8 +186,8 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
                     <span className="result-card-id">(#{result.id})</span>
                   </h3>
                   <span className="mob-level">
-                    Nivel {result.lvl}
-                    {result.mobClass ? ` · ${result.mobClass}` : ''}
+                    {result.lvl != null ? `Nivel ${result.lvl}` : null}
+                    {result.mobClass ? `${result.lvl != null ? ' · ' : ''}${formatFilterLabel(result.mobClass)}` : ''}
                   </span>
                 </div>
               </div>
@@ -278,46 +242,56 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
             </div>
           )}
 
-          {/* Primera fila: HP, ATK, DEF/MDEF */}
           <div className="result-card-section">
             <div className="result-card-properties">
-              <div className="result-card-property">
-                <span className="property-label">HP</span>
-                <span className="property-value">{displayStat(result.hp)}</span>
-              </div>
-              <div className="result-card-property">
-                <span className="property-label">ATK</span>
-                <span className="property-value">
-                  {result.attack2 != null && result.attack2 !== result.atk
-                    ? `${displayStat(result.atk)}-${displayStat(result.attack2)}`
-                    : displayStat(result.atk)}
-                </span>
-              </div>
-              {result.sp != null && result.sp > 0 && (
+              {displayStat(result.hp) != null && (
+                <div className="result-card-property">
+                  <span className="property-label">HP</span>
+                  <span className="property-value">{displayStat(result.hp)}</span>
+                </div>
+              )}
+              {displayStat(result.atk) != null && (
+                <div className="result-card-property">
+                  <span className="property-label">ATK</span>
+                  <span className="property-value">
+                    {result.attack2 != null && result.attack2 !== result.atk
+                      ? `${displayStat(result.atk)}-${displayStat(result.attack2)}`
+                      : displayStat(result.atk)}
+                  </span>
+                </div>
+              )}
+              {result.sp != null && (
                 <div className="result-card-property">
                   <span className="property-label">SP</span>
                   <span className="property-value">{result.sp.toLocaleString()}</span>
                 </div>
               )}
-              <div className="result-card-property">
-                <span className="property-label">DEF/MDEF</span>
-                <span className="property-value">{`${displayStat(result.def)}/${displayStat(result.mdef)}`}</span>
-              </div>
+              {(displayStat(result.def) != null || displayStat(result.mdef) != null) && (
+                <div className="result-card-property">
+                  <span className="property-label">DEF/MDEF</span>
+                  <span className="property-value">
+                    {`${displayStat(result.def) ?? '—'}/${displayStat(result.mdef) ?? '—'}`}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Nueva fila: Base EXP, Job EXP, MVP EXP */}
           <div className="result-card-section">
             <div className="result-card-properties">
-              <div className="result-card-property">
-                <span className="property-label">Base EXP</span>
-                <span className="property-value">{result.exp != null ? result.exp.toLocaleString() : 'NA'}</span>
-              </div>
-              <div className="result-card-property">
-                <span className="property-label">Job EXP</span>
-                <span className="property-value">{result.jexp != null ? result.jexp.toLocaleString() : 'NA'}</span>
-              </div>
-              {result.mexp > 0 && (
+              {result.exp != null && (
+                <div className="result-card-property">
+                  <span className="property-label">Base EXP</span>
+                  <span className="property-value">{result.exp.toLocaleString()}</span>
+                </div>
+              )}
+              {result.jexp != null && (
+                <div className="result-card-property">
+                  <span className="property-label">Job EXP</span>
+                  <span className="property-value">{result.jexp.toLocaleString()}</span>
+                </div>
+              )}
+              {result.mexp != null && (
                 <div className="result-card-property">
                   <span className="property-label">MVP EXP</span>
                   <span className="property-value">{result.mexp.toLocaleString()}</span>
@@ -326,115 +300,96 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
             </div>
           </div>
 
-          {/* Segunda fila: Raza, Elemento, Tamaño */}
           <div className="result-card-section">
             <div className="result-card-properties">
-              <div className="result-card-property">
-                <span className="property-label">Raza</span>
-                <span className="property-value">{getRaceName(result.race)}</span>
-              </div>
-              <div className="result-card-property">
-                <span className="property-label">Elemento</span>
-                <span className="property-value">{getElementName(result.element)}</span>
-              </div>
-              <div className="result-card-property">
-                <span className="property-label">Tamaño</span>
-                <span className="property-value">{getSizeName(result.size)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Tercera fila: Stats y Modos */}
-          <div className="result-card-section stats-modes-grid">
-            <div className="result-card-stats">
-              <div className="stats-grid">
-                <div className="stat-item">
-                  <span className="stat-label">STR</span>
-                  <span className="stat-value">{displayStat(result.str)}</span>
+              {result.race && (
+                <div className="result-card-property">
+                  <span className="property-label">Raza</span>
+                  <span className="property-value">{formatFilterLabel(result.race)}</span>
                 </div>
-                <div className="stat-item">
-                  <span className="stat-label">AGI</span>
-                  <span className="stat-value">{displayStat(result.agi)}</span>
+              )}
+              {formatElement(result.element, result.elementLevel) && (
+                <div className="result-card-property">
+                  <span className="property-label">Elemento</span>
+                  <span className="property-value">
+                    {formatElement(result.element, result.elementLevel)}
+                  </span>
                 </div>
-                <div className="stat-item">
-                  <span className="stat-label">VIT</span>
-                  <span className="stat-value">{displayStat(result.vit)}</span>
+              )}
+              {result.size && (
+                <div className="result-card-property">
+                  <span className="property-label">Tamaño</span>
+                  <span className="property-value">{formatFilterLabel(result.size)}</span>
                 </div>
-                <div className="stat-item">
-                  <span className="stat-label">INT</span>
-                  <span className="stat-value">{displayStat(result.int)}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">DEX</span>
-                  <span className="stat-value">{displayStat(result.dex)}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">LUK</span>
-                  <span className="stat-value">{displayStat(result.luk)}</span>
-                </div>
-              </div>
-            </div>
-            <div className="result-card-modes">
-              {result.activeModes && result.activeModes.length > 0 ? (
-                <div className="modes-active-list">
-                  {result.activeModes.map((mode) => (
-                    <span key={mode} className="mode-tag mode-tag-active">{mode}</span>
-                  ))}
-                </div>
-              ) : (
-                <div className="modes-grid">
-                {Object.entries(MOB_MODES)
-                  .map(([modeId, modeName]) => ({
-                    id: modeId,
-                    name: modeName,
-                    isActive: result.mode?.includes(Number(modeId))
-                  }))
-                  .sort((a, b) => (b.isActive ? 1 : 0) - (a.isActive ? 1 : 0))
-                  .map(({ id, name, isActive }) => (
-                    <div key={id} className={`mode-item ${isActive ? 'mode-item-active' : ''}`}>
-                      <span>{name} :</span><strong> {isActive ? 'SI' : 'NO'}</strong>
-                    </div>
-                  ))}
+              )}
+              {result.mobClass && (
+                <div className="result-card-property">
+                  <span className="property-label">Clase</span>
+                  <span className="property-value">{formatFilterLabel(result.mobClass)}</span>
                 </div>
               )}
             </div>
           </div>
 
+          <div className="result-card-section stats-modes-grid">
+            <div className="result-card-stats">
+              <div className="stats-grid">
+                {([
+                  ['STR', result.str],
+                  ['AGI', result.agi],
+                  ['VIT', result.vit],
+                  ['INT', result.int],
+                  ['DEX', result.dex],
+                  ['LUK', result.luk]
+                ] as const).map(([label, value]) => (
+                  displayStat(value) != null ? (
+                    <div key={label} className="stat-item">
+                      <span className="stat-label">{label}</span>
+                      <span className="stat-value">{displayStat(value)}</span>
+                    </div>
+                  ) : null
+                ))}
+              </div>
+            </div>
+            {result.activeModes && result.activeModes.length > 0 && (
+              <div className="result-card-modes">
+                <div className="modes-active-list">
+                  {result.activeModes.map((mode) => (
+                    <span key={mode} className="mode-tag mode-tag-active">{mode}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
-
-          {result.drop && result.drop.filter(d => d.per > 0).length > 0 && (
+          {result.drop && result.drop.length > 0 && (
             <div className="result-card-section">
               <div className="result-card-drops">
                 <div className="result-card-drops-grid normal-drops">
-                  {result.drop
-                    .filter(d => d.per > 0)
-                    .map((drop, index) => {
-                      // Convertir el nombre a Title Case y truncar si es necesario
-                      const formattedName = drop.itemName
-                        .split(' ')
-                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                        .join(' ');
-                      
-                      const truncatedName = formattedName.length > 20 
-                        ? formattedName.substring(0, 20) + '...'
-                        : formattedName;
-                      
-                      return (
-                        <div key={`${drop.id}-${index}`} className={`result-card-drop ${drop.type}`}>
-                          <AtlasSprite
-                            sprite={drop.itemIcon}
-                            alt={formattedName}
-                            className="drop-icon"
-                          />
-                          <span className="drop-name">
-                            <Link to={`/database?tab=items&q=${drop.id}`}>{truncatedName}</Link>{drop.type === 'mvp' ? ' (MVP)' : ''}
-                          </span>
-                          <span className="drop-chance">
-                            {(Math.min(drop.per, 10000) / 100).toFixed(2)}%
-                          </span>
-                        </div>
-                      );
-                    })}
+                  {result.drop.map((drop, index) => {
+                    const chanceText = drop.chancePercent != null
+                      ? `${drop.chancePercent.toFixed(2)}%`
+                      : null;
+                    return (
+                      <div
+                        key={`${drop.id}-${index}`}
+                        className={`result-card-drop${drop.type ? ` ${drop.type}` : ''}`}
+                      >
+                        <AtlasSprite
+                          sprite={drop.itemIcon}
+                          alt={drop.itemName}
+                          className="drop-icon"
+                        />
+                        <span className="drop-name">
+                          <Link to={`/database?tab=items&q=${drop.id}`}>{drop.itemName}</Link>
+                          {drop.type === 'mvp' ? ' (MVP)' : ''}
+                        </span>
+                        {chanceText && (
+                          <span className="drop-chance">{chanceText}</span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -506,10 +461,42 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
           </div>
         </div>
       </div>
+      {spriteModalOpen && canOpenSprite && createPortal(
+        <div
+          className="item-card-art-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeSpriteModal();
+          }}
+        >
+          <div
+            className="item-card-art-frame mob-sprite-modal-frame"
+            role="dialog"
+            aria-modal="true"
+            aria-label={result.name}
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="item-card-art-close"
+              onClick={closeSpriteModal}
+              aria-label="Cerrar"
+            >
+              ×
+            </button>
+            <div className="mob-sprite-modal-body">
+              <AtlasSprite sprite={result.sprite} alt={result.name} />
+            </div>
+            <p className="mob-sprite-modal-caption">
+              {result.name} <span>#{result.id}</span>
+            </p>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };
 
 export default MobCard;
-export type { MobResult };
-export { MOB_SIZE, MOB_MODES, MOB_ELEMENTS, MOB_RACES }; 
+export type { MobResult }; 

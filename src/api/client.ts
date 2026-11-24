@@ -160,21 +160,21 @@ export interface MobSummary {
   id: number;
   name: string;
   nameAegis: string;
-  nameJapanese?: string;
-  level: number;
-  hp: number;
-  baseExp: number;
-  jobExp: number;
-  mvpExp: number;
-  attack: number;
-  defense: number;
-  magicDefense: number;
-  element: string;
-  elementLevel: number;
-  race: string;
-  size: string;
-  isMvp: boolean;
-  class?: string;
+  nameJapanese?: string | null;
+  level: number | null;
+  hp: number | null;
+  baseExp: number | null;
+  jobExp: number | null;
+  mvpExp: number | null;
+  attack: number | null;
+  defense: number | null;
+  magicDefense: number | null;
+  element: string | null;
+  elementLevel: number | null;
+  race: string | null;
+  size: string | null;
+  isMvp: boolean | null;
+  class?: string | null;
   spawnMaps?: MobSpawnMapSummary[];
   spawnMapCount?: number;
   spawnAmount?: number;
@@ -184,11 +184,21 @@ export interface MobSummary {
 
 export interface MobDrop {
   itemId: number | null;
-  itemName: string;
-  itemAegis: string;
-  rate: number;
-  type: 'normal' | 'mvp';
+  itemName: string | null;
+  itemAegis: string | null;
+  itemType?: string | null;
+  rate: number | null;
+  baseRate?: number | null;
+  type: string | null;
   chancePercent: number | null;
+  rateUnit?: string | null;
+}
+
+export interface MobMetaResponse {
+  elements: string[];
+  races: string[];
+  sizes: string[];
+  classes: string[];
 }
 
 export interface MobDetail extends MobSummary {
@@ -464,6 +474,8 @@ export const apiClient = {
     apiFetch<PaginatedResponse<MobDetail>>(`/mobs${buildQuery(params)}`),
 
   getMob: (id: number | string) => apiFetch<MobDetail>(`/mobs/${id}`),
+
+  getMobMeta: () => apiFetch<MobMetaResponse>('/mobs/meta'),
 
   searchItems: (params: ItemSearchParams) =>
     apiFetch<PaginatedResponse<ItemDetail>>(`/items${buildQuery(params)}`),

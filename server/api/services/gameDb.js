@@ -25,18 +25,6 @@ export const T = {
 
 let worldDataAvailable = false;
 
-export const MOB_ELEMENTS = [
-    'Neutral', 'Water', 'Earth', 'Fire', 'Wind',
-    'Poison', 'Holy', 'Shadow', 'Ghost', 'Undead'
-];
-
-export const MOB_RACES = [
-    'Formless', 'Undead', 'Brute', 'Plant', 'Insect',
-    'Fish', 'Demon', 'Demi-Human', 'Angel', 'Dragon'
-];
-
-export const MOB_SIZES = ['Small', 'Medium', 'Large'];
-
 export const ITEM_TYPES = [
     'Healing', 'Usable', 'Etc', 'Armor', 'Weapon', 'Card',
     'Petegg', 'Petarmor', 'Ammo', 'DelayConsume', 'Cash',
