@@ -14,7 +14,8 @@ import { hasManifestSprite, loadManifest, resolveSprite, type SpriteRect } from 
 import {
   PLACEHOLDER_ITEM_ICON,
   PLACEHOLDER_ITEM_ILLUSTRATION,
-  PLACEHOLDER_MOB_SPRITE
+  PLACEHOLDER_MOB_SPRITE,
+  PLACEHOLDER_SKILL_ICON
 } from '../api/placeholders';
 import {
   buildItemSearchParams,
@@ -264,7 +265,7 @@ const Database = () => {
       const iconResolved = await resolveSprite(skill.id, 'skills/icons');
       return {
         ...skill,
-        icon: iconResolved ?? PLACEHOLDER_ITEM_ICON
+        icon: iconResolved ?? PLACEHOLDER_SKILL_ICON
       };
     }));
   }, []);

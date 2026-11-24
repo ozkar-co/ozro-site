@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { SpriteRect } from '../api/assets';
-import { PLACEHOLDER_ITEM_ICON } from '../api/placeholders';
+import { PLACEHOLDER_SKILL_ICON } from '../api/placeholders';
+import { skillPrefixLabel } from '../api/skillPrefixes';
 import AtlasSprite from './AtlasSprite';
 
 export interface SkillResult {
@@ -95,6 +96,8 @@ const processColoredText = (text: string): JSX.Element[] => {
 const SkillCard = ({ result }: SkillCardProps) => {
   const title = result.displayName || result.name || result.aegisName || `Skill #${result.id}`;
   const prefix = result.aegisPrefix || result.type || null;
+  const prefixCode = prefix ? String(prefix).trim().toUpperCase() : null;
+  const prefixName = skillPrefixLabel(prefixCode);
   const description = Array.isArray(result.description) ? result.description : [];
   const hasDescription = description.some((line) => String(line || '').trim());
   const spPreview = Array.isArray(result.spAmount) && result.spAmount.length > 0
@@ -116,21 +119,32 @@ const SkillCard = ({ result }: SkillCardProps) => {
           sprite={result.icon}
           alt={title}
           className="skill-card-icon"
-          fallback={PLACEHOLDER_ITEM_ICON}
-          fit={{ maxWidth: 32, maxHeight: 32 }}
+          fallback={PLACEHOLDER_SKILL_ICON}
+          // Atlas skill icons are 24×24; show at 2×. URL placeholders fit the same box.
+          {...(result.icon && typeof result.icon === 'object'
+            ? { scale: 2 }
+            : { fit: { maxWidth: 48, maxHeight: 48 } })}
         />
         <div className="skill-card-heading">
-          <h3>
-            {prefix && <span className="skill-prefix-badge">{prefix}</span>}
-            {' '}
-            <span className="name-title">
-              <Link to={`/database?tab=skills&q=${result.id}&run=1`}>{title}</Link>
-            </span>
-            {' '}
-            <span className="result-card-id">#{result.id}</span>
-            {result.isPlatinum && <span className="skill-flag-badge skill-flag-badge--platinum">Platinum</span>}
-            {result.isQuest && <span className="skill-flag-badge skill-flag-badge--quest">Quest</span>}
-          </h3>
+          <div className="skill-card-title-row">
+            <h3>
+              <span className="name-title">
+                <Link to={`/database?tab=skills&q=${result.id}&run=1`}>{title}</Link>
+              </span>
+              {' '}
+              <span className="result-card-id">#{result.id}</span>
+              {result.isPlatinum && <span className="skill-flag-badge skill-flag-badge--platinum">Platinum</span>}
+              {result.isQuest && <span className="skill-flag-badge skill-flag-badge--quest">Quest</span>}
+            </h3>
+            {prefixCode && (
+              <span className="skill-prefix-badge" title={prefixCode}>
+                <span className="skill-prefix-code">{prefixCode}</span>
+                {prefixName && prefixName !== prefixCode && (
+                  <span className="skill-prefix-label">{prefixName}</span>
+                )}
+              </span>
+            )}
+          </div>
           <div className="skill-card-meta">
             {result.maxLv != null && <span>Max Lv {result.maxLv}</span>}
             {result.skillType && <span>{result.skillType}</span>}

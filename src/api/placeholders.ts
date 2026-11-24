@@ -4,11 +4,14 @@ import type { SpriteRect } from './assets';
 export const PLACEHOLDER_ITEM_ICON = '/placeholder-icon.png';
 export const PLACEHOLDER_ITEM_ILLUSTRATION = '/placeholder-illustration.png';
 export const PLACEHOLDER_MOB_SPRITE = '/placeholder-icon.png';
+/** Generic RO-style skill button (paw) when atlas has no skill icon. */
+export const PLACEHOLDER_SKILL_ICON = '/placeholder-skill-icon.png';
 
 export function isPlaceholderAsset(sprite: SpriteRect | string | null | undefined): boolean {
   if (!sprite) return true;
   if (typeof sprite !== 'string') return false;
   return sprite === PLACEHOLDER_ITEM_ICON
     || sprite === PLACEHOLDER_ITEM_ILLUSTRATION
-    || sprite === PLACEHOLDER_MOB_SPRITE;
+    || sprite === PLACEHOLDER_MOB_SPRITE
+    || sprite === PLACEHOLDER_SKILL_ICON;
 }

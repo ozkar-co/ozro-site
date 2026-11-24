@@ -2067,13 +2067,17 @@ a {
 
 .skill-card-header {
   display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 0.85rem;
 }
 
 .skill-card-icon {
   flex: 0 0 auto;
-  margin-top: 0.15rem;
+  /* 24×24 atlas @ 2× — keep placeholder imgs in the same box */
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  image-rendering: pixelated;
 }
 
 .skill-card-heading {
@@ -2081,23 +2085,46 @@ a {
   flex: 1 1 auto;
 }
 
+.skill-card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .skill-card-heading h3 {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.35rem 0.45rem;
+  margin: 0;
+  min-width: 0;
 }
 
 .skill-prefix-badge {
   display: inline-flex;
-  padding: 0.08rem 0.4rem;
+  flex: 0 0 auto;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
   border-radius: 4px;
   background: #eef3fa;
   border: 1px solid #c2d0e6;
   color: #3a5680;
-  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.skill-prefix-code {
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  opacity: 0.75;
+}
+
+.skill-prefix-label {
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
 .skill-flag-badge {
