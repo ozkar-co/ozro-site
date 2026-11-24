@@ -1,9 +1,8 @@
 /**
- * Tasas de drop del servidor.
+ * @deprecated World API uses ozro_mob_drops.chance_effective (Master World Dataset).
+ * Kept only for any leftover tooling; do not apply these rates in /api/mobs|/api/items|/api/farming.
  *
- * Los valores viven en `server/api/config/dropRates.json` (versionado en git) y
- * reflejan rAthena `conf/import/battle_conf.txt` (100 = 1x). Si se cambia una
- * tasa en el servidor hay que actualizar ese JSON.
+ * Historical note: values mirrored battle_conf in dropRates.json.
  */
 import fs from 'fs';
 

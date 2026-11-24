@@ -10,7 +10,7 @@ import itemsRouter from './routes/items.js';
 import mvpsRouter from './routes/mvps.js';
 import farmingRouter from './routes/farming.js';
 import marketRouter from './routes/market.js';
-import { BANK_VAULT_KEY, bankVaultValueSql, effectiveMobsSql, excludeInternalAccountsSql, isMobDataAvailable, statsPlayerAccountSql, statsPlayerAccountWhereClause } from './services/gameDb.js';
+import { BANK_VAULT_KEY, bankVaultValueSql, T, excludeInternalAccountsSql, isMobDataAvailable, statsPlayerAccountSql, statsPlayerAccountWhereClause } from './services/gameDb.js';
 import { getCardCatalogIndex } from './services/cardCatalog.js';
 
 const app = express();
@@ -646,7 +646,8 @@ api.get('/rankings/mvps/:charId', async (req, res) => {
         if (mobIds.length > 0 && isMobDataAvailable()) {
             const placeholders = mobIds.map(() => '?').join(', ');
             const mobRows = await query(
-                `SELECT m.id, m.name_english, m.name_aegis FROM ${effectiveMobsSql('m')} WHERE m.id IN (${placeholders})`,
+                `SELECT m.mob_id AS id, m.name AS name_english, m.aegis_name AS name_aegis
+                 FROM \`${T.MOBS}\` m WHERE m.mob_id IN (${placeholders})`,
                 mobIds
             );
             mobNames = new Map(mobRows.map((mob) => [Number(mob.id), mob]));

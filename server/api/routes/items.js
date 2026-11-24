@@ -21,7 +21,7 @@ router.use((req, res, next) => {
     if (hasDrop !== null && !isMobDataAvailable()) {
         return res.status(503).json({
             ...mobUnavailableError(),
-            detail: 'El filtro hasDrop requiere la tabla mob_db_re'
+            detail: 'El filtro hasDrop requiere tablas ozro_mobs / ozro_mob_drops'
         });
     }
 

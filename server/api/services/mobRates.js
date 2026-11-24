@@ -1,9 +1,7 @@
 /**
- * Tasas de monstruos del servidor.
+ * @deprecated World API uses ozro_mobs.hp_effective. Do not apply these rates in API paths.
  *
- * Los valores viven en `server/api/config/mobRates.json` (versionado en git) y
- * reflejan rAthena `conf/import/battle_conf.txt` (100 = 1x). Si se cambia una
- * tasa en el servidor hay que actualizar ese JSON.
+ * Historical: values mirrored battle_conf in mobRates.json.
  */
 import fs from 'fs';
 

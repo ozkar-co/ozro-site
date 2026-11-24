@@ -19,6 +19,16 @@ cp .env.example .env
 
 Edita `.env` con las credenciales de MariaDB y el puerto (`API_PORT`, por defecto 3001).
 
+### Master World Dataset (`ozro_*`)
+
+`/database`, mobs/items/drops/spawns/farming y el radar MVP leen **solo tablas `ozro_*`** (Master World Dataset de `ozro-data`). No se aplican rates al vuelo ni se consulta `mob_db_re` / `item_db_re_*` para el mundo.
+
+1. En el mismo MySQL: `ozro-data` → `pipeline.py schema --reset` + `pipeline.py sync`
+2. Arranca ozro-site (detecta `ozro_mobs`, `ozro_items`, … al boot)
+3. Referencia de tablas/flags: `ozro-data/DATA.md`
+
+Tablas live de rAthena (`login`, `char`, `mvplog`, …) siguen usándose para jugadores, rankings y estado MVP en tiempo real. Assets visuales (mapas webp, atlases) siguen en `assets/`.
+
 ## Ejecutar
 
 ```bash

@@ -1,195 +1,174 @@
+/**
+ * Mob / drop / spawn queries against ozro_* (precomputed effective HP/EXP/chances).
+ */
 import { query } from '../../services/mariadb.js';
 import {
-    effectiveMobsSql,
-    effectiveItemsSql,
+    T,
     isSpawnDataAvailable,
-    mobDropColumns,
-    mobDropMatchSql,
-    mobDropMatchParams,
     parsePagination,
     parseCsv,
     parseBool,
     parseIntParam,
-    spawnTableSql,
+    parseJsonColumn,
+    chanceToPercent,
+    isWorldSpawnSql,
     MOB_ELEMENTS,
     MOB_RACES,
     MOB_SIZES
 } from './gameDb.js';
-import {
-    applyDropRate,
-    dropMultiplier,
-    effectiveMvpRates,
-    mobTier,
-    rateToPercent,
-    MVP_REWARD_RATE
-} from './dropRates.js';
-import { applyMobHp } from './mobRates.js';
-import { getMobSummons } from './mobSummons.js';
 import { getItemDisplayName } from './itemInfo.js';
 import {
     buildRelevanceOrderSql,
     buildTokenMatchClause
 } from './textSearch.js';
 
-function mapMobSummary(row) {
-    const tier = mobTierFromRow(row);
-    return {
-        id: row.id,
-        name: row.name_english,
-        nameAegis: row.name_aegis,
-        nameJapanese: row.name_japanese,
-        level: row.level,
-        hp: applyMobHp(row.hp, tier),
-        sp: row.sp,
-        baseExp: row.base_exp,
-        jobExp: row.job_exp,
-        mvpExp: row.mvp_exp,
-        attack: row.attack,
-        attack2: row.attack2,
-        defense: row.defense,
-        magicDefense: row.magic_defense,
-        attackRange: row.attack_range,
-        element: row.element,
-        elementLevel: row.element_level,
-        race: row.race,
-        size: row.size,
-        isMvp: Boolean(row.mode_mvp) || (row.mvp_exp > 0),
-        class: row.class,
-        summons: getMobSummons(row.id)
-    };
+function parseStats(row) {
+    return parseJsonColumn(row.stats, {}) || {};
 }
 
-function mapMobModes(row) {
-    const modeFields = [
-        'mode_canmove', 'mode_looter', 'mode_aggressive', 'mode_assist',
-        'mode_castsensoridle', 'mode_norandomwalk', 'mode_nocast', 'mode_canattack',
-        'mode_castsensorchase', 'mode_changechase', 'mode_angry',
-        'mode_changetargetmelee', 'mode_changetargetchase', 'mode_targetweak',
-        'mode_randomtarget', 'mode_ignoremelee', 'mode_ignoremagic', 'mode_ignoreranged',
-        'mode_mvp', 'mode_ignoremisc', 'mode_knockbackimmune', 'mode_teleportblock',
-        'mode_fixeditemdrop', 'mode_detector', 'mode_statusimmune', 'mode_skillimmune'
-    ];
+function parseModes(row) {
+    const raw = parseJsonColumn(row.modes, null);
+    if (!raw || typeof raw !== 'object') return {};
     const modes = {};
-    for (const field of modeFields) {
-        modes[field.replace('mode_', '')] = Boolean(row[field]);
+    for (const [key, value] of Object.entries(raw)) {
+        const normalized = String(key).replace(/^mode_/i, '').toLowerCase();
+        modes[normalized] = Boolean(value);
     }
     return modes;
 }
 
-function extractDrops(row) {
-    const drops = [];
-    for (const col of mobDropColumns()) {
-        const item = row[col.item];
-        const rate = row[col.rate];
-        if (!item) continue;
-        drops.push({
-            itemAegis: item,
-            rate: rate ?? 0,
-            type: col.type
-        });
-    }
-    return drops;
+function num(value) {
+    if (value == null) return null;
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
 }
 
-function mobTierFromRow(row) {
-    return mobTier({
-        isMvp: Number(row.mode_mvp) === 1 || Number(row.mvp_exp) > 0,
-        isBoss: String(row.class || row.mob_class || '').toLowerCase() === 'boss'
-    });
-}
-
-async function fetchDropItemInfo(drops) {
-    if (drops.length === 0) return new Map();
-
-    const aegisNames = [...new Set(drops.map((d) => d.itemAegis))];
-    const placeholders = aegisNames.map(() => '?').join(', ');
-    const items = await query(
-        `SELECT id, name_aegis, name_english, type FROM ${effectiveItemsSql('i')}
-         WHERE name_aegis IN (${placeholders})`,
-        aegisNames
-    );
-    return new Map(items.map((item) => [item.name_aegis, item]));
-}
-
-async function fetchItemTypes(aegisNames) {
-    if (aegisNames.length === 0) return new Map();
-
-    const placeholders = aegisNames.map(() => '?').join(', ');
-    const items = await query(
-        `SELECT name_aegis, type FROM ${effectiveItemsSql('i')}
-         WHERE name_aegis IN (${placeholders})`,
-        aegisNames
-    );
-    return new Map(items.map((item) => [item.name_aegis, item.type]));
-}
-
-function adjustDrop(drop, item, tier) {
-    const multiplier = dropMultiplier(tier, drop.type, item?.type);
-    const rate = applyDropRate(drop.rate, multiplier);
+function mapMobSummary(row) {
+    const stats = parseStats(row);
+    const isMvp = Boolean(row.is_mvp) || Number(row.mvp_exp_effective || row.mvp_exp_base || 0) > 0;
     return {
-        itemId: item?.id ?? null,
-        itemName: getItemDisplayName(item?.id) ?? item?.name_english ?? drop.itemAegis,
-        itemAegis: drop.itemAegis,
-        itemType: item?.type ?? null,
-        baseRate: drop.rate,
-        rate,
-        type: drop.type,
-        chancePercent: rateToPercent(rate)
+        id: num(row.mob_id),
+        name: row.name,
+        nameAegis: row.aegis_name,
+        nameJapanese: row.japanese_name,
+        level: num(row.level),
+        hp: num(row.hp_effective),
+        hpBase: num(row.hp_base),
+        hpStatus: row.hp_status,
+        sp: num(row.sp),
+        baseExp: num(row.base_exp_effective ?? row.base_exp_base),
+        jobExp: num(row.job_exp_effective ?? row.job_exp_base),
+        mvpExp: num(row.mvp_exp_effective ?? row.mvp_exp_base),
+        attack: num(row.attack),
+        attack2: num(row.attack2),
+        defense: num(row.defense),
+        magicDefense: num(row.magic_defense),
+        attackRange: num(stats.attack_range),
+        element: row.element,
+        elementLevel: num(row.element_level),
+        race: row.race,
+        size: row.size,
+        isMvp,
+        class: row.mob_class,
+        summons: []
     };
-}
-
-function applyEffectiveMvpRates(drops) {
-    const mvpDrops = drops.filter((drop) => drop.type === 'mvp');
-    if (mvpDrops.length === 0) return drops;
-
-    const rates = effectiveMvpRates(mvpDrops.map((drop) => drop.rate));
-    let mvpIndex = 0;
-    return drops.map((drop) => {
-        if (drop.type !== 'mvp') return drop;
-        const rate = rates[mvpIndex++];
-        return { ...drop, rate, chancePercent: rateToPercent(rate) };
-    });
-}
-
-function mvpSiblingColumnsSql(alias = 'm') {
-    return mobDropColumns()
-        .filter((column) => column.type === 'mvp')
-        .map((column) => `, ${alias}.${column.item} AS ${column.item}_sibling, ${alias}.${column.rate} AS ${column.rate}_sibling`)
-        .join('');
-}
-
-function effectiveMvpRatesForRow(row) {
-    const mvpColumns = mobDropColumns().filter((column) => column.type === 'mvp');
-    const items = mvpColumns.map((column) => row[`${column.item}_sibling`]);
-    const rates = mvpColumns.map((column) =>
-        applyDropRate(Number(row[`${column.rate}_sibling`]) || 0, MVP_REWARD_RATE)
-    );
-    const effective = effectiveMvpRates(rates);
-    const byItem = new Map();
-    items.forEach((item, index) => {
-        if (!item || effective[index] <= 0) return;
-        byItem.set(item, Math.max(byItem.get(item) ?? 0, effective[index]));
-    });
-    return byItem;
 }
 
 function mapMobDetailFromRow(row, drops = []) {
+    const stats = parseStats(row);
     return {
         ...mapMobSummary(row),
-        str: row.str,
-        agi: row.agi,
-        vit: row.vit,
-        int: row.int,
-        dex: row.dex,
-        luk: row.luk,
-        walkSpeed: row.walk_speed,
-        attackDelay: row.attack_delay,
-        skillRange: row.skill_range,
-        chaseRange: row.chase_range,
-        ai: row.ai,
-        modes: mapMobModes(row),
+        str: stats.str ?? null,
+        agi: stats.agi ?? null,
+        vit: stats.vit ?? null,
+        int: stats.int ?? null,
+        dex: stats.dex ?? null,
+        luk: stats.luk ?? null,
+        walkSpeed: stats.walk_speed ?? null,
+        attackDelay: stats.attack_delay ?? null,
+        skillRange: stats.skill_range ?? null,
+        chaseRange: stats.chase_range ?? null,
+        ai: stats.ai ?? null,
+        modes: parseModes(row),
         drops
     };
+}
+
+function mapDropRow(row) {
+    const rate = Number(row.chance_effective) || 0;
+    const baseRate = Number(row.chance_base) || 0;
+    const dropType = String(row.drop_category || 'normal').toLowerCase().includes('mvp')
+        ? 'mvp'
+        : 'normal';
+    return {
+        itemId: row.item_id,
+        itemName: getItemDisplayName(row.item_id) ?? row.item_name ?? row.item_aegis_name,
+        itemAegis: row.item_aegis_name,
+        itemType: row.item_type ?? null,
+        baseRate,
+        rate,
+        type: dropType,
+        chancePercent: chanceToPercent(rate, row.rate_unit),
+        rateUnit: row.rate_unit,
+        isMapBonus: Boolean(row.is_map_bonus)
+    };
+}
+
+async function fetchDropsForMobs(mobIds, { includeMapBonus = false } = {}) {
+    if (!mobIds.length) return new Map();
+    const placeholders = mobIds.map(() => '?').join(', ');
+    const bonusClause = includeMapBonus ? '' : ' AND d.is_map_bonus = 0';
+    const rows = await query(
+        `SELECT d.mob_id, d.item_id, d.item_aegis_name, d.drop_category,
+                d.chance_base, d.chance_effective, d.rate_unit, d.is_map_bonus,
+                i.name AS item_name, i.type AS item_type
+         FROM \`${T.MOB_DROPS}\` d
+         LEFT JOIN \`${T.ITEMS}\` i ON i.item_id = d.item_id
+         WHERE d.mob_id IN (${placeholders})${bonusClause}
+         ORDER BY d.chance_effective DESC`,
+        mobIds
+    );
+    const byMob = new Map();
+    for (const row of rows) {
+        const id = Number(row.mob_id);
+        if (!byMob.has(id)) byMob.set(id, []);
+        byMob.get(id).push(mapDropRow(row));
+    }
+    return byMob;
+}
+
+async function attachDropsToMobRows(rows) {
+    const dropsByMob = await fetchDropsForMobs(rows.map((r) => r.mob_id));
+    return rows.map((row) =>
+        mapMobDetailFromRow(row, dropsByMob.get(Number(row.mob_id)) || [])
+    );
+}
+
+async function loadSummonsForMobs(mobIds) {
+    if (!mobIds.length) return new Map();
+    try {
+        const placeholders = mobIds.map(() => '?').join(', ');
+        const rows = await query(
+            `SELECT parent_mob_id, summoned_mob_id, amount, summon_kind, skill_id
+             FROM \`${T.SKILL_SUMMONS}\`
+             WHERE parent_mob_id IN (${placeholders})`,
+            mobIds
+        );
+        const byParent = new Map();
+        for (const row of rows) {
+            const parent = Number(row.parent_mob_id);
+            if (!byParent.has(parent)) byParent.set(parent, []);
+            byParent.get(parent).push({
+                mobId: row.summoned_mob_id,
+                amount: row.amount,
+                kind: row.summon_kind,
+                skillId: row.skill_id
+            });
+        }
+        return byParent;
+    } catch {
+        return new Map();
+    }
 }
 
 export async function attachSpawnSummaries(targets) {
@@ -205,20 +184,23 @@ export async function attachSpawnSummaries(targets) {
         return targets;
     }
 
-    const ids = [...new Set(targets.map((target) => Number(target.id)).filter(Number.isFinite))];
+    const ids = [...new Set(targets.map((t) => Number(t.id)).filter(Number.isFinite))];
     if (ids.length === 0) return targets;
 
     const placeholders = ids.map(() => '?').join(', ');
     const rows = await query(
-        `SELECT mob_id, map,
-                SUM(amount) AS amount,
+        `SELECT s.mob_id, s.map_id AS map,
+                SUM(COALESCE(s.amount, 0)) AS amount,
                 COUNT(*) AS points,
-                MAX(is_boss) AS boss,
-                MAX(is_instance) AS instance
-         FROM ${spawnTableSql('s')}
-         WHERE mob_id IN (${placeholders})
-         GROUP BY mob_id, map
-         ORDER BY mob_id ASC, instance ASC, map ASC`,
+                MAX(COALESCE(s.boss_flag, 0)) AS boss,
+                MAX(CASE WHEN s.spawn_type = 'instance' OR mp.is_instance = 1 THEN 1 ELSE 0 END) AS instance
+         FROM \`${T.SPAWNS}\` s
+         LEFT JOIN \`${T.MAPS}\` mp ON mp.map_id = s.map_id
+         WHERE s.mob_id IN (${placeholders})
+           AND s.map_id IS NOT NULL
+           AND s.spawn_type IN ('permanent', 'scripted', 'instance', 'event')
+         GROUP BY s.mob_id, s.map_id
+         ORDER BY s.mob_id ASC, instance ASC, s.map_id ASC`,
         ids
     );
 
@@ -251,11 +233,16 @@ export async function getMobSpawns(mobId) {
     if (!isSpawnDataAvailable()) return [];
 
     const rows = await query(
-        `SELECT map, x, y, xs, ys, amount, delay, delay2,
-                is_boss, is_instance, source_file, source_line
-         FROM ${spawnTableSql('s')}
-         WHERE mob_id = ?
-         ORDER BY is_instance ASC, map ASC, amount DESC, x ASC, y ASC`,
+        `SELECT s.map_id AS map, s.x, s.y, s.x_area AS xs, s.y_area AS ys,
+                s.amount, s.respawn_min AS delay, s.respawn_max AS delay2,
+                s.boss_flag AS is_boss,
+                CASE WHEN s.spawn_type = 'instance' OR mp.is_instance = 1 THEN 1 ELSE 0 END AS is_instance,
+                s.script_path AS source_file, s.script_line AS source_line,
+                s.spawn_type, s.spawn_route
+         FROM \`${T.SPAWNS}\` s
+         LEFT JOIN \`${T.MAPS}\` mp ON mp.map_id = s.map_id
+         WHERE s.mob_id = ? AND s.map_id IS NOT NULL
+         ORDER BY is_instance ASC, s.map_id ASC, s.amount DESC, s.x ASC, s.y ASC`,
         [mobId]
     );
 
@@ -271,27 +258,13 @@ export async function getMobSpawns(mobId) {
         delay2: row.delay2,
         boss: Boolean(row.is_boss),
         instance: Boolean(row.is_instance),
+        spawnType: row.spawn_type,
+        spawnRoute: row.spawn_route,
         source: {
             file: row.source_file,
             line: row.source_line
         }
     }));
-}
-
-async function attachDropsToMobRows(rows) {
-    if (rows.length === 0) return [];
-
-    const dropsByMob = rows.map((row) => extractDrops(row));
-    const itemInfo = await fetchDropItemInfo(dropsByMob.flat());
-
-    return rows.map((row, index) => {
-        const tier = mobTierFromRow(row);
-        const drops = applyEffectiveMvpRates(
-            dropsByMob[index]
-                .map((drop) => adjustDrop(drop, itemInfo.get(drop.itemAegis), tier))
-        );
-        return mapMobDetailFromRow(row, drops);
-    });
 }
 
 function buildMobKindFilter(kinds) {
@@ -301,18 +274,20 @@ function buildMobKindFilter(kinds) {
 
     const clauses = [];
     if (kinds.includes('mvp')) {
-        clauses.push('(COALESCE(m.mode_mvp, 0) = 1 OR COALESCE(m.mvp_exp, 0) > 0)');
+        clauses.push('(COALESCE(m.is_mvp, 0) = 1 OR COALESCE(m.mvp_exp_effective, m.mvp_exp_base, 0) > 0)');
     }
     if (kinds.includes('boss')) {
-        clauses.push("(LOWER(COALESCE(m.class, '')) = 'boss' AND COALESCE(m.mode_mvp, 0) = 0 AND COALESCE(m.mvp_exp, 0) = 0)");
+        clauses.push(
+            "(LOWER(COALESCE(m.mob_class, '')) = 'boss' AND COALESCE(m.is_mvp, 0) = 0 AND COALESCE(m.mvp_exp_effective, m.mvp_exp_base, 0) = 0)"
+        );
     }
     if (kinds.includes('normal')) {
-        clauses.push("(LOWER(COALESCE(m.class, '')) <> 'boss' AND COALESCE(m.mode_mvp, 0) = 0 AND COALESCE(m.mvp_exp, 0) = 0)");
+        clauses.push(
+            "(LOWER(COALESCE(m.mob_class, '')) <> 'boss' AND COALESCE(m.is_mvp, 0) = 0 AND COALESCE(m.mvp_exp_effective, m.mvp_exp_base, 0) = 0)"
+        );
     }
 
-    if (clauses.length === 0) {
-        return '1 = 0';
-    }
+    if (clauses.length === 0) return '1 = 0';
     return `(${clauses.join(' OR ')})`;
 }
 
@@ -324,18 +299,18 @@ function buildMobFilters(params) {
     if (params.q) {
         const term = params.q.trim();
         if (/^\d+$/.test(term)) {
-            conditions.push('m.id = ?');
+            conditions.push('m.mob_id = ?');
             values.push(parseInt(term, 10));
             orderBy = buildRelevanceOrderSql(
                 'm',
-                ['m.name_english', 'm.name_aegis', 'm.name_japanese'],
+                ['m.name', 'm.aegis_name', 'm.japanese_name'],
                 term,
-                'm.id'
+                'm.mob_id'
             );
         } else {
             const tokenMatch = buildTokenMatchClause(
                 'm',
-                ['m.name_english', 'm.name_aegis', 'm.name_japanese'],
+                ['m.name', 'm.aegis_name', 'm.japanese_name'],
                 term
             );
             if (tokenMatch) {
@@ -344,9 +319,9 @@ function buildMobFilters(params) {
             }
             orderBy = buildRelevanceOrderSql(
                 'm',
-                ['m.name_english', 'm.name_aegis', 'm.name_japanese'],
+                ['m.name', 'm.aegis_name', 'm.japanese_name'],
                 term,
-                'm.id'
+                'm.mob_id'
             );
         }
     }
@@ -383,32 +358,26 @@ function buildMobFilters(params) {
 
     const baseExpMin = parseIntParam(params.baseExpMin);
     if (baseExpMin !== null) {
-        conditions.push('m.base_exp >= ?');
+        conditions.push('COALESCE(m.base_exp_effective, m.base_exp_base) >= ?');
         values.push(baseExpMin);
     }
 
     const baseExpMax = parseIntParam(params.baseExpMax);
     if (baseExpMax !== null) {
-        conditions.push('m.base_exp <= ?');
+        conditions.push('COALESCE(m.base_exp_effective, m.base_exp_base) <= ?');
         values.push(baseExpMax);
     }
 
     const jobExpMin = parseIntParam(params.jobExpMin);
     if (jobExpMin !== null) {
-        conditions.push('m.job_exp >= ?');
+        conditions.push('COALESCE(m.job_exp_effective, m.job_exp_base) >= ?');
         values.push(jobExpMin);
     }
 
     const jobExpMax = parseIntParam(params.jobExpMax);
     if (jobExpMax !== null) {
-        conditions.push('m.job_exp <= ?');
+        conditions.push('COALESCE(m.job_exp_effective, m.job_exp_base) <= ?');
         values.push(jobExpMax);
-    }
-
-    const attackRange = parseIntParam(params.attackRange);
-    if (attackRange !== null) {
-        conditions.push('m.attack_range = ?');
-        values.push(attackRange);
     }
 
     const kinds = parseCsv(params.kinds).map((k) => k.toLowerCase());
@@ -418,19 +387,21 @@ function buildMobFilters(params) {
     } else {
         const mvp = parseBool(params.mvp);
         if (mvp === true) {
-            conditions.push('(m.mode_mvp = 1 OR m.mvp_exp > 0)');
+            conditions.push('(m.is_mvp = 1 OR COALESCE(m.mvp_exp_effective, m.mvp_exp_base, 0) > 0)');
         } else if (mvp === false) {
-            conditions.push('(COALESCE(m.mode_mvp, 0) = 0 AND COALESCE(m.mvp_exp, 0) = 0)');
+            conditions.push('(COALESCE(m.is_mvp, 0) = 0 AND COALESCE(m.mvp_exp_effective, m.mvp_exp_base, 0) = 0)');
         }
     }
 
     const hasSpawn = parseBool(params.hasSpawn);
     if (hasSpawn !== null && isSpawnDataAvailable()) {
         const includeInstances = parseBool(params.includeInstances) === true;
-        const instanceClause = includeInstances ? '' : ' AND s.is_instance = 0';
+        const instanceClause = includeInstances
+            ? ''
+            : ` AND ${isWorldSpawnSql('s')}`;
         const exists = `EXISTS (
-            SELECT 1 FROM ${spawnTableSql('s')}
-            WHERE s.mob_id = m.id${instanceClause}
+            SELECT 1 FROM \`${T.SPAWNS}\` s
+            WHERE s.mob_id = m.mob_id AND s.map_id IS NOT NULL${instanceClause}
         )`;
         conditions.push(hasSpawn ? exists : `NOT ${exists}`);
     }
@@ -438,8 +409,8 @@ function buildMobFilters(params) {
     const spawnMap = typeof params.spawnMap === 'string' ? params.spawnMap.trim() : '';
     if (spawnMap && isSpawnDataAvailable()) {
         conditions.push(`EXISTS (
-            SELECT 1 FROM ${spawnTableSql('s')}
-            WHERE s.mob_id = m.id AND s.map = ?
+            SELECT 1 FROM \`${T.SPAWNS}\` s
+            WHERE s.mob_id = m.mob_id AND s.map_id = ?
         )`);
         values.push(spawnMap);
     }
@@ -451,19 +422,18 @@ function buildMobFilters(params) {
 export async function searchMobs(params) {
     const { page, limit, offset } = parsePagination(params);
     const { whereClause, values, orderBy } = buildMobFilters(params);
-    const fromSql = effectiveMobsSql('m');
     const orderSql = orderBy?.orderSql
-        ? orderBy.orderSql
-        : 'm.name_english ASC, m.id ASC';
+        ? orderBy.orderSql.replace(/\bm\.id\b/g, 'm.mob_id')
+        : 'm.name ASC, m.mob_id ASC';
     const orderValues = orderBy?.values ?? [];
 
     const [countRows, rows] = await Promise.all([
         query(
-            `SELECT COUNT(*) AS total FROM ${fromSql} ${whereClause}`,
+            `SELECT COUNT(*) AS total FROM \`${T.MOBS}\` m ${whereClause}`,
             values
         ),
         query(
-            `SELECT m.* FROM ${fromSql}
+            `SELECT m.* FROM \`${T.MOBS}\` m
              ${whereClause}
              ORDER BY ${orderSql}
              LIMIT ? OFFSET ?`,
@@ -473,41 +443,35 @@ export async function searchMobs(params) {
     const total = Number(countRows[0].total);
 
     const results = await attachDropsToMobRows(rows);
+    const summons = await loadSummonsForMobs(results.map((r) => r.id));
+    for (const mob of results) {
+        mob.summons = summons.get(Number(mob.id)) || [];
+    }
     await attachSpawnSummaries(results);
 
-    return {
-        total,
-        page,
-        limit,
-        results
-    };
+    return { total, page, limit, results };
 }
 
 export async function getMobById(id) {
     const rows = await query(
-        `SELECT m.* FROM ${effectiveMobsSql('m')} WHERE m.id = ?`,
+        `SELECT m.* FROM \`${T.MOBS}\` m WHERE m.mob_id = ?`,
         [id]
     );
     if (rows.length === 0) return null;
 
-    const row = rows[0];
-    const drops = extractDrops(row);
-    const itemInfo = await fetchDropItemInfo(drops);
-    const tier = mobTierFromRow(row);
-    const adjustedDrops = applyEffectiveMvpRates(
-        drops.map((drop) => adjustDrop(drop, itemInfo.get(drop.itemAegis), tier))
-    );
-    const mob = mapMobDetailFromRow(row, adjustedDrops);
-    mob.spawns = await getMobSpawns(id);
-    await attachSpawnSummaries([mob]);
-    return mob;
+    const [detail] = await attachDropsToMobRows(rows);
+    const summons = await loadSummonsForMobs([id]);
+    detail.summons = summons.get(Number(id)) || [];
+    detail.spawns = await getMobSpawns(id);
+    await attachSpawnSummaries([detail]);
+    return detail;
 }
 
 export async function getMobMeta() {
     const [elements, races, sizes] = await Promise.all([
-        query(`SELECT DISTINCT element AS value FROM ${effectiveMobsSql('m')} WHERE element IS NOT NULL ORDER BY element`),
-        query(`SELECT DISTINCT race AS value FROM ${effectiveMobsSql('m')} WHERE race IS NOT NULL ORDER BY race`),
-        query(`SELECT DISTINCT size AS value FROM ${effectiveMobsSql('m')} WHERE size IS NOT NULL ORDER BY size`)
+        query(`SELECT DISTINCT element AS value FROM \`${T.MOBS}\` WHERE element IS NOT NULL ORDER BY element`),
+        query(`SELECT DISTINCT race AS value FROM \`${T.MOBS}\` WHERE race IS NOT NULL ORDER BY race`),
+        query(`SELECT DISTINCT size AS value FROM \`${T.MOBS}\` WHERE size IS NOT NULL ORDER BY size`)
     ]);
 
     return {
@@ -522,84 +486,62 @@ export async function getMobMeta() {
     };
 }
 
-export async function getMobsDroppingItems(itemAegisList) {
-    const aegisNames = [...new Set((itemAegisList || []).filter(Boolean))];
-    if (aegisNames.length === 0) return new Map();
+async function buildDroppedByList(itemIdsOrAegis, { byAegis = false } = {}) {
+    if (!itemIdsOrAegis.length) return byAegis ? new Map() : [];
 
-    const placeholders = aegisNames.map(() => '?').join(', ');
-    const dropColumns = mobDropColumns();
-    const selects = dropColumns.map((col) => `
-        SELECT m.id, m.name_english, m.name_aegis, m.level,
-               m.class AS mob_class, m.mode_mvp, m.mvp_exp,
-               m.${col.item} AS item_aegis,
-               m.${col.rate} AS rate,
-               '${col.type}' AS drop_type
-               ${mvpSiblingColumnsSql('m')}
-        FROM ${effectiveMobsSql('m')}
-        WHERE m.${col.item} IN (${placeholders})
-    `);
-    const params = dropColumns.flatMap(() => aegisNames);
-
+    const placeholders = itemIdsOrAegis.map(() => '?').join(', ');
+    const keyCol = byAegis ? 'd.item_aegis_name' : 'd.item_id';
     const rows = await query(
-        `(${selects.join(' UNION ALL ')})
-         ORDER BY item_aegis ASC, rate DESC, level ASC, name_english ASC`,
-        params
+        `SELECT d.item_id, d.item_aegis_name, d.chance_base, d.chance_effective,
+                d.rate_unit, d.drop_category, d.is_map_bonus,
+                m.mob_id AS id, m.name, m.aegis_name AS nameAegis, m.level
+         FROM \`${T.MOB_DROPS}\` d
+         JOIN \`${T.MOBS}\` m ON m.mob_id = d.mob_id
+         WHERE ${keyCol} IN (${placeholders})
+           AND d.is_map_bonus = 0
+         ORDER BY d.chance_effective DESC, m.level ASC, m.name ASC`,
+        itemIdsOrAegis
     );
 
-    const itemTypes = await fetchItemTypes(aegisNames);
-
-    const mobsById = new Map();
+    const mobs = [];
+    const seenMob = new Set();
     for (const row of rows) {
-        if (!mobsById.has(row.id)) {
-            mobsById.set(row.id, {
-                id: row.id,
-                name: row.name_english,
-                nameAegis: row.name_aegis,
-                level: row.level
-            });
-        }
+        if (seenMob.has(row.id)) continue;
+        seenMob.add(row.id);
+        mobs.push({
+            id: row.id,
+            name: row.name,
+            nameAegis: row.nameAegis,
+            level: row.level
+        });
     }
-    await attachSpawnSummaries([...mobsById.values()]);
+    await attachSpawnSummaries(mobs);
+    const mobMeta = new Map(mobs.map((m) => [m.id, m]));
 
-    const byItem = new Map();
-    const seen = new Map();
-    for (const row of rows) {
-        if (!row.item_aegis) continue;
-        const dropType = row.drop_type || 'normal';
-        const key = `${row.item_aegis}|${row.id}|${dropType}`;
-        const baseRate = Number(row.rate) || 0;
-        const tier = mobTierFromRow(row);
-        const rate = dropType === 'mvp'
-            ? (effectiveMvpRatesForRow(row).get(row.item_aegis) ?? 0)
-            : applyDropRate(
-                baseRate,
-                dropMultiplier(tier, dropType, itemTypes.get(row.item_aegis))
-            );
-        if (rate <= 0) continue;
-        const previous = seen.get(key);
-        if (previous != null && previous >= rate) continue;
-        seen.set(key, rate);
-
-        if (!byItem.has(row.item_aegis)) byItem.set(row.item_aegis, []);
-        const mob = mobsById.get(row.id) || {};
-        byItem.get(row.item_aegis).push({
-            id: mob.id,
-            name: mob.name,
-            nameAegis: mob.nameAegis,
-            level: mob.level,
-            baseRate,
+    const mapRow = (row) => {
+        const dropType = String(row.drop_category || 'normal').toLowerCase().includes('mvp')
+            ? 'mvp'
+            : 'normal';
+        const rate = Number(row.chance_effective) || 0;
+        const mob = mobMeta.get(row.id) || {};
+        return {
+            id: row.id,
+            name: row.name,
+            nameAegis: row.nameAegis,
+            level: row.level,
+            baseRate: Number(row.chance_base) || 0,
             rate,
             dropType,
-            chancePercent: rateToPercent(rate),
+            chancePercent: chanceToPercent(rate, row.rate_unit),
             spawnMaps: mob.spawnMaps,
             spawnMapCount: mob.spawnMapCount,
             spawnAmount: mob.spawnAmount,
             hasWorldSpawn: mob.hasWorldSpawn
-        });
-    }
+        };
+    };
 
-    for (const drops of byItem.values()) {
-        drops.sort((a, b) =>
+    if (!byAegis) {
+        return rows.map(mapRow).sort((a, b) =>
             Number(b.hasWorldSpawn === true) - Number(a.hasWorldSpawn === true) ||
             b.rate - a.rate ||
             a.level - b.level ||
@@ -607,55 +549,35 @@ export async function getMobsDroppingItems(itemAegisList) {
         );
     }
 
+    const byItem = new Map();
+    for (const row of rows) {
+        const key = row.item_aegis_name;
+        if (!byItem.has(key)) byItem.set(key, []);
+        byItem.get(key).push(mapRow(row));
+    }
+    for (const list of byItem.values()) {
+        list.sort((a, b) =>
+            Number(b.hasWorldSpawn === true) - Number(a.hasWorldSpawn === true) ||
+            b.rate - a.rate ||
+            a.level - b.level ||
+            a.name.localeCompare(b.name)
+        );
+    }
     return byItem;
 }
 
-export async function getMobsDroppingItem(itemAegis) {
-    const dropColumns = mobDropColumns();
-    const rateCase = dropColumns.map((col) => `WHEN m.${col.item} = ? THEN m.${col.rate}`).join(' ');
-    const typeCase = dropColumns.map((col) => `WHEN m.${col.item} = ? THEN '${col.type}'`).join(' ');
-    const rateParams = dropColumns.map(() => itemAegis);
-    const typeParams = dropColumns.map(() => itemAegis);
-    const whereParams = mobDropMatchParams(itemAegis);
+export async function getMobsDroppingItems(itemAegisList) {
+    const aegisNames = [...new Set((itemAegisList || []).filter(Boolean))];
+    if (aegisNames.length === 0) return new Map();
+    return buildDroppedByList(aegisNames, { byAegis: true });
+}
 
-    const rows = await query(
-        `SELECT m.id, m.name_english, m.name_aegis, m.level,
-                m.class AS mob_class, m.mode_mvp, m.mvp_exp,
-                CASE ${rateCase} END AS rate,
-                CASE ${typeCase} END AS drop_type
-                ${mvpSiblingColumnsSql('m')}
-         FROM ${effectiveMobsSql('m')}
-         WHERE ${mobDropMatchSql('m')}
-         ORDER BY rate DESC, m.level ASC, m.name_english ASC`,
-        [...rateParams, ...typeParams, ...whereParams]
-    );
-    const itemTypes = await fetchItemTypes([itemAegis]);
-    const itemType = itemTypes.get(itemAegis) ?? null;
-    const results = rows.map((row) => {
-        const dropType = row.drop_type || 'normal';
-        const baseRate = Number(row.rate) || 0;
-        const tier = mobTierFromRow(row);
-        const rate = dropType === 'mvp'
-            ? (effectiveMvpRatesForRow(row).get(itemAegis) ?? 0)
-            : applyDropRate(baseRate, dropMultiplier(tier, dropType, itemType));
-        if (rate <= 0) return null;
-        return {
-            id: row.id,
-            name: row.name_english,
-            nameAegis: row.name_aegis,
-            level: row.level,
-            baseRate,
-            rate,
-            dropType,
-            chancePercent: rateToPercent(rate)
-        };
-    }).filter(Boolean);
-    await attachSpawnSummaries(results);
-    results.sort((a, b) =>
-        Number(b.hasWorldSpawn === true) - Number(a.hasWorldSpawn === true) ||
-        b.rate - a.rate ||
-        a.level - b.level ||
-        a.name.localeCompare(b.name)
-    );
-    return results;
+export async function getMobsDroppingItem(itemAegis) {
+    if (!itemAegis) return [];
+    const map = await buildDroppedByList([itemAegis], { byAegis: true });
+    return map.get(itemAegis) || [];
+}
+
+export async function getMobsDroppingItemId(itemId) {
+    return buildDroppedByList([itemId], { byAegis: false });
 }

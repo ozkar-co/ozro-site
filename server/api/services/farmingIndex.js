@@ -3,25 +3,21 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { query } from '../../services/mariadb.js';
 import {
-    effectiveItemsSql,
-    effectiveMobsSql,
+    T,
     isItemDataAvailable,
     isMobDataAvailable,
     isSpawnDataAvailable,
-    mobDropColumns,
     parseBool,
     parseIntParam,
     parsePagination,
-    spawnTableSql
+    parseJsonColumn,
+    chanceToPercent
 } from './gameDb.js';
-import { applyDropRate, dropMultiplier, effectiveMvpRates, mobTier, rateToPercent } from './dropRates.js';
-import { applyMobHp } from './mobRates.js';
 import { bestItemValue, initializeItemValues } from './itemValue.js';
 import { getItemDisplayName } from './itemInfo.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ASSETS_DIR = path.resolve(__dirname, '../../../assets');
-const LEVEL_PENALTY_PATH = path.join(ASSETS_DIR, 'farming/levelPenalty.json');
 const WORLDVIEW_PATH = path.join(ASSETS_DIR, 'world/worldview.json');
 const WORLD_ACCESS_PATH = path.join(ASSETS_DIR, 'world/access.json');
 const MIN_MZW = 10;
@@ -46,11 +42,11 @@ function readJson(filePath) {
 }
 
 function rowTier(row) {
-    return mobTier({
-        isMvp: Number(row.mode_mvp) === 1 || Number(row.mvp_exp) > 0,
-        isBoss: String(row.class || row.mob_class || '').toLowerCase() === 'boss',
-        isTreasure: Number(row.racegroup_treasure) === 1
-    });
+    const isMvp = Boolean(row.is_mvp) || Number(row.mvp_exp_effective || row.mvp_exp_base || 0) > 0;
+    const isBoss = String(row.mob_class || '').toLowerCase() === 'boss';
+    if (isMvp) return 'mvp';
+    if (isBoss) return 'boss';
+    return 'normal';
 }
 
 function penaltyRate(type, levelDifference) {
@@ -59,6 +55,45 @@ function penaltyRate(type, levelDifference) {
     const minDiff = Number(penaltyData.minDiff) || 0;
     const index = Math.max(0, Math.min(rates.length - 1, levelDifference - minDiff));
     return Number(rates[index]) || 100;
+}
+
+async function loadLevelPenaltyFromDb() {
+    try {
+        const rows = await query(
+            `SELECT type, difference, rate FROM \`${T.LEVEL_PENALTY}\` ORDER BY type, difference`
+        );
+        const byType = new Map();
+        for (const row of rows) {
+            const t = String(row.type || '').toLowerCase();
+            if (!byType.has(t)) byType.set(t, []);
+            byType.get(t).push({ difference: Number(row.difference), rate: Number(row.rate) });
+        }
+        const build = (key) => {
+            const list = byType.get(key) || [];
+            if (!list.length) return null;
+            const minDiff = Math.min(...list.map((x) => x.difference));
+            const maxDiff = Math.max(...list.map((x) => x.difference));
+            const rates = [];
+            for (let d = minDiff; d <= maxDiff; d++) {
+                const hit = list.find((x) => x.difference === d);
+                rates.push(hit ? hit.rate : 100);
+            }
+            return { rates, minDiff };
+        };
+        const drop = build('drop') || build('Drop');
+        const exp = build('exp') || build('Exp');
+        if (!drop && !exp) return null;
+        return {
+            minDiff: drop?.minDiff ?? exp?.minDiff ?? 0,
+            penalties: {
+                drop: drop || { rates: [100], minDiff: 0 },
+                exp: exp || { rates: [100], minDiff: 0 }
+            }
+        };
+    } catch (error) {
+        console.warn(`No se pudo leer ${T.LEVEL_PENALTY}: ${error.message}`);
+        return null;
+    }
 }
 
 function mapAccess(map) {
@@ -78,48 +113,32 @@ function mapNameFor(map) {
     return mapByName.get(map) || map;
 }
 
-function buildDrop(column, rate, item, tier) {
+function buildDropFromOzro(dropRow, item) {
     if (!item) return null;
     const { value, source } = bestItemValue(item);
     if (value <= 0) return null;
 
-    const adjustedRate = applyDropRate(rate, dropMultiplier(tier, column.type, item.type));
+    const adjustedRate = Number(dropRow.chance_effective) || 0;
     if (adjustedRate <= 0) return null;
 
     const expected = (adjustedRate / 10000) * value;
     if (expected <= 0) return null;
 
+    const dropType = String(dropRow.drop_category || 'normal').toLowerCase().includes('mvp')
+        ? 'mvp'
+        : 'normal';
+
     return {
-        id: Number(item.id),
-        name: getItemDisplayName(item.id) ?? item.name_english,
-        nameAegis: item.name_aegis,
-        type: column.type,
-        chancePercent: rateToPercent(adjustedRate),
+        id: Number(item.item_id ?? item.id),
+        name: getItemDisplayName(item.item_id ?? item.id) ?? item.name ?? item.name_english,
+        nameAegis: item.aegis_name ?? item.name_aegis,
+        type: dropType,
+        chancePercent: chanceToPercent(adjustedRate, dropRow.rate_unit),
         sell: value,
         valueSource: source,
         expected,
         expectedBase: expected
     };
-}
-
-function applyEffectiveMvpDrops(drops) {
-    const mvpDrops = drops.filter((drop) => drop.type === 'mvp');
-    if (mvpDrops.length === 0) return drops;
-
-    const rates = effectiveMvpRates(mvpDrops.map((drop) => drop.rate));
-    let mvpIndex = 0;
-    return drops.map((drop) => {
-        if (drop.type !== 'mvp') return drop;
-        const rate = rates[mvpIndex++];
-        const expected = (rate / 10000) * drop.sell;
-        return {
-            ...drop,
-            rate,
-            chancePercent: rateToPercent(rate),
-            expected,
-            expectedBase: expected
-        };
-    });
 }
 
 function decorateMob(mob, level, applyPenalty) {
@@ -148,18 +167,16 @@ function decorateMob(mob, level, applyPenalty) {
     };
 }
 
-function buildMob(row, itemByAegis, spawnsByMob) {
+function buildMob(row, dropsForMob, itemById, spawnsByMob) {
     const tier = rowTier(row);
     let drops = [];
-
-    for (const column of mobDropColumns()) {
-        const aegis = row[column.item];
-        if (!aegis) continue;
-        const drop = buildDrop(column, Number(row[column.rate]) || 0, itemByAegis.get(aegis), tier);
+    for (const dropRow of dropsForMob || []) {
+        const item = itemById.get(Number(dropRow.item_id));
+        const drop = buildDropFromOzro(dropRow, item);
         if (drop) drops.push(drop);
     }
 
-    drops = applyEffectiveMvpDrops(drops).filter((drop) => drop.expected > 0);
+    drops = drops.filter((drop) => drop.expected > 0);
     drops.sort((a, b) => b.expected - a.expected);
 
     const mzwNormal = drops
@@ -172,9 +189,11 @@ function buildMob(row, itemByAegis, spawnsByMob) {
 
     if (mzw < MIN_MZW) return null;
 
-    const hp = applyMobHp(Number(row.hp) || 0, tier);
+    const hp = Number(row.hp_effective) || 0;
+    const modes = parseJsonColumn(row.modes, {}) || {};
+    const fixedDrop = Boolean(modes.FixedItemDrop || modes.fixeditemdrop || modes.Mvp);
 
-    const spawnMaps = (spawnsByMob.get(Number(row.id)) || [])
+    const spawnMaps = (spawnsByMob.get(Number(row.mob_id)) || [])
         .filter((spawn) => !isEventOrInstanceMap(spawn.map))
         .map((spawn) => {
             const access = mapAccess(spawn.map);
@@ -191,18 +210,18 @@ function buildMob(row, itemByAegis, spawnsByMob) {
     const instanceOnly = spawnMaps.length > 0 && spawnMaps.every((spawn) => spawn.instance);
 
     return {
-        id: Number(row.id),
-        name: row.name_english,
-        nameAegis: row.name_aegis,
+        id: Number(row.mob_id),
+        name: row.name,
+        nameAegis: row.aegis_name,
         level: Number(row.level) || 0,
         hp,
-        baseExp: Number(row.base_exp) || 0,
-        jobExp: Number(row.job_exp) || 0,
-        mvpExp: Number(row.mvp_exp) || 0,
-        class: row.class || null,
+        baseExp: Number(row.base_exp_effective ?? row.base_exp_base) || 0,
+        jobExp: Number(row.job_exp_effective ?? row.job_exp_base) || 0,
+        mvpExp: Number(row.mvp_exp_effective ?? row.mvp_exp_base) || 0,
+        class: row.mob_class || null,
         isMvp: tier === 'mvp',
         isBoss: tier === 'boss',
-        fixedDrop: Number(row.mode_fixeditemdrop) === 1,
+        fixedDrop,
         mzwBase: mzw,
         mzwNormal,
         mzwMvp,
@@ -317,7 +336,7 @@ export async function initializeFarmingIndex() {
 
     await initializeItemValues();
 
-    penaltyData = readJson(LEVEL_PENALTY_PATH);
+    penaltyData = await loadLevelPenaltyFromDb();
     accessData = readJson(WORLD_ACCESS_PATH);
 
     const worldview = readJson(WORLDVIEW_PATH);
@@ -327,30 +346,59 @@ export async function initializeFarmingIndex() {
         }
     }
 
-    const [mobRows, itemRows] = await Promise.all([
-        query(`SELECT m.* FROM ${effectiveMobsSql('m')}`),
+    const [mobRows, itemRows, dropRows] = await Promise.all([
+        query(`SELECT m.* FROM \`${T.MOBS}\` m`),
         query(
-            `SELECT i.id, i.name_aegis, i.name_english, i.type, i.price_buy, i.price_sell, i.trade_nosell
-             FROM ${effectiveItemsSql('i')}`
+            `SELECT i.item_id, i.aegis_name, i.name, i.type,
+                    i.buy_effective, i.sell_effective, i.buy_base, i.sell_base
+             FROM \`${T.ITEMS}\` i`
+        ),
+        query(
+            `SELECT d.mob_id, d.item_id, d.drop_category, d.chance_effective, d.rate_unit
+             FROM \`${T.MOB_DROPS}\` d
+             WHERE d.is_map_bonus = 0`
         )
     ]);
 
-    const itemByAegis = new Map(itemRows.map((item) => [item.name_aegis, item]));
+    const itemById = new Map(
+        itemRows.map((item) => [
+            Number(item.item_id),
+            {
+                ...item,
+                id: item.item_id,
+                name_aegis: item.aegis_name,
+                name_english: item.name,
+                price_buy: item.buy_effective ?? item.buy_base,
+                price_sell: item.sell_effective ?? item.sell_base,
+                trade_nosell: 0
+            }
+        ])
+    );
+    const dropsByMob = new Map();
+    for (const drop of dropRows) {
+        const mobId = Number(drop.mob_id);
+        if (!dropsByMob.has(mobId)) dropsByMob.set(mobId, []);
+        dropsByMob.get(mobId).push(drop);
+    }
+
     const spawnsByMob = new Map();
     let spawnRows = [];
 
     if (isSpawnDataAvailable()) {
         spawnRows = await query(
-            `SELECT s.mob_id, s.map,
-                    SUM(s.amount) AS amount,
+            `SELECT s.mob_id, s.map_id AS map,
+                    SUM(COALESCE(s.amount, 0)) AS amount,
                     COUNT(*) AS points,
-                    MIN(s.delay) AS minDelay,
-                    MAX(s.delay + s.delay2) AS maxDelay,
-                    MAX(s.is_boss) AS boss,
-                    MAX(s.is_instance) AS instance
-             FROM ${spawnTableSql('s')}
-             GROUP BY s.mob_id, s.map
-             ORDER BY s.mob_id ASC, s.map ASC`
+                    MIN(s.respawn_min) AS minDelay,
+                    MAX(COALESCE(s.respawn_max, s.respawn_min)) AS maxDelay,
+                    MAX(COALESCE(s.boss_flag, 0)) AS boss,
+                    MAX(CASE WHEN s.spawn_type = 'instance' OR mp.is_instance = 1 THEN 1 ELSE 0 END) AS instance
+             FROM \`${T.SPAWNS}\` s
+             LEFT JOIN \`${T.MAPS}\` mp ON mp.map_id = s.map_id
+             WHERE s.map_id IS NOT NULL
+               AND s.spawn_type IN ('permanent', 'scripted', 'instance', 'event')
+             GROUP BY s.mob_id, s.map_id
+             ORDER BY s.mob_id ASC, s.map_id ASC`
         );
 
         for (const row of spawnRows) {
@@ -369,7 +417,7 @@ export async function initializeFarmingIndex() {
     }
 
     for (const row of mobRows) {
-        const mob = buildMob(row, itemByAegis, spawnsByMob);
+        const mob = buildMob(row, dropsByMob.get(Number(row.mob_id)), itemById, spawnsByMob);
         if (!mob) continue;
         mobs.push(mob);
         mobById.set(mob.id, mob);

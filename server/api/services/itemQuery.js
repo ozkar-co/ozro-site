@@ -1,3 +1,6 @@
+/**
+ * Item queries against ozro_items (+ scripts / drops). Buy/sell are effective values.
+ */
 import { query } from '../../services/mariadb.js';
 import { getMobsDroppingItem, getMobsDroppingItems } from './mobQuery.js';
 import { findItemIdsByDisplayName, getItemDisplayName } from './itemInfo.js';
@@ -10,116 +13,140 @@ import {
     naturalDropFilterClause
 } from './naturalDropIndex.js';
 import {
-    effectiveMobsSql,
-    effectiveItemsSql,
+    T,
     isMobDataAvailable,
     isSpawnDataAvailable,
     parsePagination,
     parseCsv,
     parseBool,
-    parseIntParam,
+    parseJsonColumn,
     ITEM_TYPES,
     ITEM_CLASSES,
-    ITEM_CLASS_COLUMNS,
     ITEM_ARMOR_DB_TYPES,
-    ARMOR_SUBTYPE_LOCATION_COLUMNS,
-    ITEM_EQUIP_LOCATION_COLUMNS,
-    JOB_COLUMNS
+    ITEM_LOCATION_JSON_KEYS,
+    ITEM_JOB_JSON_KEYS,
+    ARMOR_SUBTYPE_LOCATION_JSON
 } from './gameDb.js';
 
+function jsonTruthy(alias, jsonCol, pathKey) {
+    // MariaDB: JSON_EXTRACT returns true/false or 1/0 depending on version
+    return `(
+        JSON_EXTRACT(${alias}.${jsonCol}, '$.${pathKey}') = TRUE
+        OR JSON_EXTRACT(${alias}.${jsonCol}, '$.${pathKey}') = 1
+        OR JSON_UNQUOTE(JSON_EXTRACT(${alias}.${jsonCol}, '$.${pathKey}')) IN ('true', '1')
+    )`;
+}
+
 function mapItemLocations(row) {
-    const locationFields = [
-        ['headTop', 'location_head_top'],
-        ['headMid', 'location_head_mid'],
-        ['headLow', 'location_head_low'],
-        ['armor', 'location_armor'],
-        ['rightHand', 'location_right_hand'],
-        ['leftHand', 'location_left_hand'],
-        ['garment', 'location_garment'],
-        ['shoes', 'location_shoes'],
-        ['rightAccessory', 'location_right_accessory'],
-        ['leftAccessory', 'location_left_accessory'],
-        ['costumeHeadTop', 'location_costume_head_top'],
-        ['costumeHeadMid', 'location_costume_head_mid'],
-        ['costumeHeadLow', 'location_costume_head_low'],
-        ['costumeGarment', 'location_costume_garment'],
-        ['ammo', 'location_ammo'],
-        ['shadowArmor', 'location_shadow_armor'],
-        ['shadowWeapon', 'location_shadow_weapon'],
-        ['shadowShield', 'location_shadow_shield'],
-        ['shadowShoes', 'location_shadow_shoes'],
-        ['shadowRightAccessory', 'location_shadow_right_accessory'],
-        ['shadowLeftAccessory', 'location_shadow_left_accessory']
-    ];
+    const locationsRaw = parseJsonColumn(row.locations, {}) || {};
+    const reverse = Object.fromEntries(
+        Object.entries(ITEM_LOCATION_JSON_KEYS).map(([api, yaml]) => [yaml, api])
+    );
     const locations = {};
-    for (const [key, column] of locationFields) {
-        if (row[column]) locations[key] = true;
+    for (const [key, value] of Object.entries(locationsRaw)) {
+        if (!value) continue;
+        const apiKey = reverse[key] || key;
+        locations[apiKey] = true;
     }
     return locations;
 }
 
 function mapItemJobs(row) {
+    const jobsRaw = parseJsonColumn(row.jobs, null);
+    if (!jobsRaw || typeof jobsRaw !== 'object') {
+        return { all: false, jobs: [] };
+    }
+    if (jobsRaw.All || jobsRaw.all) {
+        return { all: true, jobs: Object.keys(ITEM_JOB_JSON_KEYS) };
+    }
+    const reverse = Object.fromEntries(
+        Object.entries(ITEM_JOB_JSON_KEYS).map(([api, yaml]) => [yaml.toLowerCase(), api])
+    );
     const jobs = [];
-    if (row.job_all) return { all: true, jobs: Object.keys(JOB_COLUMNS) };
-    for (const [job, column] of Object.entries(JOB_COLUMNS)) {
-        if (row[column]) jobs.push(job);
+    for (const [key, value] of Object.entries(jobsRaw)) {
+        if (!value) continue;
+        const api = reverse[key.toLowerCase()] || key.toLowerCase();
+        jobs.push(api);
     }
     return { all: false, jobs };
 }
 
-function mapItemClasses(row) {
-    const classes = [];
-    if (row.class_all) return { all: true, classes: ITEM_CLASSES };
-    for (const cls of ITEM_CLASSES) {
-        const column = ITEM_CLASS_COLUMNS[cls];
-        if (row[column]) classes.push(cls);
-    }
-    return { all: false, classes };
+function mapItemClasses() {
+    // Class bitmask columns are not in ozro_items yet — keep API shape.
+    return { all: false, classes: [] };
+}
+
+function num(value) {
+    if (value == null) return null;
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
 }
 
 function mapItemSummary(row) {
     return {
-        id: row.id,
-        name: getItemDisplayName(row.id) || row.name_english || row.name_aegis,
-        nameAegis: row.name_aegis,
-        nameEnglish: row.name_english,
+        id: num(row.item_id),
+        name: getItemDisplayName(row.item_id) || row.display_name || row.name || row.aegis_name,
+        nameAegis: row.aegis_name,
+        nameEnglish: row.name,
         type: row.type,
         subtype: row.subtype,
-        attack: row.attack,
-        magicAttack: row.magic_attack,
-        defense: row.defense,
-        weight: row.weight,
-        priceBuy: row.price_buy,
-        priceSell: row.price_sell,
-        slots: row.slots,
-        equipLevelMin: row.equip_level_min,
-        equipLevelMax: row.equip_level_max
+        attack: num(row.attack),
+        magicAttack: num(row.magic_attack),
+        defense: num(row.defense),
+        weight: num(row.weight),
+        priceBuy: num(row.buy_effective ?? row.buy_base),
+        priceSell: num(row.sell_effective ?? row.sell_base),
+        slots: num(row.slots),
+        equipLevelMin: num(row.equip_level_min),
+        equipLevelMax: num(row.equip_level_max)
     };
 }
 
-function mapItemDetail(row) {
+function mapItemDetail(row, scripts = {}) {
     return {
         ...mapItemSummary(row),
-        range: row.range,
+        range: row.range_atk,
         weaponLevel: row.weapon_level,
         armorLevel: row.armor_level,
-        refineable: Boolean(row.refineable),
-        gradable: Boolean(row.gradable),
-        gender: row.gender,
-        script: row.script,
-        equipScript: row.equip_script,
-        unequipScript: row.unequip_script,
+        refineable: row.refineable == null ? null : Boolean(row.refineable),
+        gradable: null,
+        gender: null,
+        script: scripts.Script || null,
+        equipScript: scripts.EquipScript || null,
+        unequipScript: scripts.UnEquipScript || null,
         jobs: mapItemJobs(row),
         classes: mapItemClasses(row),
         locations: mapItemLocations(row)
     };
 }
 
-function buildHasDropExists() {
-    const orConditions = mobDropColumns().map((col) => `m.${col.item} = i.name_aegis`);
-    return `EXISTS (SELECT 1 FROM ${effectiveMobsSql('m')} WHERE ${orConditions.join(' OR ')})`;
+async function loadScriptsForItems(itemIds) {
+    if (!itemIds.length) return new Map();
+    try {
+        const placeholders = itemIds.map(() => '?').join(', ');
+        const rows = await query(
+            `SELECT item_id, script_kind, script_body
+             FROM \`${T.ITEM_SCRIPTS}\`
+             WHERE item_id IN (${placeholders})`,
+            itemIds
+        );
+        const byItem = new Map();
+        for (const row of rows) {
+            if (!byItem.has(row.item_id)) byItem.set(row.item_id, {});
+            byItem.get(row.item_id)[row.script_kind] = row.script_body;
+        }
+        return byItem;
+    } catch {
+        return new Map();
+    }
 }
 
+function buildHasDropExists() {
+    return `EXISTS (
+        SELECT 1 FROM \`${T.MOB_DROPS}\` d
+        WHERE d.item_id = i.item_id AND d.is_map_bonus = 0
+    )`;
+}
 
 function buildItemFilters(params) {
     const conditions = [];
@@ -129,14 +156,19 @@ function buildItemFilters(params) {
     if (params.q) {
         const term = params.q.trim();
         if (/^\d+$/.test(term)) {
-            conditions.push('i.id = ?');
+            conditions.push('i.item_id = ?');
             values.push(parseInt(term, 10));
-            orderBy = buildRelevanceOrderSql('i', ['i.name_english', 'i.name_aegis'], term, 'i.id');
+            orderBy = buildRelevanceOrderSql(
+                'i',
+                ['i.name', 'i.display_name', 'i.aegis_name'],
+                term,
+                'i.item_id'
+            );
         } else {
             const nameIds = findItemIdsByDisplayName(term);
             const tokenMatch = buildTokenMatchClause(
                 'i',
-                ['i.name_english', 'i.name_aegis'],
+                ['i.name', 'i.display_name', 'i.aegis_name'],
                 term
             );
             const branches = [];
@@ -147,14 +179,19 @@ function buildItemFilters(params) {
                 branchValues.push(...tokenMatch.values);
             }
             if (nameIds.length > 0) {
-                branches.push(`i.id IN (${nameIds.map(() => '?').join(', ')})`);
+                branches.push(`i.item_id IN (${nameIds.map(() => '?').join(', ')})`);
                 branchValues.push(...nameIds);
             }
             if (branches.length > 0) {
                 conditions.push(`(${branches.join(' OR ')})`);
                 values.push(...branchValues);
             }
-            orderBy = buildRelevanceOrderSql('i', ['i.name_english', 'i.name_aegis'], term, 'i.id');
+            orderBy = buildRelevanceOrderSql(
+                'i',
+                ['i.name', 'i.display_name', 'i.aegis_name'],
+                term,
+                'i.item_id'
+            );
         }
     }
 
@@ -173,27 +210,28 @@ function buildItemFilters(params) {
         values.push(...uniqueTypes);
     }
 
+    // Class columns not present in ozro_items — ignore filter (documented in DATA.md gap).
     const classes = parseCsv(params.class);
     if (classes.length > 0) {
-        const classConditions = classes
-            .filter((cls) => ITEM_CLASS_COLUMNS[cls])
-            .map((cls) => `i.${ITEM_CLASS_COLUMNS[cls]} = 1`);
-        if (classConditions.length > 0) {
-            conditions.push(`(i.class_all = 1 OR (${classConditions.join(' OR ')}))`);
-        }
+        console.warn('Filtro class ignorado: ozro_items no expone class_* aún');
     }
 
     const jobs = parseCsv(params.jobs);
     const jobsStrict = parseBool(params.jobsStrict) === true;
     if (jobs.length > 0) {
         const jobConditions = jobs
-            .filter((job) => JOB_COLUMNS[job])
-            .map((job) => `i.${JOB_COLUMNS[job]} = 1`);
+            .map((job) => ITEM_JOB_JSON_KEYS[job])
+            .filter(Boolean)
+            .map((jsonKey) => jsonTruthy('i', 'jobs', jsonKey));
         if (jobConditions.length > 0) {
             if (jobsStrict) {
                 conditions.push(`(${jobConditions.join(' OR ')})`);
             } else {
-                conditions.push(`(i.job_all = 1 OR (${jobConditions.join(' OR ')}))`);
+                conditions.push(`(
+                    JSON_EXTRACT(i.jobs, '$.All') = TRUE
+                    OR JSON_EXTRACT(i.jobs, '$.all') = TRUE
+                    OR (${jobConditions.join(' OR ')})
+                )`);
             }
         }
     }
@@ -203,15 +241,13 @@ function buildItemFilters(params) {
     const subtypeParts = [];
 
     if (armorSubtypes.length > 0) {
-        const locationCols = armorSubtypes
-            .map((st) => ARMOR_SUBTYPE_LOCATION_COLUMNS[st])
-            .filter(Boolean);
-        if (locationCols.length > 0) {
-            const locationSql = locationCols
-                .map((col) => `i.${col} = 1`)
-                .join(' OR ');
+        const locParts = armorSubtypes
+            .map((st) => ARMOR_SUBTYPE_LOCATION_JSON[st])
+            .filter(Boolean)
+            .map((jsonKey) => jsonTruthy('i', 'locations', jsonKey));
+        if (locParts.length > 0) {
             subtypeParts.push(
-                `(i.subtype IN (${armorSubtypes.map(() => '?').join(', ')}) OR (${locationSql}))`
+                `(i.subtype IN (${armorSubtypes.map(() => '?').join(', ')}) OR (${locParts.join(' OR ')}))`
             );
             values.push(...armorSubtypes);
         } else {
@@ -235,22 +271,22 @@ function buildItemFilters(params) {
 
     const locations = parseCsv(params.location);
     if (locations.length > 0) {
-        const locationConditions = [];
-        for (const key of locations) {
-            const column = ITEM_EQUIP_LOCATION_COLUMNS[key];
-            if (column) {
-                locationConditions.push(`i.${column} = 1`);
-            }
-        }
+        const locationConditions = locations
+            .map((key) => ITEM_LOCATION_JSON_KEYS[key])
+            .filter(Boolean)
+            .map((jsonKey) => jsonTruthy('i', 'locations', jsonKey));
         if (locationConditions.length > 0) {
             conditions.push(`(${locationConditions.join(' OR ')})`);
         }
     }
 
     if (params.script) {
-        const tokenMatch = buildTokenMatchClause('i', ['i.script'], params.script);
+        const tokenMatch = buildTokenMatchClause('s', ['s.script_body'], params.script);
         if (tokenMatch) {
-            conditions.push(`(${tokenMatch.clause})`);
+            conditions.push(`EXISTS (
+                SELECT 1 FROM \`${T.ITEM_SCRIPTS}\` s
+                WHERE s.item_id = i.item_id AND (${tokenMatch.clause})
+            )`);
             values.push(...tokenMatch.values);
         }
     }
@@ -288,18 +324,17 @@ function buildItemFilters(params) {
 export async function searchItems(params) {
     const { page, limit, offset } = parsePagination(params);
     const { whereClause, values, orderBy } = buildItemFilters(params);
-    const fromSql = effectiveItemsSql('i');
     const orderSql = orderBy?.orderSql
-        ? orderBy.orderSql
-        : 'i.name_english ASC, i.id ASC';
+        ? orderBy.orderSql.replace(/\bi\.id\b/g, 'i.item_id')
+        : 'i.name ASC, i.item_id ASC';
     const orderValues = orderBy?.values ?? [];
 
     const countRows = await query(
-        `SELECT COUNT(*) AS total FROM ${fromSql} ${whereClause}`,
+        `SELECT COUNT(*) AS total FROM \`${T.ITEMS}\` i ${whereClause}`,
         values
     );
     const rows = await query(
-        `SELECT i.* FROM ${fromSql}
+        `SELECT i.* FROM \`${T.ITEMS}\` i
          ${whereClause}
          ORDER BY ${orderSql}
          LIMIT ? OFFSET ?`,
@@ -307,7 +342,9 @@ export async function searchItems(params) {
     );
     const total = Number(countRows[0].total);
 
-    const results = rows.map(mapItemDetail);
+    const scripts = await loadScriptsForItems(rows.map((r) => r.item_id));
+    const results = rows.map((row) => mapItemDetail(row, scripts.get(row.item_id) || {}));
+
     if (isMobDataAvailable() && results.length > 0) {
         const dropsByItem = await getMobsDroppingItems(results.map((item) => item.nameAegis));
         for (const item of results) {
@@ -319,40 +356,36 @@ export async function searchItems(params) {
         }
     }
 
-    return {
-        total,
-        page,
-        limit,
-        results
-    };
+    return { total, page, limit, results };
 }
 
 export async function getItemById(id) {
     const rows = await query(
-        `SELECT i.* FROM ${effectiveItemsSql('i')} WHERE i.id = ?`,
+        `SELECT i.* FROM \`${T.ITEMS}\` i WHERE i.item_id = ?`,
         [id]
     );
     if (rows.length === 0) return null;
 
-    const item = mapItemDetail(rows[0]);
+    const scripts = await loadScriptsForItems([id]);
+    const item = mapItemDetail(rows[0], scripts.get(Number(id)) || {});
     item.droppedBy = isMobDataAvailable()
-        ? await getMobsDroppingItem(rows[0].name_aegis)
+        ? await getMobsDroppingItem(rows[0].aegis_name)
         : [];
     return item;
 }
 
 export async function getItemMeta() {
     const [types, armorSubtypes, weaponSubtypes] = await Promise.all([
-        query(`SELECT DISTINCT type AS value FROM ${effectiveItemsSql('i')} WHERE type IS NOT NULL ORDER BY type`),
+        query(`SELECT DISTINCT type AS value FROM \`${T.ITEMS}\` WHERE type IS NOT NULL ORDER BY type`),
         query(
-            `SELECT DISTINCT subtype AS value FROM ${effectiveItemsSql('i')}
+            `SELECT DISTINCT subtype AS value FROM \`${T.ITEMS}\`
              WHERE type IN (${ITEM_ARMOR_DB_TYPES.map(() => '?').join(', ')})
                AND COALESCE(subtype, '') <> ''
              ORDER BY subtype`,
             ITEM_ARMOR_DB_TYPES
         ),
         query(
-            `SELECT DISTINCT subtype AS value FROM ${effectiveItemsSql('i')}
+            `SELECT DISTINCT subtype AS value FROM \`${T.ITEMS}\`
              WHERE type = 'Weapon' AND COALESCE(subtype, '') <> ''
              ORDER BY subtype`
         )
@@ -362,9 +395,9 @@ export async function getItemMeta() {
         types: types.map((r) => r.value),
         armorSubtypes: armorSubtypes.map((r) => r.value),
         weaponSubtypes: weaponSubtypes.map((r) => r.value),
-        cardLocations: Object.keys(ITEM_EQUIP_LOCATION_COLUMNS),
+        cardLocations: Object.keys(ITEM_LOCATION_JSON_KEYS),
         classes: ITEM_CLASSES,
-        jobs: Object.keys(JOB_COLUMNS),
+        jobs: Object.keys(ITEM_JOB_JSON_KEYS),
         defaults: {
             types: ITEM_TYPES
         }

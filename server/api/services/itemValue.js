@@ -70,8 +70,12 @@ export async function initializeItemValues() {
 export function npcValue(item) {
     if (!item || Number(item.trade_nosell) === 1) return 0;
 
-    let buy = numberOrNull(item.price_buy);
-    let sell = numberOrNull(item.price_sell);
+    // Prefer Master World effective sell (already resolved in ozro_items).
+    const effectiveSell = numberOrNull(item.sell_effective ?? item.price_sell);
+    if (effectiveSell !== null && effectiveSell > 0) return effectiveSell;
+
+    let buy = numberOrNull(item.buy_effective ?? item.price_buy);
+    let sell = numberOrNull(item.sell_base ?? item.price_sell);
 
     if (buy === null && sell !== null) buy = sell * 2;
     if (sell === null && buy !== null) sell = Math.floor(buy / 2);

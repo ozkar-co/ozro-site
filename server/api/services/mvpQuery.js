@@ -1,10 +1,8 @@
 import { query } from '../../services/mariadb.js';
 import {
-    effectiveMobsSql,
-    isSpawnDataAvailable,
-    spawnTableSql
+    T,
+    isSpawnDataAvailable
 } from './gameDb.js';
-import { applyMobHp } from './mobRates.js';
 import { getMobSummons } from './mobSummons.js';
 
 const YELLOW_WINDOW_SECONDS = 20 * 60;
@@ -190,15 +188,22 @@ export async function getMvpRadar() {
     const [timeRows, spawnRows, latestKills, recentKills] = await Promise.all([
         query('SELECT UNIX_TIMESTAMP() AS server_time'),
         query(`
-            SELECT s.mob_id, s.map, s.amount, s.delay, s.delay2,
-                   m.name_english, m.name_aegis, m.level, m.hp,
+            SELECT s.mob_id, s.map_id AS map, s.amount,
+                   s.respawn_min AS delay, s.respawn_max AS delay2,
+                   m.name AS name_english, m.aegis_name AS name_aegis, m.level,
+                   m.hp_effective AS hp,
                    m.element, m.element_level, m.race, m.size,
-                   m.base_exp, m.job_exp, m.mvp_exp
-            FROM ${spawnTableSql('s')}
-            JOIN ${effectiveMobsSql('m')} ON m.id = s.mob_id
-            WHERE s.is_instance = 0
-              AND (m.mode_mvp = 1 OR COALESCE(m.mvp_exp, 0) > 0)
-            ORDER BY m.level ASC, m.name_english ASC
+                   COALESCE(m.base_exp_effective, m.base_exp_base) AS base_exp,
+                   COALESCE(m.job_exp_effective, m.job_exp_base) AS job_exp,
+                   COALESCE(m.mvp_exp_effective, m.mvp_exp_base) AS mvp_exp
+            FROM \`${T.SPAWNS}\` s
+            JOIN \`${T.MOBS}\` m ON m.mob_id = s.mob_id
+            LEFT JOIN \`${T.MAPS}\` mp ON mp.map_id = s.map_id
+            WHERE s.map_id IS NOT NULL
+              AND COALESCE(mp.is_instance, 0) = 0
+              AND s.spawn_type IN ('permanent', 'scripted', 'event')
+              AND (COALESCE(m.is_mvp, 0) = 1 OR COALESCE(m.mvp_exp_effective, m.mvp_exp_base, 0) > 0)
+            ORDER BY m.level ASC, m.name ASC
         `),
         getLatestKills(),
         getRecentKills()
@@ -223,7 +228,7 @@ export async function getMvpRadar() {
             name: row.name_english,
             nameAegis: row.name_aegis,
             level,
-            hp: applyMobHp(row.hp, 'mvp'),
+            hp: toNumber(row.hp),
             element: row.element,
             elementLevel: toNumber(row.element_level),
             race: row.race,

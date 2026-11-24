@@ -1,57 +1,53 @@
+/**
+ * Items dropped by world (non-instance) spawns — from ozro_spawns + ozro_mob_drops.
+ */
 import { query } from '../../services/mariadb.js';
-import {
-    effectiveMobsSql,
-    isSpawnDataAvailable,
-    mobDropColumns,
-    spawnTableSql
-} from './gameDb.js';
+import { T, isSpawnDataAvailable, isWorldSpawnSql } from './gameDb.js';
 
 const CACHE_TABLE = 'ozro_cache_natural_drop';
 let useTableCache = false;
-let naturalDropAegisSubquery = null;
+let naturalDropItemIdSubquery = null;
 
-function buildDropUnionSql() {
-    const cols = mobDropColumns();
-    return cols.map((col) => `
-        SELECT m.${col.item} AS name_aegis
-        FROM ${spawnTableSql('s')}
-        INNER JOIN ${effectiveMobsSql('m')} ON m.id = s.mob_id
-        WHERE s.is_instance = 0
-          AND COALESCE(m.${col.rate}, 0) > 0
-          AND m.${col.item} IS NOT NULL
-          AND m.${col.item} <> ''
-    `).join(' UNION ');
+function buildDistinctItemSql() {
+    return `
+        SELECT DISTINCT d.item_id
+        FROM \`${T.MOB_DROPS}\` d
+        INNER JOIN \`${T.SPAWNS}\` s ON s.mob_id = d.mob_id
+        WHERE d.is_map_bonus = 0
+          AND ${isWorldSpawnSql('s')}
+    `;
 }
 
 export function isNaturalDropIndexReady() {
-    return useTableCache || naturalDropAegisSubquery !== null;
+    return useTableCache || naturalDropItemIdSubquery !== null;
 }
 
-/**
- * Precalcula objetos con drop en mapas del mundo (no instancia).
- * Preferimos tabla cache indexada; si no hay permisos CREATE, subquery materializada en SQL.
- */
 export async function initializeNaturalDropIndex() {
     useTableCache = false;
-    naturalDropAegisSubquery = null;
+    naturalDropItemIdSubquery = null;
 
     if (!isSpawnDataAvailable()) {
         return;
     }
 
-    const unionSql = buildDropUnionSql();
-    const distinctSql = `SELECT DISTINCT name_aegis FROM (${unionSql}) AS src WHERE name_aegis IS NOT NULL AND name_aegis <> ''`;
+    const distinctSql = buildDistinctItemSql();
 
     try {
         await query(`
             CREATE TABLE IF NOT EXISTS ${CACHE_TABLE} (
-                name_aegis VARCHAR(100) NOT NULL,
-                PRIMARY KEY (name_aegis)
+                item_id INT NOT NULL,
+                PRIMARY KEY (item_id)
             ) ENGINE=InnoDB
         `);
+        // Migrate old aegis-based cache if present
+        try {
+            await query(`ALTER TABLE ${CACHE_TABLE} DROP COLUMN name_aegis`);
+        } catch {
+            /* ignore */
+        }
         await query(`TRUNCATE TABLE ${CACHE_TABLE}`);
         await query(`
-            INSERT INTO ${CACHE_TABLE} (name_aegis)
+            INSERT INTO ${CACHE_TABLE} (item_id)
             ${distinctSql}
         `);
         const countRows = await query(`SELECT COUNT(*) AS cnt FROM ${CACHE_TABLE}`);
@@ -60,17 +56,19 @@ export async function initializeNaturalDropIndex() {
         return;
     } catch (error) {
         console.warn(
-            `Tabla ${CACHE_TABLE} no disponible (${error.message}); usando subquery sin correlacionar.`
+            `Tabla ${CACHE_TABLE} no disponible (${error.message}); usando subquery.`
         );
     }
 
-    naturalDropAegisSubquery = distinctSql;
+    naturalDropItemIdSubquery = distinctSql;
     try {
-        const countRows = await query(`SELECT COUNT(*) AS cnt FROM (${naturalDropAegisSubquery}) AS counted`);
+        const countRows = await query(
+            `SELECT COUNT(*) AS cnt FROM (${naturalDropItemIdSubquery}) AS counted`
+        );
         console.log(`Índice drop natural listo: ${countRows[0].cnt} objetos (subquery)`);
     } catch (error) {
         console.error('No se pudo construir índice de drop natural:', error);
-        naturalDropAegisSubquery = null;
+        naturalDropItemIdSubquery = null;
     }
 }
 
@@ -78,14 +76,14 @@ export function naturalDropFilterClause(itemAlias, hasDrop) {
     if (useTableCache) {
         const exists = `EXISTS (
             SELECT 1 FROM ${CACHE_TABLE} nd
-            WHERE nd.name_aegis = ${itemAlias}.name_aegis
+            WHERE nd.item_id = ${itemAlias}.item_id
         )`;
         return hasDrop ? exists : `NOT ${exists}`;
     }
 
-    if (naturalDropAegisSubquery) {
-        const membership = `${itemAlias}.name_aegis IN (${naturalDropAegisSubquery})`;
-        return hasDrop ? membership : `${itemAlias}.name_aegis NOT IN (${naturalDropAegisSubquery})`;
+    if (naturalDropItemIdSubquery) {
+        const membership = `${itemAlias}.item_id IN (${naturalDropItemIdSubquery})`;
+        return hasDrop ? membership : `${itemAlias}.item_id NOT IN (${naturalDropItemIdSubquery})`;
     }
 
     return null;
