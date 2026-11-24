@@ -228,6 +228,81 @@ export interface ItemSummary {
   equipLevelMax?: number;
 }
 
+export interface AcquisitionOpenerItem {
+  id: number;
+  name: string;
+  nameAegis?: string;
+}
+
+export interface AcquisitionBarterRequire {
+  id: number;
+  name: string;
+  amount: number;
+}
+
+export interface ItemAcquisition {
+  available: boolean;
+  summary: Record<string, number>;
+  labels?: Record<string, string>;
+  dropCount?: number;
+  mapDropCount?: number;
+  shops: {
+    shopId?: string | null;
+    shopName: string;
+    mapId?: string | null;
+    x?: number | null;
+    y?: number | null;
+    price?: number | null;
+    runtimeMutated?: boolean;
+    inventoryDeclared?: boolean | null;
+    stock?: number | null;
+  }[];
+  shopTotal?: number;
+  boxes: {
+    boxId?: string | null;
+    groupName?: string | null;
+    algorithm?: string | null;
+    chanceStatus?: string | null;
+    chanceLabel?: string | null;
+    chancePercent?: number | null;
+    quantityMin?: number | null;
+    quantityMax?: number | null;
+    openers: AcquisitionOpenerItem[];
+  }[];
+  boxTotal?: number;
+  crafting: {
+    recipeId?: string;
+    family?: string | null;
+    skillName?: string | null;
+    skillLevel?: number | null;
+    amount?: number | null;
+    zenyCost?: number | null;
+    successStatus?: string | null;
+    successLabel?: string | null;
+    successPercent?: number | null;
+    successVariable?: boolean;
+  }[];
+  barters: {
+    barterName?: string | null;
+    zeny?: number | null;
+    refine?: number | null;
+    quantity?: number;
+    requires: AcquisitionBarterRequire[];
+  }[];
+  barterTotal?: number;
+  npcRewards: {
+    npcName: string;
+    mapId?: string | null;
+    quantityMin?: number | null;
+    quantityMax?: number | null;
+    command?: string | null;
+  }[];
+  npcRewardTotal?: number;
+  questDrops?: unknown[];
+  mapDrops?: unknown[];
+  other?: { sourceType: string; label: string; mapId?: string | null }[];
+}
+
 export interface ItemDetail extends ItemSummary {
   range?: number;
   weaponLevel?: number;
@@ -253,6 +328,7 @@ export interface ItemDetail extends ItemSummary {
     spawnAmount?: number;
     hasWorldSpawn?: boolean;
   }[];
+  acquisition?: ItemAcquisition | null;
 }
 
 export interface ItemDescriptionResponse {

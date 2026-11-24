@@ -4,7 +4,7 @@ import Header from './Header';
 import Footer from './Footer';
 import Maps from './Maps';
 import Mvps from './Mvps';
-import ItemCard, { SearchResult, ITEM_TYPES } from './ItemCard';
+import ItemCard, { SearchResult } from './ItemCard';
 import MobCard, { MobResult, MOB_SIZE, MOB_ELEMENTS, MOB_RACES } from './MobCard';
 import '../styles/Database.css';
 import { apiClient } from '../api/client';
@@ -15,6 +15,7 @@ import {
   PLACEHOLDER_MOB_SPRITE
 } from '../api/placeholders';
 import {
+  ACQUISITION_SOURCE_OPTIONS,
   ARMOR_SUBTYPE_LABELS,
   armorSubtypeLabel,
   buildItemSearchParams,
@@ -22,12 +23,15 @@ import {
   CARD_LOCATION_OPTIONS,
   ITEM_TYPE_ARMOR,
   ITEM_TYPE_CARD,
+  ITEM_TYPE_FILTER_ORDER,
   ITEM_TYPE_WEAPON,
+  itemTypeFilterLabel,
   WEAPON_SUBTYPE_LABELS,
   weaponSubtypeLabel,
   mapItemToCard,
   mapMobToCard,
-  SearchOptions
+  SearchOptions,
+  defaultSearchOptions
 } from '../api/databaseMappers';
 import {
   buildDatabaseSearchParams,
@@ -36,7 +40,6 @@ import {
   parseDatabaseUrl,
   type DatabaseTab
 } from '../api/databaseUrl';
-import { defaultSearchOptions } from '../api/databaseMappers';
 
 type TabType = DatabaseTab;
 
@@ -74,6 +77,7 @@ const Database = () => {
   const [searchOptions, setSearchOptions] = useState<SearchOptions>(defaultSearchOptions());
   const [armorSubtypes, setArmorSubtypes] = useState<string[]>([]);
   const [weaponSubtypes, setWeaponSubtypes] = useState<string[]>([]);
+  const [itemTypeFilters, setItemTypeFilters] = useState<string[]>([...ITEM_TYPE_FILTER_ORDER]);
   const searchOptionsRef = useRef(searchOptions);
   const searchOptionsPanelRef = useRef<HTMLDivElement>(null);
 
@@ -106,10 +110,19 @@ const Database = () => {
         setArmorSubtypes(armorList.length > 0 ? armorList : Object.keys(ARMOR_SUBTYPE_LABELS));
         const weaponList = meta.weaponSubtypes ?? [];
         setWeaponSubtypes(weaponList.length > 0 ? weaponList : Object.keys(WEAPON_SUBTYPE_LABELS));
+        const metaTypes = (meta.types ?? [])
+          .map((t) => (t === 'Delayconsume' ? 'DelayConsume' : t))
+          .filter((t) => t && t !== 'Armor2');
+        if (metaTypes.length > 0) {
+          const preferred = ITEM_TYPE_FILTER_ORDER.filter((t) => metaTypes.includes(t));
+          const extras = metaTypes.filter((t) => !ITEM_TYPE_FILTER_ORDER.includes(t as typeof ITEM_TYPE_FILTER_ORDER[number]));
+          setItemTypeFilters([...preferred, ...extras]);
+        }
       })
       .catch(() => {
         setArmorSubtypes(Object.keys(ARMOR_SUBTYPE_LABELS));
         setWeaponSubtypes(Object.keys(WEAPON_SUBTYPE_LABELS));
+        setItemTypeFilters([...ITEM_TYPE_FILTER_ORDER]);
       });
   }, [activeTab]);
 
@@ -387,33 +400,32 @@ const Database = () => {
                         <div className="search-types">
                           <div className="search-types-title">Filtrar por tipo:</div>
                           <div className="search-types-grid">
-                            {Object.entries(ITEM_TYPES).map(([typeId, typeName]) => (
-                              <label key={typeId} className="type-checkbox">
+                            {itemTypeFilters.map((typeName) => (
+                              <label key={typeName} className="type-checkbox">
                                 <input
                                   type="checkbox"
-                                  checked={searchOptions.selectedTypes.includes(Number(typeId))}
+                                  checked={searchOptions.selectedTypes.includes(typeName)}
                                   onChange={() => setSearchOptions((prev) => {
-                                    const id = Number(typeId);
-                                    const selected = prev.selectedTypes.includes(id);
+                                    const selected = prev.selectedTypes.includes(typeName);
                                     const selectedTypes = selected
-                                      ? prev.selectedTypes.filter((t) => t !== id)
-                                      : [...prev.selectedTypes, id];
+                                      ? prev.selectedTypes.filter((t) => t !== typeName)
+                                      : [...prev.selectedTypes, typeName];
                                     return {
                                       ...prev,
                                       selectedTypes,
-                                      selectedArmorSubtypes: id === ITEM_TYPE_ARMOR && selected
+                                      selectedArmorSubtypes: typeName === ITEM_TYPE_ARMOR && selected
                                         ? []
                                         : prev.selectedArmorSubtypes,
-                                      selectedWeaponSubtypes: id === ITEM_TYPE_WEAPON && selected
+                                      selectedWeaponSubtypes: typeName === ITEM_TYPE_WEAPON && selected
                                         ? []
                                         : prev.selectedWeaponSubtypes,
-                                      selectedCardLocations: id === ITEM_TYPE_CARD && selected
+                                      selectedCardLocations: typeName === ITEM_TYPE_CARD && selected
                                         ? []
                                         : prev.selectedCardLocations
                                     };
                                   })}
                                 />
-                                {typeName}
+                                {itemTypeFilterLabel(typeName)}
                               </label>
                             ))}
                           </div>
@@ -494,6 +506,40 @@ const Database = () => {
                             }))}
                             placeholder="Ej: bonus bStr, heal"
                           />
+                        </div>
+                        <div className="search-types">
+                          <div className="search-types-title">Obtención (tiene fuente):</div>
+                          <div className="search-types-grid">
+                            {ACQUISITION_SOURCE_OPTIONS.map((source) => (
+                              <label key={source.id} className="type-checkbox">
+                                <input
+                                  type="checkbox"
+                                  checked={searchOptions.selectedAcquisitionSources.includes(source.id)}
+                                  onChange={() => setSearchOptions((prev) => {
+                                    const selected = prev.selectedAcquisitionSources.includes(source.id);
+                                    const selectedAcquisitionSources = selected
+                                      ? prev.selectedAcquisitionSources.filter((id) => id !== source.id)
+                                      : [...prev.selectedAcquisitionSources, source.id];
+                                    // Si filtras por tienda/craft/etc., no ocultar sin drop natural
+                                    const nonDropSelected = selectedAcquisitionSources.some(
+                                      (id) => id !== 'mob_drop' && id !== 'map_drop'
+                                    );
+                                    return {
+                                      ...prev,
+                                      selectedAcquisitionSources,
+                                      hideItemsWithoutNaturalDrop: nonDropSelected
+                                        ? false
+                                        : prev.hideItemsWithoutNaturalDrop
+                                    };
+                                  })}
+                                />
+                                {source.label}
+                              </label>
+                            ))}
+                          </div>
+                          <div className="search-filter-hint">
+                            Varios = OR (cualquiera de las fuentes)
+                          </div>
                         </div>
                         <div className="search-types">
                           <div className="search-types-title">Fuente de obtención:</div>

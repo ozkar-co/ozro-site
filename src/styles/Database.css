@@ -876,6 +876,96 @@ a {
   font-weight: 500;
 }
 
+.acquisition-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.acquisition-chip {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  background: #eef2f7;
+  color: #3a4a5c;
+  border: 1px solid #d5dde8;
+}
+
+.acquisition-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 0.65rem;
+}
+
+.acquisition-group-title,
+.acquisition-group-toggle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #445;
+  margin-bottom: 0.35rem;
+}
+
+.acquisition-group-toggle {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #4a6fa5;
+}
+
+.acquisition-group-toggle:hover {
+  text-decoration: underline;
+}
+
+.acquisition-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.acquisition-primary {
+  color: #333;
+}
+
+.acquisition-meta {
+  color: #666;
+}
+
+.acquisition-flag {
+  color: #8a5a00;
+  font-size: 0.85em;
+}
+
+.acquisition-requires {
+  margin-top: 0.15rem;
+  color: #555;
+  font-size: 0.85rem;
+}
+
+.acquisition-requires a {
+  color: #4a6fa5;
+  text-decoration: none;
+}
+
+.acquisition-requires a:hover {
+  text-decoration: underline;
+}
+
+.acquisition-more {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: #777;
+}
+
 .result-card-dropped-by {
   display: flex;
   flex-wrap: wrap;

@@ -39,6 +39,7 @@ const SIZE_TO_API: Record<number, string> = {
   2: 'Large'
 };
 
+/** @deprecated Prefer API type strings; kept for legacy numeric card fields. */
 export const ITEM_TYPE_TO_API: Record<number, string> = {
   0: 'Healing',
   2: 'Usable',
@@ -49,7 +50,9 @@ export const ITEM_TYPE_TO_API: Record<number, string> = {
   7: 'Petegg',
   8: 'Petarmor',
   10: 'Ammo',
-  11: 'Delayconsume',
+  11: 'DelayConsume',
+  12: 'Cash',
+  13: 'Shadowgear',
   18: 'Usable'
 };
 
@@ -59,15 +62,39 @@ const ITEM_TYPE_TO_NUMBER: Record<string, number> = {
   Etc: 3,
   Weapon: 4,
   Armor: 5,
+  Armor2: 5,
   Card: 6,
   Petegg: 7,
   Petarmor: 8,
   Ammo: 10,
+  DelayConsume: 11,
   Delayconsume: 11,
-  Cash: 3,
-  Shadowgear: 5,
-  Armor2: 5
+  Cash: 12,
+  Shadowgear: 13
 };
+
+/** Labels for ozro_items.type filter checkboxes. */
+export const ITEM_TYPE_FILTER_LABELS: Record<string, string> = {
+  Healing: 'Healing',
+  Usable: 'Usable',
+  Etc: 'Etc',
+  Weapon: 'Weapon',
+  Armor: 'Armor',
+  Card: 'Card',
+  Cash: 'Cash',
+  Shadowgear: 'Shadow gear',
+  DelayConsume: 'Delayed usable',
+  Petegg: 'Pet egg',
+  Petarmor: 'Pet equipment',
+  Ammo: 'Ammo',
+  Armor2: 'Armor (alt)'
+};
+
+/** Fallback order when /items/meta is unavailable. */
+export const ITEM_TYPE_FILTER_ORDER = [
+  'Healing', 'Usable', 'Etc', 'Weapon', 'Armor', 'Card',
+  'Cash', 'Shadowgear', 'DelayConsume', 'Petegg', 'Petarmor', 'Ammo'
+] as const;
 
 const JOB_LABELS: Record<string, string> = {
   novice: 'Novice', swordman: 'Swordman', mage: 'Mage', archer: 'Archer',
@@ -143,25 +170,30 @@ const SIZE_FROM_API = Object.fromEntries(
   Object.entries(SIZE_TO_API).map(([id, name]) => [name, Number(id)])
 );
 
-export const ITEM_TYPE_WEAPON = 4;
-export const ITEM_TYPE_ARMOR = 5;
-export const ITEM_TYPE_CARD = 6;
+export const ITEM_TYPE_WEAPON = 'Weapon';
+export const ITEM_TYPE_ARMOR = 'Armor';
+export const ITEM_TYPE_CARD = 'Card';
+export const ITEM_TYPE_CASH = 'Cash';
+export const ITEM_TYPE_SHADOWGEAR = 'Shadowgear';
 
 /** Debe coincidir con server/api/services/gameDb.js ITEM_ARMOR_DB_TYPES */
-export const ITEM_ARMOR_DB_TYPES = ['Armor', 'Armor2', 'Shadowgear'] as const;
+export const ITEM_ARMOR_DB_TYPES = ['Armor', 'Armor2'] as const;
 
-function itemTypesForApi(selectedTypes: number[]): string[] {
+function itemTypesForApi(selectedTypes: string[]): string[] {
   const names: string[] = [];
-  for (const id of selectedTypes) {
-    const api = ITEM_TYPE_TO_API[id];
-    if (!api) continue;
-    if (id === ITEM_TYPE_ARMOR) {
+  for (const typeName of selectedTypes) {
+    if (!typeName) continue;
+    if (typeName === ITEM_TYPE_ARMOR) {
       names.push(...ITEM_ARMOR_DB_TYPES);
     } else {
-      names.push(api);
+      names.push(typeName);
     }
   }
   return [...new Set(names)];
+}
+
+export function itemTypeFilterLabel(typeName: string): string {
+  return ITEM_TYPE_FILTER_LABELS[typeName] || typeName.replace(/_/g, ' ');
 }
 
 export const CARD_LOCATION_OPTIONS: Record<string, string> = {
@@ -240,12 +272,25 @@ export function weaponSubtypeLabel(value: string): string {
   return WEAPON_SUBTYPE_LABELS[value] || value.replace(/_/g, ' ');
 }
 
+/** Filtros de obtención (API sourceType). */
+export const ACQUISITION_SOURCE_OPTIONS: { id: string; label: string }[] = [
+  { id: 'mob_drop', label: 'Drop monstruo' },
+  { id: 'npc_shop', label: 'Tienda NPC' },
+  { id: 'box_reward', label: 'Cofre / caja' },
+  { id: 'crafting', label: 'Crafteo' },
+  { id: 'npc_barter', label: 'Trueque' },
+  { id: 'npc_reward', label: 'Recompensa NPC' },
+  { id: 'quest_drop', label: 'Drop quest' },
+  { id: 'map_drop', label: 'Drop de mapa' }
+];
+
 export interface SearchOptions {
-  selectedTypes: number[];
+  selectedTypes: string[];
   selectedArmorSubtypes: string[];
   selectedWeaponSubtypes: string[];
   selectedCardLocations: string[];
   scriptQuery: string;
+  selectedAcquisitionSources: string[];
   selectedElements: number[];
   selectedRaces: number[];
   selectedSizes: number[];
@@ -264,6 +309,7 @@ export const defaultSearchOptions = (): SearchOptions => ({
   selectedWeaponSubtypes: [],
   selectedCardLocations: [],
   scriptQuery: '',
+  selectedAcquisitionSources: [],
   selectedElements: [],
   selectedRaces: [],
   selectedSizes: [],
@@ -342,7 +388,11 @@ export function buildItemSearchParams(
   if (options.selectedTypes.length > 0) {
     params.type = itemTypesForApi(options.selectedTypes).join(',');
   } else if (options.selectedArmorSubtypes.length > 0) {
-    params.type = ITEM_ARMOR_DB_TYPES.join(',');
+    // Subtipos de armadura pueden incluir slots shadow → incluir Shadowgear
+    const shadowSubtype = options.selectedArmorSubtypes.some((s) => s.startsWith('Shadow_'));
+    params.type = shadowSubtype
+      ? [...ITEM_ARMOR_DB_TYPES, ITEM_TYPE_SHADOWGEAR].join(',')
+      : ITEM_ARMOR_DB_TYPES.join(',');
   } else if (options.selectedWeaponSubtypes.length > 0) {
     params.type = 'Weapon';
   }
@@ -367,6 +417,10 @@ export function buildItemSearchParams(
   const script = options.scriptQuery.trim();
   if (script) {
     params.script = script;
+  }
+
+  if (options.selectedAcquisitionSources.length > 0) {
+    params.sourceType = options.selectedAcquisitionSources.join(',');
   }
 
   return params;
@@ -470,6 +524,7 @@ export function mapItemToCard(
     jobsText,
     classesText,
     locationsText,
-    droppedBy: detail.droppedBy || []
+    droppedBy: detail.droppedBy || [],
+    acquisition: detail.acquisition || null
   };
 }

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import type { SpriteRect } from '../api/assets';
-import { apiClient, type MobSpawnMapSummary } from '../api/client';
+import { apiClient, type ItemAcquisition, type MobSpawnMapSummary } from '../api/client';
 import AtlasSprite from './AtlasSprite';
 import {
   PLACEHOLDER_ITEM_ICON,
@@ -56,6 +56,7 @@ interface SearchResult {
     spawnAmount?: number;
     hasWorldSpawn?: boolean;
   }[];
+  acquisition?: ItemAcquisition | null;
   equip_locations?: number[];
   equip_upper?: number[];
   equip_jobs?: number[];
@@ -116,6 +117,8 @@ const ITEM_TYPES = {
   8: 'Pet equipment',
   10: 'Ammo',
   11: 'Delayed Usable',
+  12: 'Cash',
+  13: 'Shadow gear',
   18: 'Usable with Confirmation'
 } as const;
 
@@ -288,6 +291,58 @@ function formatDropperSummary(total: number, withSpawn: number, withoutSpawn: nu
   return `Lo dropean: ${total} (${withSpawn} con spawn y ${withoutSpawn} sin spawn)`;
 }
 
+function hasAcquisitionDetails(acquisition?: ItemAcquisition | null): boolean {
+  if (!acquisition) return false;
+  return Boolean(
+    (acquisition.shops && acquisition.shops.length > 0)
+    || (acquisition.boxes && acquisition.boxes.length > 0)
+    || (acquisition.crafting && acquisition.crafting.length > 0)
+    || (acquisition.barters && acquisition.barters.length > 0)
+    || (acquisition.npcRewards && acquisition.npcRewards.length > 0)
+    || (acquisition.other && acquisition.other.length > 0)
+  );
+}
+
+function summarizeAcquisition(
+  acquisition: ItemAcquisition | null | undefined,
+  dropCount: number
+): { key: string; label: string }[] {
+  const chips: { key: string; label: string }[] = [];
+  const dropTotal = Math.max(dropCount, acquisition?.dropCount || 0);
+  if (dropTotal > 0) chips.push({ key: 'mob_drop', label: `Drop ×${dropTotal}` });
+  if (!acquisition) return chips;
+
+  const push = (key: string, count: number | undefined, label: string) => {
+    if (count && count > 0) chips.push({ key, label: `${label} ×${count}` });
+  };
+  push('npc_shop', acquisition.shopTotal ?? acquisition.shops?.length, 'Tienda');
+  push('box_reward', acquisition.boxTotal ?? acquisition.boxes?.length, 'Cofre');
+  push('crafting', acquisition.crafting?.length, 'Craft');
+  push('npc_barter', acquisition.barterTotal ?? acquisition.barters?.length, 'Trueque');
+  push('npc_reward', acquisition.npcRewardTotal ?? acquisition.npcRewards?.length, 'NPC');
+  push('quest_drop', acquisition.summary?.quest_drop, 'Quest');
+  push('map_drop', acquisition.mapDropCount, 'Mapa');
+  const otherCount = (acquisition.summary?.socketing || 0)
+    + (acquisition.summary?.enchanting || 0);
+  if (otherCount > 0) chips.push({ key: 'other', label: `Otros ×${otherCount}` });
+  return chips;
+}
+
+function AcquisitionBlock({
+  title,
+  children
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="acquisition-group">
+      <div className="acquisition-group-title">{title}</div>
+      {children}
+    </div>
+  );
+}
+
 function ResultProperty({
   label,
   value
@@ -320,6 +375,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
   const [descriptionLoading, setDescriptionLoading] = useState(false);
   const [descriptionError, setDescriptionError] = useState(false);
   const [dropsOpen, setDropsOpen] = useState(false);
+  const [acquisitionOpen, setAcquisitionOpen] = useState(false);
   const [scriptsOpen, setScriptsOpen] = useState(false);
 
   const scriptMain = result.script?.trim() || '';
@@ -330,6 +386,8 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
   const drops = result.droppedBy ?? [];
   const dropWithSpawn = drops.filter((mob) => mob.hasWorldSpawn === true).length;
   const dropWithoutSpawn = drops.length - dropWithSpawn;
+  const acquisition = result.acquisition;
+  const acquisitionChips = summarizeAcquisition(acquisition, drops.length);
   const equipLocationsText = result.equip_locations?.length
     ? getEquipLocationsText(result.equip_locations)
     : null;
@@ -513,49 +571,261 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
               </div>
             </div>
           )}
-          {drops.length > 0 && (
+          {acquisitionChips.length > 0 && (
+            <div className="result-card-section">
+              <div className="acquisition-chips" aria-label="Fuentes de obtención">
+                {acquisitionChips.map((chip) => (
+                  <span key={chip.key} className="acquisition-chip">{chip.label}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {(drops.length > 0 || hasAcquisitionDetails(acquisition)) && (
             <div className="result-card-section result-card-collapsible-actions">
               <button
                 type="button"
                 className="result-card-toggle"
-                onClick={() => setDropsOpen((open) => !open)}
-                aria-expanded={dropsOpen}
+                onClick={() => setAcquisitionOpen((open) => !open)}
+                aria-expanded={acquisitionOpen}
               >
-                {dropsOpen
-                  ? 'Ocultar lo que lo dropean'
-                  : formatDropperSummary(drops.length, dropWithSpawn, dropWithoutSpawn)}
+                {acquisitionOpen ? 'Ocultar obtención' : 'Ver obtención'}
               </button>
-              {dropsOpen && (
-              <div className="result-card-dropped-by">
-                {drops.map((mob) => {
-                  const pct = mob.chancePercent ?? (mob.rate != null ? Math.min(mob.rate, 10000) / 100 : null);
-                  return (
-                    <div key={mob.id} className="dropped-by-item">
-                      <Link to={`/database?tab=mobs&q=${mob.id}`}>
-                        {mob.name} (Nv. {mob.level})
-                        {pct != null ? ` — ${pct.toFixed(2)}%` : ''}
-                        {mob.dropType === 'mvp' ? ' [MVP]' : ''}
-                      </Link>
-                      <div className="dropped-by-maps">
-                        {(mob.spawnMaps ?? [])
-                          .filter((spawn) => !spawn.instance)
-                          .map((spawn) => (
-                            <Link
-                              key={spawn.map}
-                              to={`/database?tab=maps&map=${encodeURIComponent(spawn.map)}`}
-                              className="dropped-by-map"
-                            >
-                              {spawn.map}
-                            </Link>
-                          ))}
-                        {mob.hasWorldSpawn === false && (
-                          <span className="dropped-by-map is-muted">Sin spawn en el mundo</span>
-                        )}
-                      </div>
+              {acquisitionOpen && (
+                <div className="acquisition-panel">
+                  {drops.length > 0 && (
+                    <div className="acquisition-group">
+                      <button
+                        type="button"
+                        className="acquisition-group-toggle"
+                        onClick={() => setDropsOpen((open) => !open)}
+                        aria-expanded={dropsOpen}
+                      >
+                        {dropsOpen
+                          ? 'Ocultar drops de monstruo'
+                          : formatDropperSummary(drops.length, dropWithSpawn, dropWithoutSpawn)}
+                      </button>
+                      {dropsOpen && (
+                        <div className="result-card-dropped-by">
+                          {drops.map((mob) => {
+                            const pct = mob.chancePercent
+                              ?? (mob.rate != null ? Math.min(mob.rate, 10000) / 100 : null);
+                            return (
+                              <div key={mob.id} className="dropped-by-item">
+                                <Link to={`/database?tab=mobs&q=${mob.id}`}>
+                                  {mob.name} (Nv. {mob.level})
+                                  {pct != null ? ` — ${pct.toFixed(2)}%` : ''}
+                                  {mob.dropType === 'mvp' ? ' [MVP]' : ''}
+                                </Link>
+                                <div className="dropped-by-maps">
+                                  {(mob.spawnMaps ?? [])
+                                    .filter((spawn) => !spawn.instance)
+                                    .map((spawn) => (
+                                      <Link
+                                        key={spawn.map}
+                                        to={`/database?tab=maps&map=${encodeURIComponent(spawn.map)}`}
+                                        className="dropped-by-map"
+                                      >
+                                        {spawn.map}
+                                      </Link>
+                                    ))}
+                                  {mob.hasWorldSpawn === false && (
+                                    <span className="dropped-by-map is-muted">Sin spawn en el mundo</span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
+                  )}
+                  {acquisition?.shops && acquisition.shops.length > 0 && (
+                    <AcquisitionBlock
+                      title={`Tienda NPC (${acquisition.shopTotal ?? acquisition.shops.length})`}
+                    >
+                      <ul className="acquisition-list">
+                        {acquisition.shops.map((shop, index) => (
+                          <li key={`${shop.shopId || shop.shopName}-${index}`}>
+                            <span className="acquisition-primary">{shop.shopName}</span>
+                            {shop.mapId && (
+                              <>
+                                {' · '}
+                                <Link
+                                  to={`/database?tab=maps&map=${encodeURIComponent(shop.mapId)}`}
+                                  className="dropped-by-map"
+                                >
+                                  {shop.mapId}
+                                  {shop.x != null && shop.y != null ? ` (${shop.x},${shop.y})` : ''}
+                                </Link>
+                              </>
+                            )}
+                            {shop.price != null && shop.price >= 0 && (
+                              <span className="acquisition-meta"> — {shop.price.toLocaleString()}z</span>
+                            )}
+                            {shop.runtimeMutated && (
+                              <span className="acquisition-flag"> puede cambiar in-game</span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                      {(acquisition.shopTotal || 0) > acquisition.shops.length && (
+                        <div className="acquisition-more">
+                          +{(acquisition.shopTotal || 0) - acquisition.shops.length} tiendas más
+                        </div>
+                      )}
+                    </AcquisitionBlock>
+                  )}
+                  {acquisition?.boxes && acquisition.boxes.length > 0 && (
+                    <AcquisitionBlock
+                      title={`Cofre / caja (${acquisition.boxTotal ?? acquisition.boxes.length})`}
+                    >
+                      <ul className="acquisition-list">
+                        {acquisition.boxes.map((box, index) => (
+                          <li key={`${box.boxId || box.groupName}-${index}`}>
+                            <span className="acquisition-primary">
+                              {box.openers.length > 0
+                                ? box.openers.map((o) => o.name).join(', ')
+                                : (box.groupName || 'Caja')}
+                            </span>
+                            {box.openers.length > 0 && box.groupName && (
+                              <span className="acquisition-meta"> · grupo {box.groupName}</span>
+                            )}
+                            {box.chanceLabel && (
+                              <span className="acquisition-meta"> — {box.chanceLabel}</span>
+                            )}
+                            {box.openers.length > 0 && (
+                              <div className="dropped-by-maps">
+                                {box.openers.map((opener) => (
+                                  <Link
+                                    key={opener.id}
+                                    to={`/database?tab=items&q=${opener.id}`}
+                                    className="dropped-by-map"
+                                  >
+                                    #{opener.id}
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                      {(acquisition.boxTotal || 0) > acquisition.boxes.length && (
+                        <div className="acquisition-more">
+                          +{(acquisition.boxTotal || 0) - acquisition.boxes.length} cajas más
+                        </div>
+                      )}
+                    </AcquisitionBlock>
+                  )}
+                  {acquisition?.crafting && acquisition.crafting.length > 0 && (
+                    <AcquisitionBlock title={`Crafteo (${acquisition.crafting.length})`}>
+                      <ul className="acquisition-list">
+                        {acquisition.crafting.map((recipe, index) => (
+                          <li key={`${recipe.recipeId}-${index}`}>
+                            <span className="acquisition-primary">
+                              {recipe.skillName
+                                ? `${recipe.skillName}${recipe.skillLevel != null ? ` Lv.${recipe.skillLevel}` : ''}`
+                                : (recipe.family || 'Receta')}
+                            </span>
+                            {recipe.amount != null && recipe.amount > 1 && (
+                              <span className="acquisition-meta"> · x{recipe.amount}</span>
+                            )}
+                            {recipe.successVariable ? (
+                              <span className="acquisition-flag"> — éxito variable (no es 0%)</span>
+                            ) : recipe.successLabel ? (
+                              <span className="acquisition-meta"> — {recipe.successLabel}</span>
+                            ) : null}
+                            {recipe.zenyCost != null && recipe.zenyCost > 0 && (
+                              <span className="acquisition-meta"> · {recipe.zenyCost.toLocaleString()}z</span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </AcquisitionBlock>
+                  )}
+                  {acquisition?.barters && acquisition.barters.length > 0 && (
+                    <AcquisitionBlock
+                      title={`Trueque (${acquisition.barterTotal ?? acquisition.barters.length})`}
+                    >
+                      <ul className="acquisition-list">
+                        {acquisition.barters.map((barter, index) => (
+                          <li key={`${barter.barterName}-${index}`}>
+                            <span className="acquisition-primary">
+                              {barter.barterName || 'Barter'}
+                            </span>
+                            {barter.zeny != null && barter.zeny > 0 && (
+                              <span className="acquisition-meta"> · {barter.zeny.toLocaleString()}z</span>
+                            )}
+                            {barter.requires.length > 0 && (
+                              <div className="acquisition-requires">
+                                Requiere:{' '}
+                                {barter.requires.map((req, reqIndex) => (
+                                  <span key={`${req.id}-${reqIndex}`}>
+                                    {reqIndex > 0 ? ', ' : ''}
+                                    <Link to={`/database?tab=items&q=${req.id}`}>
+                                      {req.name} x{req.amount}
+                                    </Link>
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </AcquisitionBlock>
+                  )}
+                  {acquisition?.npcRewards && acquisition.npcRewards.length > 0 && (
+                    <AcquisitionBlock
+                      title={`Recompensa NPC (${acquisition.npcRewardTotal ?? acquisition.npcRewards.length})`}
+                    >
+                      <ul className="acquisition-list">
+                        {acquisition.npcRewards.map((reward, index) => (
+                          <li key={`${reward.npcName}-${index}`}>
+                            <span className="acquisition-primary">{reward.npcName}</span>
+                            {reward.mapId && (
+                              <>
+                                {' · '}
+                                <Link
+                                  to={`/database?tab=maps&map=${encodeURIComponent(reward.mapId)}`}
+                                  className="dropped-by-map"
+                                >
+                                  {reward.mapId}
+                                </Link>
+                              </>
+                            )}
+                            {reward.quantityMin != null && (
+                              <span className="acquisition-meta">
+                                {' '}
+                                — x{reward.quantityMin}
+                                {reward.quantityMax != null && reward.quantityMax !== reward.quantityMin
+                                  ? `–${reward.quantityMax}`
+                                  : ''}
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                      {(acquisition.npcRewardTotal || 0) > acquisition.npcRewards.length && (
+                        <div className="acquisition-more">
+                          +{(acquisition.npcRewardTotal || 0) - acquisition.npcRewards.length} más
+                        </div>
+                      )}
+                    </AcquisitionBlock>
+                  )}
+                  {acquisition?.other && acquisition.other.length > 0 && (
+                    <AcquisitionBlock title="Otras fuentes">
+                      <ul className="acquisition-list">
+                        {acquisition.other.map((row, index) => (
+                          <li key={`${row.sourceType}-${index}`}>
+                            <span className="acquisition-primary">{row.label}</span>
+                            {row.mapId && (
+                              <span className="acquisition-meta"> · {row.mapId}</span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </AcquisitionBlock>
+                  )}
+                </div>
               )}
             </div>
           )}

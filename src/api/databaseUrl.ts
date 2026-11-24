@@ -1,5 +1,9 @@
 import type { SearchOptions } from './databaseMappers';
-import { defaultSearchOptions, ITEM_TYPE_TO_API } from './databaseMappers';
+import {
+  defaultSearchOptions,
+  ITEM_TYPE_ARMOR,
+  ITEM_TYPE_WEAPON
+} from './databaseMappers';
 
 export type DatabaseTab = 'items' | 'mobs' | 'maps' | 'mvps';
 
@@ -21,6 +25,7 @@ function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): bo
     if (options.selectedWeaponSubtypes.length > 0) return true;
     if (options.selectedCardLocations.length > 0) return true;
     if (options.scriptQuery.trim()) return true;
+    if (options.selectedAcquisitionSources.length > 0) return true;
     if (options.hideItemsWithoutNaturalDrop !== defaults.hideItemsWithoutNaturalDrop) return true;
     if (options.hideWithoutSprite !== defaults.hideWithoutSprite) return true;
     return false;
@@ -75,24 +80,25 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
 
   const typeNames = params.get('type');
   if (typeNames) {
-    const reverseType: Record<string, number> = {};
-    for (const [id, name] of Object.entries(ITEM_TYPE_TO_API)) {
-      reverseType[name.toLowerCase()] = Number(id);
+    // Keep Armor/Armor2 as a single Armor checkbox selection
+    const raw = typeNames.split(',').map((name) => name.trim()).filter(Boolean);
+    const selected = new Set<string>();
+    for (const name of raw) {
+      if (name === 'Armor2') selected.add(ITEM_TYPE_ARMOR);
+      else selected.add(name);
     }
-    options.selectedTypes = typeNames
-      .split(',')
-      .map((name) => reverseType[name.trim().toLowerCase()])
-      .filter((n) => n !== undefined);
+    options.selectedTypes = [...selected];
   } else if (params.get('subtype')) {
-    options.selectedTypes = [5];
+    options.selectedTypes = [ITEM_TYPE_ARMOR];
   } else if (params.get('weaponSubtype')) {
-    options.selectedTypes = [4];
+    options.selectedTypes = [ITEM_TYPE_WEAPON];
   }
 
   options.selectedArmorSubtypes = parseCsvList(params.get('subtype'));
   options.selectedWeaponSubtypes = parseCsvList(params.get('weaponSubtype'));
   options.selectedCardLocations = parseCsvList(params.get('location'));
   options.scriptQuery = params.get('script') ?? '';
+  options.selectedAcquisitionSources = parseCsvList(params.get('sourceType'));
 
   const naturalDrop = parseBoolParam(params.get('naturalDrop'));
   if (naturalDrop !== undefined) {
@@ -157,13 +163,7 @@ export function buildDatabaseSearchParams(
 
   if (tab === 'items') {
     if (options.selectedTypes.length > 0) {
-      params.set(
-        'type',
-        options.selectedTypes
-          .map((id) => ITEM_TYPE_TO_API[id])
-          .filter(Boolean)
-          .join(',')
-      );
+      params.set('type', options.selectedTypes.join(','));
     }
     if (options.selectedArmorSubtypes.length > 0) {
       params.set('subtype', options.selectedArmorSubtypes.join(','));
@@ -176,6 +176,9 @@ export function buildDatabaseSearchParams(
     }
     const script = options.scriptQuery.trim();
     if (script) params.set('script', script);
+    if (options.selectedAcquisitionSources.length > 0) {
+      params.set('sourceType', options.selectedAcquisitionSources.join(','));
+    }
     if (options.hideItemsWithoutNaturalDrop !== defaults.hideItemsWithoutNaturalDrop) {
       params.set('naturalDrop', options.hideItemsWithoutNaturalDrop ? '1' : '0');
     } else if (run) {

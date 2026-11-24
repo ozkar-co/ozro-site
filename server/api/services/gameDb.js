@@ -39,12 +39,12 @@ export const MOB_SIZES = ['Small', 'Medium', 'Large'];
 
 export const ITEM_TYPES = [
     'Healing', 'Usable', 'Etc', 'Armor', 'Weapon', 'Card',
-    'Petegg', 'Petarmor', 'Ammo', 'Delayconsume', 'Cash',
+    'Petegg', 'Petarmor', 'Ammo', 'DelayConsume', 'Cash',
     'Shadowgear', 'Armor2'
 ];
 
-/** UI "Armor" expands to these type strings in ozro_items. */
-export const ITEM_ARMOR_DB_TYPES = ['Armor', 'Armor2', 'Shadowgear'];
+/** UI "Armor" expands to these type strings in ozro_items (Shadowgear is its own filter). */
+export const ITEM_ARMOR_DB_TYPES = ['Armor', 'Armor2'];
 
 /**
  * API location filter key → JSON key in ozro_items.locations
@@ -131,6 +131,11 @@ export async function initializeGameDb() {
     const missing = required.filter((name) => !tableSet.has(name));
     worldDataAvailable = missing.length === 0;
 
+    const hasAcquisition = tableSet.has(T.ACQUISITION);
+    // Lazy import to avoid circular init with acquisitionQuery ↔ gameDb
+    const { setAcquisitionAvailable } = await import('./acquisitionQuery.js');
+    setAcquisitionAvailable(hasAcquisition);
+
     console.log('OzRo Master World tables:', {
         prefix: OZRO_PREFIX,
         available: worldDataAvailable,
@@ -139,7 +144,7 @@ export async function initializeGameDb() {
             item_scripts: tableSet.has(T.ITEM_SCRIPTS),
             skill_summons: tableSet.has(T.SKILL_SUMMONS),
             level_penalty: tableSet.has(T.LEVEL_PENALTY),
-            acquisition: tableSet.has(T.ACQUISITION)
+            acquisition: hasAcquisition
         }
     });
 

@@ -13,6 +13,12 @@ import {
     naturalDropFilterClause
 } from './naturalDropIndex.js';
 import {
+    acquisitionSourceFilterClause,
+    isAcquisitionAvailable,
+    loadAcquisitionForItems,
+    parseAcquisitionSourceTypes
+} from './acquisitionQuery.js';
+import {
     T,
     isMobDataAvailable,
     isSpawnDataAvailable,
@@ -230,10 +236,12 @@ function buildItemFilters(params) {
     if (types.length > 0) {
         const expandedTypes = [];
         for (const typeName of types) {
-            if (typeName === 'Armor') {
+            // Normalize legacy / alternate casings from older clients
+            const normalized = typeName === 'Delayconsume' ? 'DelayConsume' : typeName;
+            if (normalized === 'Armor') {
                 expandedTypes.push(...ITEM_ARMOR_DB_TYPES);
             } else {
-                expandedTypes.push(typeName);
+                expandedTypes.push(normalized);
             }
         }
         const uniqueTypes = [...new Set(expandedTypes)];
@@ -370,6 +378,17 @@ function buildItemFilters(params) {
         }
     }
 
+    const sourceTypes = parseAcquisitionSourceTypes(params);
+    if (sourceTypes.length > 0) {
+        const acqFilter = acquisitionSourceFilterClause('i', sourceTypes);
+        if (acqFilter) {
+            conditions.push(acqFilter.clause);
+            values.push(...acqFilter.values);
+        } else if (!isAcquisitionAvailable()) {
+            console.warn('Filtro sourceType ignorado: ozro_acquisition_outputs no disponible');
+        }
+    }
+
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
     return { whereClause, values, orderBy };
 }
@@ -409,6 +428,13 @@ export async function searchItems(params) {
         }
     }
 
+    if (isAcquisitionAvailable() && results.length > 0) {
+        const acqByItem = await loadAcquisitionForItems(results.map((item) => item.id));
+        for (const item of results) {
+            item.acquisition = acqByItem.get(Number(item.id)) || null;
+        }
+    }
+
     return { total, page, limit, results };
 }
 
@@ -424,6 +450,10 @@ export async function getItemById(id) {
     item.droppedBy = isMobDataAvailable()
         ? await getMobsDroppingItem(rows[0].aegis_name)
         : [];
+    if (isAcquisitionAvailable()) {
+        const acqByItem = await loadAcquisitionForItems([id]);
+        item.acquisition = acqByItem.get(Number(id)) || null;
+    }
     return item;
 }
 
