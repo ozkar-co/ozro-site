@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "generatedAt": "2026-07-07T23:38:11.767Z",
+  "version": 2,
+  "generatedAt": "2026-11-24T04:38:55.118372+00:00",
   "items": {
     "icons": {
       "pages": [
@@ -8,29 +8,17 @@
           "page": 0,
           "image": "items/icons/atlas_0.webp",
           "mapping": "items/icons/atlas_0.json",
-          "count": 7225
+          "count": 19532,
+          "width": 2048,
+          "height": 2040
         },
         {
           "page": 1,
           "image": "items/icons/atlas_1.webp",
           "mapping": "items/icons/atlas_1.json",
-          "count": 6776
-        },
-        {
-          "page": 2,
-          "image": "items/icons/atlas_override_2.webp",
-          "mapping": "items/icons/atlas_override_2.json",
-          "count": 7097,
+          "count": 3277,
           "width": 2048,
-          "height": 2016
-        },
-        {
-          "page": 3,
-          "image": "items/icons/atlas_override_3.webp",
-          "mapping": "items/icons/atlas_override_3.json",
-          "count": 3080,
-          "width": 2048,
-          "height": 888
+          "height": 264
         }
       ]
     },
@@ -40,105 +28,33 @@
           "page": 0,
           "image": "items/illustrations/atlas_0.webp",
           "mapping": "items/illustrations/atlas_0.json",
-          "count": 2120,
-          "width": 4027,
-          "height": 4039
+          "count": 3048,
+          "width": 4030,
+          "height": 4070
         },
         {
           "page": 1,
           "image": "items/illustrations/atlas_1.webp",
           "mapping": "items/illustrations/atlas_1.json",
-          "count": 2120,
-          "width": 4027,
-          "height": 4039
+          "count": 3989,
+          "width": 4029,
+          "height": 4041
         },
         {
           "page": 2,
           "image": "items/illustrations/atlas_2.webp",
           "mapping": "items/illustrations/atlas_2.json",
-          "count": 2120,
-          "width": 4027,
-          "height": 4039
+          "count": 6831,
+          "width": 4029,
+          "height": 4041
         },
         {
           "page": 3,
           "image": "items/illustrations/atlas_3.webp",
           "mapping": "items/illustrations/atlas_3.json",
-          "count": 2120,
-          "width": 4027,
-          "height": 4039
-        },
-        {
-          "page": 4,
-          "image": "items/illustrations/atlas_4.webp",
-          "mapping": "items/illustrations/atlas_4.json",
-          "count": 2120,
-          "width": 4027,
-          "height": 4039
-        },
-        {
-          "page": 5,
-          "image": "items/illustrations/atlas_5.webp",
-          "mapping": "items/illustrations/atlas_5.json",
-          "count": 2120,
-          "width": 4027,
-          "height": 4039
-        },
-        {
-          "page": 6,
-          "image": "items/illustrations/atlas_6.webp",
-          "mapping": "items/illustrations/atlas_6.json",
-          "count": 1281,
-          "width": 3182,
-          "height": 3126
-        },
-        {
-          "page": 7,
-          "image": "items/illustrations/atlas_override_7.webp",
-          "mapping": "items/illustrations/atlas_override_7.json",
-          "count": 2120,
-          "width": 4027,
-          "height": 4039
-        },
-        {
-          "page": 8,
-          "image": "items/illustrations/atlas_override_8.webp",
-          "mapping": "items/illustrations/atlas_override_8.json",
-          "count": 2120,
-          "width": 4027,
-          "height": 4039
-        },
-        {
-          "page": 9,
-          "image": "items/illustrations/atlas_override_9.webp",
-          "mapping": "items/illustrations/atlas_override_9.json",
-          "count": 2120,
-          "width": 4027,
-          "height": 4039
-        },
-        {
-          "page": 10,
-          "image": "items/illustrations/atlas_override_10.webp",
-          "mapping": "items/illustrations/atlas_override_10.json",
-          "count": 604,
-          "width": 4027,
-          "height": 1211
-        },
-        {
-          "page": 11,
-          "image": "items/illustrations/atlas_override_11.webp",
-          "mapping": "items/illustrations/atlas_override_11.json",
-          "count": 2120,
-          "width": 4027,
-          "height": 4039
-        },
-        {
-          "page": 12,
-          "image": "items/illustrations/atlas_override_12.webp",
-          "mapping": "items/illustrations/atlas_override_12.json",
-          "count": 925,
-          "width": 4027,
-          "height": 1817
+          "count": 8945,
+          "width": 4089,
+          "height": 3427
         }
       ]
     }
@@ -150,9 +66,23 @@
           "page": 0,
           "image": "mobs/sprites/atlas_0.webp",
           "mapping": "mobs/sprites/atlas_0.json",
-          "count": 2523,
-          "width": 4049,
-          "height": 4031
+          "count": 2447,
+          "width": 4096,
+          "height": 2030
+        }
+      ]
+    }
+  },
+  "npcs": {
+    "sprites": {
+      "pages": [
+        {
+          "page": 0,
+          "image": "npcs/sprites/atlas_0.webp",
+          "mapping": "npcs/sprites/atlas_0.json",
+          "count": 9209,
+          "width": 4096,
+          "height": 3705
         }
       ]
     }

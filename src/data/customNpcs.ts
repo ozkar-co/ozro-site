@@ -23,7 +23,8 @@ export interface CustomNpcGroup {
   npcs: CustomNpc[];
 }
 
-const sprite = (file: string) => `/assets/npcs/sprites/${file}.gif`;
+/** Sprite key for the GRF atlas (numeric id or stem); resolved via resolveNpcSprite. */
+const sprite = (key: string) => key;
 
 export const customNpcGroups: CustomNpcGroup[] = [
   {

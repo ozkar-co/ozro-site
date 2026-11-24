@@ -159,7 +159,7 @@ const Encyclopedia = () => {
                 {maps ? totalVisible.toLocaleString('es') : '—'} NPCs visibles
               </span>
               <span>
-                {sprites ? sprites.counts.sprites.toLocaleString('es') : '—'} sprites
+                {sprites ? sprites.count.toLocaleString('es') : '—'} sprites
               </span>
             </div>
           </section>
@@ -212,7 +212,7 @@ const Encyclopedia = () => {
               )}
 
               {selectedSection === 'maps' && (
-                <NpcMapBrowser maps={maps} sprites={sprites} mapsError={mapsError} />
+                <NpcMapBrowser maps={maps} mapsError={mapsError} />
               )}
 
               {selectedSection === 'farming' && <FarmingCalculator />}

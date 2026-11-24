@@ -4,13 +4,14 @@ import {
   loadNpcMap,
   npcDisplayName,
   npcQuestCount,
-  npcSpriteUrl,
+  resolveNpcSprite,
   type NpcEntry,
   type NpcMapsIndex,
   type NpcShop,
   type NpcShopItem,
-  type NpcSpriteIndex,
 } from '../../api/npcData';
+import type { SpriteRect } from '../../api/assets';
+import AtlasSprite from '../AtlasSprite';
 import '../../styles/Encyclopedia.css';
 
 const FUNCTION_LABELS: Record<string, string> = {
@@ -37,6 +38,27 @@ const FUNCTION_ORDER = [
 
 const DEFAULT_MAP = 'prontera';
 const FALLBACK_SPRITE = '/icons/npc.png';
+
+function NpcSpriteThumb({ spriteKey, alt }: { spriteKey: string | null; alt: string }) {
+  const [sprite, setSprite] = useState<SpriteRect | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    resolveNpcSprite(spriteKey).then((resolved) => {
+      if (!cancelled) setSprite(resolved);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [spriteKey]);
+  return (
+    <AtlasSprite
+      sprite={sprite}
+      alt={alt}
+      className="npc-sprite-img"
+      fallback={FALLBACK_SPRITE}
+    />
+  );
+}
 
 const itemLabel = (itemId?: number, aegis?: string) => {
   if (itemId) return `Objeto #${itemId}`;
@@ -89,11 +111,10 @@ const NpcShopDetails = ({ shop }: { shop: NpcShop }) => (
 
 interface NpcMapBrowserProps {
   maps: NpcMapsIndex | null;
-  sprites: NpcSpriteIndex | null;
   mapsError: string | null;
 }
 
-const NpcMapBrowser = ({ maps, sprites, mapsError }: NpcMapBrowserProps) => {
+const NpcMapBrowser = ({ maps, mapsError }: NpcMapBrowserProps) => {
   const [selectedMap, setSelectedMap] = useState('');
   const [npcs, setNpcs] = useState<NpcEntry[] | null>(null);
   const [query, setQuery] = useState('');
@@ -317,13 +338,9 @@ const NpcMapBrowser = ({ maps, sprites, mapsError }: NpcMapBrowserProps) => {
                     className={`npc-card${npc.visible ? '' : ' is-hidden'}`}
                   >
                     <div className="npc-sprite">
-                      <img
-                        src={npcSpriteUrl(sprites, npc.sprite) ?? FALLBACK_SPRITE}
+                      <NpcSpriteThumb
+                        spriteKey={npc.sprite}
                         alt={npcDisplayName(npc)}
-                        loading="lazy"
-                        onError={(event) => {
-                          event.currentTarget.src = FALLBACK_SPRITE;
-                        }}
                       />
                     </div>
                     <div className="npc-info">

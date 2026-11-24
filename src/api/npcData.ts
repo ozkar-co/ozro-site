@@ -1,3 +1,5 @@
+import { resolveSprite, type SpriteRect } from './assets';
+
 export interface NpcMapInfo {
   map: string;
   mapName: string;
@@ -56,26 +58,12 @@ export interface NpcEntry {
   shop?: NpcShop;
 }
 
-export interface NpcSpriteInfo {
-  file: string;
-  w: number | null;
-  h: number | null;
-  id: number | null;
-  name: string | null;
-}
-
+/** Slim index written by ozro-cli atlas build (no per-file gif list). */
 export interface NpcSpriteIndex {
-  schemaVersion: number;
   generatedAt: string;
   source: string;
-  attribution: string;
-  counts: {
-    keys: number;
-    sprites: number;
-    missing: number;
-  };
-  sprites: Record<string, NpcSpriteInfo>;
-  missing: { key: string; reason: string }[];
+  count: number;
+  keys: string[];
 }
 
 export const NPC_ASSETS_BASE = '/assets/npcs';
@@ -88,7 +76,7 @@ async function fetchJson<T>(url: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-let mapsPromise: Promise<NpcMapsIndex> | null = null;
+let mapsPromise: Promise<NpcMapsIndex | null> | null = null;
 
 export function loadNpcMaps(): Promise<NpcMapsIndex> {
   if (!mapsPromise) {
@@ -97,10 +85,10 @@ export function loadNpcMaps(): Promise<NpcMapsIndex> {
       throw error;
     });
   }
-  return mapsPromise;
+  return mapsPromise as Promise<NpcMapsIndex>;
 }
 
-let spritesPromise: Promise<NpcSpriteIndex> | null = null;
+let spritesPromise: Promise<NpcSpriteIndex | null> | null = null;
 
 export function loadNpcSprites(): Promise<NpcSpriteIndex> {
   if (!spritesPromise) {
@@ -111,7 +99,7 @@ export function loadNpcSprites(): Promise<NpcSpriteIndex> {
       }
     );
   }
-  return spritesPromise;
+  return spritesPromise as Promise<NpcSpriteIndex>;
 }
 
 const mapCache = new Map<string, Promise<NpcEntry[]>>();
@@ -130,14 +118,13 @@ export function loadNpcMap(map: string): Promise<NpcEntry[]> {
   return promise;
 }
 
-export function npcSpriteUrl(
-  index: NpcSpriteIndex | null,
-  spriteKey: string | null
-): string | null {
-  if (!index || !spriteKey) return null;
-  const sprite = index.sprites[spriteKey];
-  if (!sprite?.file) return null;
-  return `${NPC_ASSETS_BASE}/sprites/${encodeURIComponent(sprite.file)}`;
+/** Atlas-only NPC sprite (no gif / custom fallback). */
+export async function resolveNpcSprite(spriteKey: string | null): Promise<SpriteRect | null> {
+  if (!spriteKey) return null;
+  return (
+    (await resolveSprite(spriteKey, 'npcs/sprites'))
+    ?? (await resolveSprite(spriteKey.toLowerCase(), 'npcs/sprites'))
+  );
 }
 
 export function npcDisplayName(npc: NpcEntry): string {

@@ -23,48 +23,17 @@ export interface AssetManifest {
   mobs: {
     sprites: { pages: AtlasPage[] };
   };
+  npcs?: {
+    sprites: { pages: AtlasPage[] };
+  };
 }
 
-type AssetCategory = 'items/icons' | 'items/illustrations' | 'mobs/sprites';
+type AssetCategory = 'items/icons' | 'items/illustrations' | 'mobs/sprites' | 'npcs/sprites';
 
 export const ASSETS_BASE = '/assets';
 
-const CUSTOM_ITEM_DIRS: Partial<Record<AssetCategory, string>> = {
-  'items/icons': 'items/custom/icons',
-  'items/illustrations': 'items/custom/illustrations'
-};
-const CUSTOM_ITEM_EXTENSIONS = ['png', 'webp', 'jpg', 'jpeg'];
-
 let manifestPromise: Promise<AssetManifest | null> | null = null;
 const mappingCache = new Map<string, Record<string, SpriteRect & { page?: number }>>();
-const customAssetCache = new Map<string, Promise<string | null>>();
-
-async function findCustomAsset(category: AssetCategory, id: string): Promise<string | null> {
-  const dir = CUSTOM_ITEM_DIRS[category];
-  if (!dir) return null;
-
-  for (const extension of CUSTOM_ITEM_EXTENSIONS) {
-    const url = assetUrl(`${dir}/${id}.${extension}`);
-    try {
-      const response = await fetch(url, { method: 'HEAD' });
-      if (!response.ok) continue;
-      const contentType = response.headers.get('content-type') ?? '';
-      if (!/^image\//i.test(contentType)) continue;
-      return url;
-    } catch {
-      // Keep trying the next extension.
-    }
-  }
-  return null;
-}
-
-function resolveCustomAsset(category: AssetCategory, id: string): Promise<string | null> {
-  const key = `${category}:${id}`;
-  if (!customAssetCache.has(key)) {
-    customAssetCache.set(key, findCustomAsset(category, id));
-  }
-  return customAssetCache.get(key)!;
-}
 
 export function assetUrl(relativePath: string): string {
   return `${ASSETS_BASE}/${relativePath.replace(/^\//, '')}`;
@@ -91,7 +60,13 @@ async function loadPageMapping(
     ? manifest.items.icons
     : category === 'items/illustrations'
       ? manifest.items.illustrations
-      : manifest.mobs.sprites;
+      : category === 'npcs/sprites'
+        ? manifest.npcs?.sprites
+        : manifest.mobs.sprites;
+
+  if (!section?.pages?.length) {
+    return {};
+  }
 
   const merged: Record<string, SpriteRect & { page?: number }> = {};
 
@@ -126,30 +101,28 @@ const categoryMappings = new Map<AssetCategory, Promise<Record<string, SpriteRec
 export async function resolveSprite(
   id: string,
   category: AssetCategory
-): Promise<SpriteRect | string | null> {
+): Promise<SpriteRect | null> {
   const manifest = await loadManifest();
-  if (manifest) {
-    if (!categoryMappings.has(category)) {
-      categoryMappings.set(category, loadPageMapping(manifest, category));
-    }
+  if (!manifest) return null;
 
-    const mapping = await categoryMappings.get(category)!;
-    const rect = mapping[id];
-    if (rect) {
-      return {
-        atlasUrl: rect.atlasUrl,
-        x: rect.x,
-        y: rect.y,
-        w: rect.w,
-        h: rect.h
-      };
-    }
+  if (!categoryMappings.has(category)) {
+    categoryMappings.set(category, loadPageMapping(manifest, category));
   }
 
-  return resolveCustomAsset(category, id);
+  const mapping = await categoryMappings.get(category)!;
+  const rect = mapping[id] ?? mapping[id.toLowerCase()];
+  if (!rect) return null;
+
+  return {
+    atlasUrl: rect.atlasUrl,
+    x: rect.x,
+    y: rect.y,
+    w: rect.w,
+    h: rect.h
+  };
 }
 
-/** true si el id está en el manifest del atlas o tiene asset custom (no placeholder). */
-export function hasManifestSprite(resolved: SpriteRect | string | null): boolean {
+/** true si el id está en el manifest del atlas. */
+export function hasManifestSprite(resolved: SpriteRect | null): boolean {
   return resolved != null;
 }

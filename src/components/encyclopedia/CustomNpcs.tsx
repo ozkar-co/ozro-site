@@ -1,22 +1,35 @@
 import { useEffect, useState } from 'react';
 import { customNpcGroups, type CustomNpc } from '../../data/customNpcs';
+import { resolveNpcSprite } from '../../api/npcData';
+import type { SpriteRect } from '../../api/assets';
+import AtlasSprite from '../AtlasSprite';
 import '../../styles/Information.css';
 import '../../styles/Encyclopedia.css';
 
 const FALLBACK_SPRITE = '/icons/npc.png';
 
-const NpcPortrait = ({ npc, large = false }: { npc: CustomNpc; large?: boolean }) => (
-  <div className={large ? 'custom-npc-portrait is-large' : 'npc-sprite'}>
-    <img
-      src={npc.sprite}
-      alt={npc.name}
-      loading="lazy"
-      onError={(event) => {
-        event.currentTarget.src = FALLBACK_SPRITE;
-      }}
-    />
-  </div>
-);
+const NpcPortrait = ({ npc, large = false }: { npc: CustomNpc; large?: boolean }) => {
+  const [sprite, setSprite] = useState<SpriteRect | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    resolveNpcSprite(npc.sprite).then((resolved) => {
+      if (!cancelled) setSprite(resolved);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [npc.sprite]);
+
+  return (
+    <div className={large ? 'custom-npc-portrait is-large' : 'npc-sprite'}>
+      <AtlasSprite
+        sprite={sprite}
+        alt={npc.name}
+        fallback={FALLBACK_SPRITE}
+      />
+    </div>
+  );
+};
 
 const NpcDetails = ({ npc }: { npc: CustomNpc }) => (
   <>

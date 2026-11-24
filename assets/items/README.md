@@ -61,10 +61,9 @@ Item image coverage (`icon`, `collection`, `sprite`) comes from `assets/items/it
 generated from the active client GRFs and `data/itemInfo_EN.lua`. Unidentified placeholder
 entries are excluded from both `*_no_image` categories.
 
-Regenerate the coverage and append any missing atlas pages with:
+Item atlases come from **ozro-cli** (`python3 tools/build_web_atlases.py`). Taxonomy:
 
 ```bash
-python3 tools/build_item_atlas_gap.py --client-dir /mnt/games/OzRo
 python3 ../rathena/tools/generate_item_taxonomy.py
 ```
 
