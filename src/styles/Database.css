@@ -2051,6 +2051,12 @@ a {
   font-size: 0.85rem;
 }
 
+.skill-desc-body {
+  white-space: pre-wrap;
+  line-height: 1.45;
+  font-size: 0.86rem;
+}
+
 .skill-mob-list,
 .npc-tag-list {
   display: flex;

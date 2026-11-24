@@ -64,7 +64,7 @@ router.get('/:id/description', async (req, res) => {
         if (!isItemInfoAvailable()) {
             return res.status(503).json({
                 error: 'Descripciones no disponibles',
-                hint: 'Coloca itemInfo_EN.lua en data/itemInfo_EN.lua y reinicia el sitio'
+                hint: 'Coloca client_item_descriptions.jsonl en data/ (ozro-cli build_client_descriptions) y reinicia el sitio'
             });
         }
 

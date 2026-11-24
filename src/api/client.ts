@@ -445,6 +445,18 @@ export interface SkillSummary {
   name: string | null;
   mobCount: number;
   useCount: number;
+  displayName?: string | null;
+  aegisName?: string | null;
+  description?: string[];
+  resourceName?: string | null;
+  maxLv?: number | null;
+  type?: string | null;
+  spAmount?: number[] | null;
+  attackRange?: number[] | null;
+  separateLv?: boolean | null;
+  apAmount?: number[] | null;
+  needSkills?: { skill: string; level: number }[] | null;
+  skillScale?: { level: number; x: number; y: number }[] | null;
 }
 
 export interface SkillDetail extends SkillSummary {

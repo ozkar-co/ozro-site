@@ -1,9 +1,14 @@
 /**
- * Skill catalog derived from ozro_mob_skills (no dedicated skill DB table yet).
+ * Skill catalog: ozro_mob_skills + client JSONL descriptions.
  */
 import { query } from '../../services/mariadb.js';
 import { T, parsePagination } from './gameDb.js';
 import { buildTokenMatchClause } from './textSearch.js';
+import {
+    findSkillIdsByDisplayName,
+    getClientOnlySkill,
+    getSkillClientPayload
+} from './skillClientInfo.js';
 
 function num(value) {
     if (value == null || value === '') return null;
@@ -11,13 +16,23 @@ function num(value) {
     return Number.isFinite(n) ? n : null;
 }
 
-function mapSkillSummary(row) {
+function mergeClient(summary) {
+    const client = getSkillClientPayload(summary.id);
+    if (!client) return summary;
     return {
+        ...summary,
+        name: client.displayName || summary.name || client.aegisName || null,
+        ...client
+    };
+}
+
+function mapSkillSummary(row) {
+    return mergeClient({
         id: num(row.skill_id),
         name: row.skill_name || null,
         mobCount: Number(row.mob_count) || 0,
         useCount: Number(row.use_count) || 0
-    };
+    });
 }
 
 export async function searchSkills(params) {
@@ -31,10 +46,21 @@ export async function searchSkills(params) {
             conditions.push('s.skill_id = ?');
             values.push(parseInt(q, 10));
         } else {
+            const clauses = [];
             const match = buildTokenMatchClause('s', ['s.skill_name'], q);
             if (match) {
-                conditions.push(match.clause);
+                clauses.push(match.clause);
                 values.push(...match.values);
+            }
+            const clientIds = findSkillIdsByDisplayName(q, 300);
+            if (clientIds.length > 0) {
+                clauses.push(
+                    `s.skill_id IN (${clientIds.map(() => '?').join(', ')})`
+                );
+                values.push(...clientIds);
+            }
+            if (clauses.length > 0) {
+                conditions.push(`(${clauses.join(' OR ')})`);
             }
         }
     }
@@ -88,7 +114,10 @@ export async function getSkillById(skillId) {
          GROUP BY s.skill_id, s.skill_name`,
         [id]
     );
-    if (summaryRows.length === 0) return null;
+
+    if (summaryRows.length === 0) {
+        return getClientOnlySkill(id);
+    }
 
     const summary = mapSkillSummary(summaryRows[0]);
     const [entryRows, mobRows] = await Promise.all([

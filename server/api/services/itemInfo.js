@@ -1,17 +1,28 @@
+/**
+ * Client item display names + descriptions from JSONL
+ * (ozro-cli tools/build_client_descriptions.py).
+ */
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createReadStream } from 'fs';
+import readline from 'readline';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ITEM_INFO_PATH = path.resolve(__dirname, '../../../data/itemInfo_EN.lua');
-const ITEM_START_PATTERN = /^[ \t]*\[(\d+)\][ \t]*= \{/gm;
+const DATA_DIR = path.resolve(__dirname, '../../../data');
+const CANDIDATES = [
+    path.join(DATA_DIR, 'client_item_descriptions.jsonl'),
+    path.resolve(__dirname, '../../../../ozro-data/reports/client_item_descriptions.jsonl')
+];
 
-let itemInfoPath = null;
-let itemRanges = new Map();
+/** @type {Map<number, object>} */
+let itemsById = new Map();
+/** @type {Map<number, string>} */
 let itemNames = new Map();
+let sourcePath = null;
 
 export function isItemInfoAvailable() {
-    return itemInfoPath !== null;
+    return sourcePath !== null;
 }
 
 export function getItemDisplayName(id) {
@@ -53,143 +64,85 @@ export function findItemIdsByDisplayName(term, limit = 1000) {
     return ranked.slice(0, limit).map((entry) => entry.id);
 }
 
-function decodeLuaString(value) {
-    return value.replace(/\\(.)/g, (_, char) => {
-        if (char === 'n') return '\n';
-        if (char === 't') return '\t';
-        if (char === 'r') return '\r';
-        return char;
+async function resolveSourcePath() {
+    for (const candidate of CANDIDATES) {
+        try {
+            await fs.access(candidate);
+            return candidate;
+        } catch {
+            // try next
+        }
+    }
+    return null;
+}
+
+async function loadJsonl(filePath) {
+    const byId = new Map();
+    const names = new Map();
+    const rl = readline.createInterface({
+        input: createReadStream(filePath, { encoding: 'utf8' }),
+        crlfDelay: Infinity
     });
+
+    for await (const line of rl) {
+        if (!line.trim()) continue;
+        let row;
+        try {
+            row = JSON.parse(line);
+        } catch {
+            continue;
+        }
+        const id = Number(row.item_id);
+        if (!Number.isFinite(id)) continue;
+        byId.set(id, row);
+        const name = row.identified_display_name || row.unidentified_display_name;
+        if (name) names.set(id, name);
+    }
+
+    return { byId, names };
 }
 
 export async function initializeItemInfoIndex() {
     try {
-        const content = await fs.readFile(ITEM_INFO_PATH, 'latin1');
-        const starts = [];
-        let match;
-
-        ITEM_START_PATTERN.lastIndex = 0;
-        while ((match = ITEM_START_PATTERN.exec(content)) !== null) {
-            starts.push({ id: Number(match[1]), start: match.index });
+        const filePath = await resolveSourcePath();
+        if (!filePath) {
+            throw new Error(
+                'client_item_descriptions.jsonl no encontrado (data/ o ozro-data/reports/)'
+            );
         }
-
-        const ranges = new Map();
-        const names = new Map();
-        for (let i = 0; i < starts.length; i++) {
-            const end = i + 1 < starts.length ? starts[i + 1].start : content.length;
-            ranges.set(starts[i].id, { start: starts[i].start, end });
-
-            const block = content.slice(starts[i].start, end);
-            const nameMatch = /(?:^|[\r\n])[ \t]*identifiedDisplayName\s*=\s*"((?:[^"\\]|\\.)*)"/.exec(block);
-            if (nameMatch) {
-                names.set(starts[i].id, decodeLuaString(nameMatch[1]));
-            }
-        }
-
-        itemRanges = ranges;
+        const { byId, names } = await loadJsonl(filePath);
+        itemsById = byId;
         itemNames = names;
-        itemInfoPath = ITEM_INFO_PATH;
-        console.log(`Índice de descripciones listo: ${ranges.size} objetos desde ${ITEM_INFO_PATH}`);
+        sourcePath = filePath;
+        console.log(`Índice de descripciones listo: ${byId.size} objetos desde ${filePath}`);
     } catch (error) {
-        itemRanges = new Map();
+        itemsById = new Map();
         itemNames = new Map();
-        itemInfoPath = null;
-        console.warn(`No se pudo leer itemInfo para descripciones: ${error.message}`);
+        sourcePath = null;
+        console.warn(`No se pudo leer descripciones de objetos: ${error.message}`);
     }
-}
-
-function extractDescription(block, key) {
-    const keyMatch = new RegExp(`(?:^|[\\r\\n])[ \\t]*${key}[ \\t]*=[ \\t]*\\{`).exec(block);
-    if (!keyMatch) return [];
-
-    const open = keyMatch.index + keyMatch[0].lastIndexOf('{');
-
-    let depth = 0;
-    let inString = false;
-    let escape = false;
-    let i = open;
-
-    for (; i < block.length; i++) {
-        const char = block[i];
-        if (inString) {
-            if (escape) {
-                escape = false;
-            } else if (char === '\\') {
-                escape = true;
-            } else if (char === '"') {
-                inString = false;
-            }
-            continue;
-        }
-
-        if (char === '"') {
-            inString = true;
-        } else if (char === '{') {
-            depth++;
-        } else if (char === '}') {
-            depth--;
-            if (depth === 0) break;
-        }
-    }
-
-    return parseLuaStrings(block.slice(open + 1, i));
-}
-
-function parseLuaStrings(text) {
-    const result = [];
-    let i = 0;
-
-    while (i < text.length) {
-        if (text[i] !== '"') {
-            i++;
-            continue;
-        }
-
-        i++;
-        let value = '';
-        while (i < text.length) {
-            const char = text[i];
-            if (char === '\\') {
-                const next = text[i + 1];
-                if (next === 'n') value += '\n';
-                else if (next === 't') value += '\t';
-                else if (next === 'r') value += '\r';
-                else if (next === '"') value += '"';
-                else if (next === '\\') value += '\\';
-                else if (next !== undefined) value += next;
-                i += 2;
-            } else if (char === '"') {
-                i++;
-                break;
-            } else {
-                value += char;
-                i++;
-            }
-        }
-        result.push(value);
-    }
-
-    return result;
 }
 
 export async function getItemDescription(id) {
-    if (!itemInfoPath) return null;
-
-    const range = itemRanges.get(id);
-    if (!range) return { identified: [], unidentified: [] };
-
-    const handle = await fs.open(itemInfoPath, 'r');
-    try {
-        const length = range.end - range.start;
-        const buffer = Buffer.alloc(length);
-        await handle.read(buffer, 0, length, range.start);
-        const block = buffer.toString('latin1');
-
-        return {
-            identified: extractDescription(block, 'identifiedDescriptionName'),
-            unidentified: extractDescription(block, 'unidentifiedDescriptionName')
-        };
-    } finally {
-        await handle.close();
+    if (!sourcePath) return null;
+    const row = itemsById.get(Number(id));
+    if (!row) {
+        return { identified: [], unidentified: [] };
     }
+    return {
+        identified: Array.isArray(row.identified_description)
+            ? row.identified_description
+            : [],
+        unidentified: Array.isArray(row.unidentified_description)
+            ? row.unidentified_description
+            : [],
+        displayName: row.identified_display_name || null,
+        unidentifiedDisplayName: row.unidentified_display_name || null,
+        slotCount: row.slot_count ?? null,
+        classNum: row.class_num ?? null,
+        costume: row.costume ?? null,
+        effectId: row.effect_id ?? null,
+        server: row.server ?? null,
+        identifiedResourceName: row.identified_resource_name || null
+    };
 }

@@ -5,6 +5,14 @@ export interface SkillResult {
   name: string | null;
   mobCount: number;
   useCount: number;
+  displayName?: string | null;
+  aegisName?: string | null;
+  description?: string[];
+  maxLv?: number | null;
+  type?: string | null;
+  spAmount?: number[] | null;
+  attackRange?: number[] | null;
+  separateLv?: boolean | null;
   variants?: {
     skillLv: number | null;
     state: string | null;
@@ -25,8 +33,43 @@ interface SkillCardProps {
   result: SkillResult;
 }
 
+const processColoredText = (text: string): JSX.Element[] => {
+  const parts = text.split(/(\^[0-9A-F]{6})/i);
+  let currentColor = '000000';
+  const elements: JSX.Element[] = [];
+  let key = 0;
+
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (part.startsWith('^')) {
+      currentColor = part.substring(1);
+      continue;
+    }
+    if (part) {
+      elements.push(
+        <span key={key++} style={{ color: `#${currentColor}` }}>
+          {part}
+        </span>
+      );
+    }
+  }
+
+  return elements;
+};
+
 const SkillCard = ({ result }: SkillCardProps) => {
-  const title = result.name || `Skill #${result.id}`;
+  const title = result.displayName || result.name || result.aegisName || `Skill #${result.id}`;
+  const description = Array.isArray(result.description) ? result.description : [];
+  const hasDescription = description.some((line) => String(line || '').trim());
+  const spPreview = Array.isArray(result.spAmount) && result.spAmount.length > 0
+    ? result.spAmount.length === 1 || result.spAmount.every((v) => v === result.spAmount![0])
+      ? String(result.spAmount[0])
+      : `${result.spAmount[0]}–${result.spAmount[result.spAmount.length - 1]}`
+    : null;
+  const rangePreview = Array.isArray(result.attackRange) && result.attackRange.length > 0
+    ? String(Math.max(...result.attackRange))
+    : null;
+
   return (
     <div className="result-card result-card--skill">
       <div className="result-card-header">
@@ -38,10 +81,24 @@ const SkillCard = ({ result }: SkillCardProps) => {
           <span className="result-card-id">#{result.id}</span>
         </h3>
         <div className="skill-card-meta">
+          {result.maxLv != null && <span>Max Lv {result.maxLv}</span>}
+          {spPreview != null && <span>SP {spPreview}</span>}
+          {rangePreview != null && <span>Rango {rangePreview}</span>}
+          {result.type && <span>{result.type}</span>}
           <span>{result.mobCount.toLocaleString()} mobs</span>
           <span>{result.useCount.toLocaleString()} usos</span>
         </div>
       </div>
+
+      {hasDescription && (
+        <div className="result-card-section">
+          <div className="result-card-description skill-desc-body">
+            <div className="result-card-description-content">
+              {processColoredText(description.join('\n'))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {result.mobs && result.mobs.length > 0 && (
         <div className="result-card-section">

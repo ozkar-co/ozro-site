@@ -3,6 +3,7 @@ import { startAPI } from './api/server.js';
 import { initializeMariaDB } from './services/mariadb.js';
 import { initializeGameDb } from './api/services/gameDb.js';
 import { initializeItemInfoIndex } from './api/services/itemInfo.js';
+import { initializeSkillClientInfo } from './api/services/skillClientInfo.js';
 import { initializeFarmingIndex } from './api/services/farmingIndex.js';
 import { warmResponseCaches } from './api/services/warmup.js';
 import { initializeNaturalDropIndex } from './api/services/naturalDropIndex.js';
@@ -15,7 +16,10 @@ async function main() {
         await initializeMariaDB();
         await initializeGameDb();
         await initializeNaturalDropIndex();
-        await initializeItemInfoIndex();
+        await Promise.all([
+            initializeItemInfoIndex(),
+            initializeSkillClientInfo()
+        ]);
         try {
             await initializeFarmingIndex();
         } catch (error) {
