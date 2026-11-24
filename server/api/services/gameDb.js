@@ -12,6 +12,9 @@ export const T = {
     MOBS: `${OZRO_PREFIX}mobs`,
     MOB_DROPS: `${OZRO_PREFIX}mob_drops`,
     MOB_SKILLS: `${OZRO_PREFIX}mob_skills`,
+    SKILLS: `${OZRO_PREFIX}skills`,
+    SKILL_ITEM_COSTS: `${OZRO_PREFIX}skill_item_costs`,
+    SKILL_TEACHERS: `${OZRO_PREFIX}skill_teachers`,
     NPCS: `${OZRO_PREFIX}npcs`,
     NPC_FUNCTIONS: `${OZRO_PREFIX}npc_functions`,
     NPC_SHOPS: `${OZRO_PREFIX}npc_shops`,
@@ -20,10 +23,10 @@ export const T = {
     ITEMS: `${OZRO_PREFIX}items`,
     ITEM_SCRIPTS: `${OZRO_PREFIX}item_scripts`,
     SKILL_SUMMONS: `${OZRO_PREFIX}skill_summons`,
+    RECIPES: `${OZRO_PREFIX}recipes`,
     LEVEL_PENALTY: `${OZRO_PREFIX}dataset_level_penalty`,
     DATASET_RATES: `${OZRO_PREFIX}dataset_rates`,
     ACQUISITION: `${OZRO_PREFIX}acquisition_outputs`,
-    NPC_SHOPS: `${OZRO_PREFIX}npc_shops`,
     NPC_SHOP_ITEMS: `${OZRO_PREFIX}npc_shop_items`
 };
 
@@ -136,6 +139,9 @@ export async function initializeGameDb() {
             item_scripts: tableSet.has(T.ITEM_SCRIPTS),
             skill_summons: tableSet.has(T.SKILL_SUMMONS),
             mob_skills: tableSet.has(T.MOB_SKILLS),
+            skills: tableSet.has(T.SKILLS),
+            skill_item_costs: tableSet.has(T.SKILL_ITEM_COSTS),
+            skill_teachers: tableSet.has(T.SKILL_TEACHERS),
             level_penalty: tableSet.has(T.LEVEL_PENALTY),
             acquisition: hasAcquisition
         }

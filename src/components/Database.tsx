@@ -259,6 +259,16 @@ const Database = () => {
     }));
   }, []);
 
+  const enrichSkillResults = useCallback(async (skills: SkillResult[]): Promise<SkillResult[]> => {
+    return Promise.all(skills.map(async (skill) => {
+      const iconResolved = await resolveSprite(skill.id, 'skills/icons');
+      return {
+        ...skill,
+        icon: iconResolved ?? PLACEHOLDER_ITEM_ICON
+      };
+    }));
+  }, []);
+
   const fetchSearchResults = useCallback(async (
     tab: TabType,
     term: string,
@@ -274,17 +284,19 @@ const Database = () => {
         if (!skill) {
           return { total: 0, currentPage: 0, results: [], totalPages: 0 };
         }
-        return { total: 1, currentPage: 0, results: [skill], totalPages: 1 };
+        const results = await enrichSkillResults([skill]);
+        return { total: 1, currentPage: 0, results, totalPages: 1 };
       }
       const data = await apiClient.searchSkills({
         q: trimmed || undefined,
         page: page + 1,
         limit: RESULTS_PER_PAGE
       });
+      const results = await enrichSkillResults(data.results);
       return {
         total: data.total,
         currentPage: page,
-        results: data.results,
+        results,
         totalPages: Math.max(1, Math.ceil(data.total / RESULTS_PER_PAGE))
       };
     }
@@ -361,7 +373,7 @@ const Database = () => {
       results,
       totalPages: Math.max(1, Math.ceil(data.total / RESULTS_PER_PAGE))
     };
-  }, [enrichItemResults, enrichMobResults, imagesReady]);
+  }, [enrichItemResults, enrichMobResults, enrichSkillResults, imagesReady]);
 
   useEffect(() => {
     if (getLegacyDeepLinkId(location.search)) return;

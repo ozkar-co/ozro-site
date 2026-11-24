@@ -448,10 +448,17 @@ export interface SkillSummary {
   useCount: number;
   displayName?: string | null;
   aegisName?: string | null;
+  aegisPrefix?: string | null;
   description?: string[];
   resourceName?: string | null;
   maxLv?: number | null;
+  /** Job / namespace prefix from aegis (SM, WZ, NPC…). */
   type?: string | null;
+  /** Combat type from skill_db (Weapon, Magic, …). */
+  skillType?: string | null;
+  targetType?: string | null;
+  isQuest?: boolean;
+  isPlatinum?: boolean;
   spAmount?: number[] | null;
   attackRange?: number[] | null;
   separateLv?: boolean | null;
@@ -474,6 +481,32 @@ export interface SkillDetail extends SkillSummary {
     name: string | null;
     nameAegis: string | null;
     uses: number;
+  }[];
+  itemCosts?: {
+    itemId: number | null;
+    itemAegisName: string | null;
+    itemName: string | null;
+    amount: number | null;
+    level: number | null;
+  }[];
+  teachers?: {
+    grantKind: string | null;
+    npcId: string | null;
+    npcName: string | null;
+    mapId: string | null;
+    x: number | null;
+    y: number | null;
+    scriptPath?: string | null;
+    scriptLine?: number | null;
+  }[];
+  recipes?: {
+    recipeId: string | null;
+    family: string | null;
+    skillLevel: number | null;
+    resultItemId: number | null;
+    resultAegisName: string | null;
+    resultName: string | null;
+    resultAmount: number | null;
   }[];
 }
 

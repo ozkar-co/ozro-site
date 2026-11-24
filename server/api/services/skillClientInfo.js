@@ -7,6 +7,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createReadStream } from 'fs';
 import readline from 'readline';
+import {
+    normalizeAegisTail,
+    parseAegisPrefix,
+    resolveSkillDisplayName
+} from './skillNames.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.resolve(__dirname, '../../../data');
@@ -33,9 +38,21 @@ export function findSkillIdsByDisplayName(term, limit = 200) {
     const tokens = trimmed.split(/\s+/).filter(Boolean);
     const ranked = [];
     for (const [id, row] of skillsById) {
-        const name = (row.display_name || row.aegis_name || '').toLowerCase();
-        if (!tokens.every((token) => name.includes(token))) continue;
-        const score = name === trimmed ? 0 : name.startsWith(tokens[0]) ? 1 : 2;
+        const display = resolveSkillDisplayName({
+            clientDisplayName: row.display_name,
+            aegisName: row.aegis_name
+        });
+        const haystacks = [
+            display,
+            row.display_name,
+            row.aegis_name,
+            normalizeAegisTail(row.aegis_name)
+        ]
+            .filter(Boolean)
+            .map((v) => String(v).toLowerCase());
+        if (!tokens.every((token) => haystacks.some((h) => h.includes(token)))) continue;
+        const primary = (display || '').toLowerCase();
+        const score = primary === trimmed ? 0 : primary.startsWith(tokens[0]) ? 1 : 2;
         ranked.push({ id, score });
         if (ranked.length >= limit * 3) break;
     }
@@ -45,13 +62,20 @@ export function findSkillIdsByDisplayName(term, limit = 200) {
 
 function mapClientFields(row) {
     if (!row) return null;
+    const aegisName = row.aegis_name || null;
+    const displayName = resolveSkillDisplayName({
+        clientDisplayName: row.display_name,
+        aegisName
+    });
     return {
-        displayName: row.display_name || null,
-        aegisName: row.aegis_name || null,
+        displayName,
+        aegisName,
+        aegisPrefix: parseAegisPrefix(aegisName),
         description: Array.isArray(row.description) ? row.description : [],
         resourceName: row.resource_name || null,
         maxLv: row.max_lv ?? null,
-        type: row.type ?? null,
+        // Client skillinfolist Type is rare; UI prefers aegis prefix.
+        clientType: row.type ?? null,
         spAmount: Array.isArray(row.sp_amount) ? row.sp_amount : null,
         attackRange: Array.isArray(row.attack_range) ? row.attack_range : null,
         separateLv: row.separate_lv ?? null,
@@ -123,10 +147,20 @@ export function getClientOnlySkill(id) {
     return {
         id: Number(id),
         name: client.displayName || client.aegisName || null,
+        displayName: client.displayName || null,
+        aegisName: client.aegisName || null,
+        aegisPrefix: client.aegisPrefix || null,
         mobCount: 0,
         useCount: 0,
+        type: client.aegisPrefix,
+        skillType: null,
+        isQuest: false,
+        isPlatinum: false,
         ...client,
         variants: [],
-        mobs: []
+        mobs: [],
+        itemCosts: [],
+        teachers: [],
+        recipes: []
     };
 }

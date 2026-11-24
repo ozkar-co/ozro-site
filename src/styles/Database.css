@@ -2065,6 +2065,68 @@ a {
   }
 }
 
+.skill-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.skill-card-icon {
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+}
+
+.skill-card-heading {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.skill-card-heading h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.45rem;
+}
+
+.skill-prefix-badge {
+  display: inline-flex;
+  padding: 0.08rem 0.4rem;
+  border-radius: 4px;
+  background: #eef3fa;
+  border: 1px solid #c2d0e6;
+  color: #3a5680;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.skill-flag-badge {
+  display: inline-flex;
+  padding: 0.08rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.skill-flag-badge--platinum {
+  background: #f3eef8;
+  border: 1px solid #d2c2e4;
+  color: #6b4f8a;
+}
+
+.skill-flag-badge--quest {
+  background: #f7f1e6;
+  border: 1px solid #e2d2b8;
+  color: #8a6a3a;
+}
+
+.skill-card-aegis {
+  margin-top: 0.2rem;
+  color: #888;
+  font-size: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
 .skill-card-meta,
 .npc-card-meta {
   display: flex;
