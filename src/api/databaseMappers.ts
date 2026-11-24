@@ -164,6 +164,10 @@ export interface SearchOptions {
   selectedMapCategories: string[];
   mapHasSpawns: boolean;
   mapHasNpcs: boolean;
+  /** NPCs tab filters (DB npc_type + presence flags only) */
+  selectedNpcTypes: string[];
+  npcHasShop: boolean;
+  npcHasSprite: boolean;
 }
 
 export const defaultSearchOptions = (): SearchOptions => ({
@@ -204,8 +208,27 @@ export const defaultSearchOptions = (): SearchOptions => ({
   skillHasPrereq: false,
   selectedMapCategories: [],
   mapHasSpawns: false,
-  mapHasNpcs: false
+  mapHasNpcs: false,
+  selectedNpcTypes: [],
+  npcHasShop: false,
+  npcHasSprite: false
 });
+
+export function buildNpcSearchParams(
+  searchTerm: string,
+  options: SearchOptions,
+  page: number,
+  limit: number
+): Record<string, string | number> {
+  const params: Record<string, string | number> = { page: page + 1, limit };
+  if (searchTerm.trim()) params.q = searchTerm.trim();
+  if (options.selectedNpcTypes.length > 0) {
+    params.type = options.selectedNpcTypes.join(',');
+  }
+  if (options.npcHasShop) params.hasShop = 1;
+  if (options.npcHasSprite) params.hasSprite = 1;
+  return params;
+}
 
 export function buildMapSearchParams(
   searchTerm: string,

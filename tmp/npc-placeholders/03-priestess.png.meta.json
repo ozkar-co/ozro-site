@@ -1,0 +1,46 @@
+{
+  "model": "retro-diffusion/rd-plus",
+  "status": "succeeded",
+  "metrics": {
+    "image_output_count": 1,
+    "image_output_pixel_count": 65536,
+    "model_variant": "rd_plus_large",
+    "predict_time": 4.702170543,
+    "total_time": 4.712879576
+  },
+  "urls": {
+    "cancel": "https://api.replicate.com/v1/predictions/jvnzrzfwpxrmr0d21yz8rh8wd0/cancel",
+    "get": "https://api.replicate.com/v1/predictions/jvnzrzfwpxrmr0d21yz8rh8wd0",
+    "stream": "https://stream.replicate.com/v1/files/jbxs-kx6v6zrwv2l3biax3lqtsecrdxz5pgi7v63ko7vpxqolhr3afpxq",
+    "web": "https://replicate.com/p/jvnzrzfwpxrmr0d21yz8rh8wd0"
+  },
+  "model_version": "hidden",
+  "job_id": 86,
+  "provider_job_id": "jvnzrzfwpxrmr0d21yz8rh8wd0",
+  "profile_id": "ro-npc-sprite",
+  "modality": "image",
+  "provider": "replicate",
+  "endpoint_id": null,
+  "character": null,
+  "reference_image": null,
+  "mask_image": null,
+  "control_preview": null,
+  "seed": 248350651,
+  "params": {
+    "width": 256,
+    "height": 256,
+    "style": "default",
+    "remove_bg": true,
+    "num_images": 1,
+    "tile_x": false,
+    "tile_y": false,
+    "bypass_prompt_expansion": false,
+    "seed": 248350651
+  },
+  "batch": "npc-placeholder-noimg",
+  "project": "ozro-site",
+  "out_path": "/home/oz/Code/ozro-site/tmp/npc-placeholders/03-priestess.png",
+  "timestamp": "2026-11-24T22:48:29.990073+00:00",
+  "cost_usd": 0.02,
+  "cost_source": "profile_approx"
+}

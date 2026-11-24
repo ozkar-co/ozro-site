@@ -16,6 +16,7 @@ import {
   PLACEHOLDER_ITEM_ICON,
   PLACEHOLDER_ITEM_ILLUSTRATION,
   PLACEHOLDER_MOB_SPRITE,
+  PLACEHOLDER_NPC_SPRITE,
   PLACEHOLDER_SKILL_ICON
 } from '../api/placeholders';
 import { skillPrefixLabel } from '../api/skillPrefixes';
@@ -23,6 +24,7 @@ import {
   buildItemSearchParams,
   buildMapSearchParams,
   buildMobSearchParams,
+  buildNpcSearchParams,
   buildSkillSearchParams,
   formatFilterLabel,
   ITEM_TYPE_AMMO,
@@ -104,6 +106,9 @@ const Database = () => {
   const [mapCategories, setMapCategories] = useState<string[]>([]);
   const [mapMetaError, setMapMetaError] = useState<string | null>(null);
   const [mapMetaLoading, setMapMetaLoading] = useState(false);
+  const [npcTypes, setNpcTypes] = useState<string[]>([]);
+  const [npcMetaError, setNpcMetaError] = useState<string | null>(null);
+  const [npcMetaLoading, setNpcMetaLoading] = useState(false);
   const searchOptionsRef = useRef(searchOptions);
   const searchOptionsPanelRef = useRef<HTMLDivElement>(null);
 
@@ -241,6 +246,35 @@ const Database = () => {
   }, [activeTab]);
 
   useEffect(() => {
+    if (activeTab !== 'npcs') return;
+    let cancelled = false;
+    setNpcMetaLoading(true);
+    setNpcMetaError(null);
+    apiClient.getNpcMeta()
+      .then((meta) => {
+        if (cancelled) return;
+        const types = Array.isArray(meta.types) ? meta.types.filter(Boolean) : [];
+        if (types.length === 0) {
+          throw new Error('npcs/meta: types vacío (sin fallback)');
+        }
+        setNpcTypes(types);
+        setNpcMetaError(null);
+      })
+      .catch((error: Error) => {
+        if (cancelled) return;
+        console.error('Fallo cargando npcs/meta', error);
+        setNpcTypes([]);
+        setNpcMetaError(error?.message || String(error));
+      })
+      .finally(() => {
+        if (!cancelled) setNpcMetaLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab]);
+
+  useEffect(() => {
     if (activeTab !== 'mobs') return;
     let cancelled = false;
     setMobMetaLoading(true);
@@ -336,6 +370,21 @@ const Database = () => {
     }));
   }, []);
 
+  const enrichNpcResults = useCallback(async (npcs: NpcResult[]): Promise<NpcResult[]> => {
+    return Promise.all(npcs.map(async (npc) => {
+      const stem = npc.spriteStem?.trim() || '';
+      const spriteResolved = stem
+        ? (await resolveSprite(stem, 'npcs/sprites'))
+          ?? (await resolveSprite(stem.toLowerCase(), 'npcs/sprites'))
+        : null;
+      return {
+        ...npc,
+        sprite: spriteResolved ?? PLACEHOLDER_NPC_SPRITE,
+        hasSprite: hasManifestSprite(spriteResolved)
+      };
+    }));
+  }, []);
+
   const fetchSearchResults = useCallback(async (
     tab: TabType,
     term: string,
@@ -384,17 +433,19 @@ const Database = () => {
         if (!npc) {
           return { total: 0, currentPage: 0, results: [], totalPages: 0 };
         }
-        return { total: 1, currentPage: 0, results: [npc], totalPages: 1 };
+        const results = imagesReady ? await enrichNpcResults([npc]) : [npc];
+        return { total: 1, currentPage: 0, results, totalPages: 1 };
       }
-      const data = await apiClient.searchNpcs({
-        q: trimmed || undefined,
-        page: page + 1,
-        limit: RESULTS_PER_PAGE
-      });
+      const data = await apiClient.searchNpcs(
+        buildNpcSearchParams(trimmed, options, page, RESULTS_PER_PAGE)
+      );
+      const results = imagesReady
+        ? await enrichNpcResults(data.results)
+        : data.results;
       return {
         total: data.total,
         currentPage: page,
-        results: data.results,
+        results,
         totalPages: Math.max(1, Math.ceil(data.total / RESULTS_PER_PAGE))
       };
     }
@@ -450,7 +501,7 @@ const Database = () => {
       results,
       totalPages: Math.max(1, Math.ceil(data.total / RESULTS_PER_PAGE))
     };
-  }, [enrichItemResults, enrichMobResults, enrichSkillResults, imagesReady]);
+  }, [enrichItemResults, enrichMobResults, enrichNpcResults, enrichSkillResults, imagesReady]);
 
   useEffect(() => {
     if (getLegacyDeepLinkId(location.search)) return;
@@ -641,14 +692,75 @@ const Database = () => {
                 </div>
               </form>
               <div className="search-options-container" ref={searchOptionsPanelRef}>
-                {(activeTab === 'items' || activeTab === 'mobs' || activeTab === 'skills' || activeTab === 'maps') && (
+                {(activeTab === 'items' || activeTab === 'mobs' || activeTab === 'skills' || activeTab === 'npcs' || activeTab === 'maps') && (
                 <button className="search-options-toggle" onClick={handleOptionsToggle}>
                   <i className={`arrow-icon ${isOptionsVisible ? 'up' : 'down'}`}></i>
                 </button>
                 )}
-                {isOptionsVisible && (activeTab === 'items' || activeTab === 'mobs' || activeTab === 'skills' || activeTab === 'maps') && (
+                {isOptionsVisible && (activeTab === 'items' || activeTab === 'mobs' || activeTab === 'skills' || activeTab === 'npcs' || activeTab === 'maps') && (
                   <div className={`search-options-panel ${isClosing ? 'closing' : ''}`}>
-                    {activeTab === 'maps' ? (
+                    {activeTab === 'npcs' ? (
+                      <>
+                        {npcMetaError && (
+                          <div className="search-filter-hint">{npcMetaError}</div>
+                        )}
+                        {npcMetaLoading && (
+                          <div className="search-filter-hint">Cargando filtros…</div>
+                        )}
+                        {npcTypes.length > 0 && (
+                          <div className="search-types">
+                            <div className="search-types-title">Tipo:</div>
+                            <div className="search-types-grid">
+                              {npcTypes.map((typeName) => (
+                                <label key={typeName} className="type-checkbox">
+                                  <input
+                                    type="checkbox"
+                                    checked={searchOptions.selectedNpcTypes.includes(typeName)}
+                                    onChange={() => setSearchOptions((prev) => {
+                                      const on = prev.selectedNpcTypes.includes(typeName);
+                                      return {
+                                        ...prev,
+                                        selectedNpcTypes: on
+                                          ? prev.selectedNpcTypes.filter((t) => t !== typeName)
+                                          : [...prev.selectedNpcTypes, typeName]
+                                      };
+                                    })}
+                                  />
+                                  {formatFilterLabel(typeName)}
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        <div className="search-types">
+                          <div className="search-types-title">Contenido:</div>
+                          <div className="search-types-grid">
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.npcHasShop}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  npcHasShop: !prev.npcHasShop
+                                }))}
+                              />
+                              Con tienda
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.npcHasSprite}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  npcHasSprite: !prev.npcHasSprite
+                                }))}
+                              />
+                              Con sprite
+                            </label>
+                          </div>
+                        </div>
+                      </>
+                    ) : activeTab === 'maps' ? (
                       <>
                         {mapMetaError && (
                           <div className="search-filter-hint">{mapMetaError}</div>

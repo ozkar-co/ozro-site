@@ -38,6 +38,9 @@ function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): bo
     return false;
   }
   if (tab === 'npcs') {
+    if (options.selectedNpcTypes.length > 0) return true;
+    if (options.npcHasShop) return true;
+    if (options.npcHasSprite) return true;
     return false;
   }
   if (tab === 'skills') {
@@ -178,6 +181,12 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
   const mapHasNpcs = parseBoolParam(params.get('mapHasNpcs'));
   if (mapHasNpcs !== undefined) options.mapHasNpcs = mapHasNpcs;
 
+  options.selectedNpcTypes = parseCsvList(params.get('npcType'));
+  const npcHasShop = parseBoolParam(params.get('npcHasShop'));
+  if (npcHasShop !== undefined) options.npcHasShop = npcHasShop;
+  const npcHasSprite = parseBoolParam(params.get('npcHasSprite'));
+  if (npcHasSprite !== undefined) options.npcHasSprite = npcHasSprite;
+
   const kinds = params.get('kinds');
   if (kinds) {
     const set = new Set(kinds.split(',').map((k) => k.trim().toLowerCase()));
@@ -294,6 +303,14 @@ export function buildDatabaseSearchParams(
     }
     if (options.mapHasSpawns) params.set('mapHasSpawns', '1');
     if (options.mapHasNpcs) params.set('mapHasNpcs', '1');
+  }
+
+  if (tab === 'npcs') {
+    if (options.selectedNpcTypes.length > 0) {
+      params.set('npcType', options.selectedNpcTypes.join(','));
+    }
+    if (options.npcHasShop) params.set('npcHasShop', '1');
+    if (options.npcHasSprite) params.set('npcHasSprite', '1');
   }
 
   if (tab === 'mobs') {

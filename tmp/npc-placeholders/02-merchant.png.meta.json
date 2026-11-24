@@ -1,0 +1,46 @@
+{
+  "model": "retro-diffusion/rd-plus",
+  "status": "succeeded",
+  "metrics": {
+    "image_output_count": 1,
+    "image_output_pixel_count": 65536,
+    "model_variant": "rd_plus_large",
+    "predict_time": 4.8135190009999995,
+    "total_time": 4.823068646
+  },
+  "urls": {
+    "cancel": "https://api.replicate.com/v1/predictions/x5t2v749sxrmy0d21yz9g8pqa4/cancel",
+    "get": "https://api.replicate.com/v1/predictions/x5t2v749sxrmy0d21yz9g8pqa4",
+    "stream": "https://stream.replicate.com/v1/files/jbxs-hhcecjrtnz4ozcnbpyesc4y2l24s6vasukzwo4ct47hemvfuwgmq",
+    "web": "https://replicate.com/p/x5t2v749sxrmy0d21yz9g8pqa4"
+  },
+  "model_version": "hidden",
+  "job_id": 82,
+  "provider_job_id": "x5t2v749sxrmy0d21yz9g8pqa4",
+  "profile_id": "ro-npc-sprite",
+  "modality": "image",
+  "provider": "replicate",
+  "endpoint_id": null,
+  "character": null,
+  "reference_image": null,
+  "mask_image": null,
+  "control_preview": null,
+  "seed": 45422673,
+  "params": {
+    "width": 256,
+    "height": 256,
+    "style": "default",
+    "remove_bg": true,
+    "num_images": 1,
+    "tile_x": false,
+    "tile_y": false,
+    "bypass_prompt_expansion": false,
+    "seed": 45422673
+  },
+  "batch": "npc-placeholder-noimg",
+  "project": "ozro-site",
+  "out_path": "/home/oz/Code/ozro-site/tmp/npc-placeholders/02-merchant.png",
+  "timestamp": "2026-11-24T22:48:00.684154+00:00",
+  "cost_usd": 0.02,
+  "cost_source": "profile_approx"
+}

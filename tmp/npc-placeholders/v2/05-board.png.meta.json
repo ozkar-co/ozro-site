@@ -1,0 +1,46 @@
+{
+  "model": "retro-diffusion/rd-plus",
+  "status": "succeeded",
+  "metrics": {
+    "image_output_count": 1,
+    "image_output_pixel_count": 65536,
+    "model_variant": "rd_plus_large",
+    "predict_time": 4.163635666,
+    "total_time": 4.177848895
+  },
+  "urls": {
+    "cancel": "https://api.replicate.com/v1/predictions/50pwh184vdrmy0d21z1ajypwdr/cancel",
+    "get": "https://api.replicate.com/v1/predictions/50pwh184vdrmy0d21z1ajypwdr",
+    "stream": "https://stream.replicate.com/v1/files/jbxs-jexnadr224wpaczmzybni2nycp7wyucimq3zjbkzz5vq6uwq75na",
+    "web": "https://replicate.com/p/50pwh184vdrmy0d21z1ajypwdr"
+  },
+  "model_version": "hidden",
+  "job_id": 93,
+  "provider_job_id": "50pwh184vdrmy0d21z1ajypwdr",
+  "profile_id": "ro-npc-sprite",
+  "modality": "image",
+  "provider": "replicate",
+  "endpoint_id": null,
+  "character": null,
+  "reference_image": null,
+  "mask_image": null,
+  "control_preview": null,
+  "seed": 1078251424,
+  "params": {
+    "width": 256,
+    "height": 256,
+    "style": "default",
+    "remove_bg": true,
+    "num_images": 1,
+    "tile_x": false,
+    "tile_y": false,
+    "bypass_prompt_expansion": false,
+    "seed": 1078251424
+  },
+  "batch": "npc-placeholder-sign-v2",
+  "project": "ozro-site",
+  "out_path": "/home/oz/Code/ozro-site/tmp/npc-placeholders/v2/05-board.png",
+  "timestamp": "2026-11-24T22:51:47.951281+00:00",
+  "cost_usd": 0.02,
+  "cost_source": "profile_approx"
+}

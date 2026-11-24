@@ -530,6 +530,7 @@ export interface NpcSummary {
   x: number | null;
   y: number | null;
   spriteStem?: string | null;
+  hasSprite?: boolean | null;
   shopCount: number;
   functionCount: number;
   scriptPath?: string | null;

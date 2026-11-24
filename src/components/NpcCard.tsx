@@ -1,5 +1,8 @@
 import { Link } from 'react-router-dom';
+import type { SpriteRect } from '../api/assets';
 import { formatFilterLabel } from '../api/databaseMappers';
+import { PLACEHOLDER_NPC_SPRITE } from '../api/placeholders';
+import AtlasSprite from './AtlasSprite';
 
 export interface NpcResult {
   id: string;
@@ -10,6 +13,8 @@ export interface NpcResult {
   x: number | null;
   y: number | null;
   spriteStem?: string | null;
+  hasSprite?: boolean | null;
+  sprite?: SpriteRect | string | null;
   shopCount: number;
   functionCount: number;
   scriptPath?: string | null;
@@ -31,38 +36,54 @@ interface NpcCardProps {
 }
 
 const NpcCard = ({ result }: NpcCardProps) => {
+  const sprite = result.sprite ?? null;
+
   return (
     <div className="result-card result-card--npc">
-      <div className="result-card-header">
-        <h3>
-          <span className="name-title">
-            <Link to={`/database?tab=npcs&q=${encodeURIComponent(result.id)}&run=1`}>
-              {result.name}
-            </Link>
-          </span>
-          {result.type && (
-            <>
-              {' '}
-              <span className="npc-type-badge">{formatFilterLabel(result.type)}</span>
-            </>
-          )}
-        </h3>
-        <div className="npc-card-meta">
-          {result.mapId ? (
-            <Link
-              to={`/database?tab=maps&map=${encodeURIComponent(result.mapId)}`}
-              className="dropped-by-map"
-            >
-              {result.mapId}
-              {result.x != null && result.y != null ? ` (${result.x},${result.y})` : ''}
-            </Link>
-          ) : (
-            <span>Sin mapa</span>
-          )}
-          {result.shopCount > 0 && <span>{result.shopCount} shop{result.shopCount === 1 ? '' : 's'}</span>}
-          {result.functionCount > 0 && (
-            <span>{result.functionCount} function{result.functionCount === 1 ? '' : 's'}</span>
-          )}
+      <div className="result-card-header npc-card-header">
+        <AtlasSprite
+          sprite={sprite}
+          alt={result.name}
+          className="npc-card-sprite"
+          fallback={PLACEHOLDER_NPC_SPRITE}
+          {...(sprite && typeof sprite === 'object'
+            ? { fit: { maxWidth: 64, maxHeight: 64 } }
+            : { fit: { maxWidth: 64, maxHeight: 64 } })}
+        />
+        <div className="npc-card-heading">
+          <h3>
+            <span className="name-title">
+              <Link to={`/database?tab=npcs&q=${encodeURIComponent(result.id)}&run=1`}>
+                {result.name}
+              </Link>
+            </span>
+            {result.type && (
+              <>
+                {' '}
+                <span className="npc-type-badge">{formatFilterLabel(result.type)}</span>
+              </>
+            )}
+          </h3>
+          <div className="npc-card-meta">
+            {result.mapId ? (
+              <Link
+                to={`/database?tab=maps&map=${encodeURIComponent(result.mapId)}`}
+                className="dropped-by-map"
+              >
+                {result.mapId}
+                {result.x != null && result.y != null ? ` (${result.x},${result.y})` : ''}
+              </Link>
+            ) : (
+              <span>Sin mapa</span>
+            )}
+            {result.spriteStem && <span className="npc-sprite-stem">{result.spriteStem}</span>}
+            {result.shopCount > 0 && (
+              <span>{result.shopCount} shop{result.shopCount === 1 ? '' : 's'}</span>
+            )}
+            {result.functionCount > 0 && (
+              <span>{result.functionCount} function{result.functionCount === 1 ? '' : 's'}</span>
+            )}
+          </div>
         </div>
       </div>
 

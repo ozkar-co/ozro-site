@@ -38,16 +38,48 @@ function mapNpcSummary(row) {
     };
 }
 
+function parseCsvParam(value) {
+    if (typeof value !== 'string') return [];
+    return value.split(',').map((part) => part.trim()).filter(Boolean);
+}
+
+function parseBoolFlag(value) {
+    if (value === true || value === 1 || value === '1' || value === 'true') return true;
+    if (value === false || value === 0 || value === '0' || value === 'false') return false;
+    return null;
+}
+
 export async function searchNpcs(params) {
     const { page, limit, offset } = parsePagination(params);
     const q = typeof params.q === 'string' ? params.q.trim() : '';
-    const type = typeof params.type === 'string' ? params.type.trim() : '';
+    const types = parseCsvParam(params.type);
+    const hasShop = parseBoolFlag(params.hasShop);
+    const hasSprite = parseBoolFlag(params.hasSprite);
     const conditions = [];
     const values = [];
 
-    if (type) {
+    if (types.length === 1) {
         conditions.push('n.npc_type = ?');
-        values.push(type);
+        values.push(types[0]);
+    } else if (types.length > 1) {
+        conditions.push(`n.npc_type IN (${types.map(() => '?').join(', ')})`);
+        values.push(...types);
+    }
+
+    if (hasShop === true) {
+        conditions.push(
+            `EXISTS (SELECT 1 FROM \`${NPC_SHOPS}\` s WHERE s.npc_id = n.npc_id)`
+        );
+    } else if (hasShop === false) {
+        conditions.push(
+            `NOT EXISTS (SELECT 1 FROM \`${NPC_SHOPS}\` s WHERE s.npc_id = n.npc_id)`
+        );
+    }
+
+    if (hasSprite === true) {
+        conditions.push('COALESCE(n.has_sprite, 0) = 1');
+    } else if (hasSprite === false) {
+        conditions.push('COALESCE(n.has_sprite, 0) = 0');
     }
 
     if (q) {
@@ -57,7 +89,7 @@ export async function searchNpcs(params) {
         } else {
             const match = buildTokenMatchClause(
                 'n',
-                ['n.name', 'n.display_name', 'n.map_id', 'n.npc_id'],
+                ['n.name', 'n.display_name', 'n.map_id', 'n.npc_id', 'n.sprite_stem'],
                 q
             );
             if (match) {
