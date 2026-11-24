@@ -124,6 +124,8 @@ export interface PaginatedResponse<T> {
   results: T[];
 }
 
+export type MobSpawnType = 'permanent' | 'scripted' | 'instance' | 'event';
+
 export interface MobSpawnMapSummary {
   map: string;
   mapName?: string;
@@ -131,6 +133,7 @@ export interface MobSpawnMapSummary {
   points: number;
   boss: boolean;
   instance: boolean;
+  type?: MobSpawnType | string | null;
 }
 
 export interface MobSpawnPoint {
@@ -145,6 +148,8 @@ export interface MobSpawnPoint {
   delay2: number;
   boss: boolean;
   instance: boolean;
+  spawnType?: string | null;
+  spawnRoute?: string | null;
   source?: { file: string; line: number };
 }
 
@@ -157,6 +162,18 @@ export interface MobSummon {
   skillId?: number | null;
   skillName?: string | null;
   conditions?: Record<string, unknown> | null;
+}
+
+export interface MobSkill {
+  skillId: number | null;
+  skillName: string | null;
+  skillLv: number | null;
+  state: string | null;
+  conditionType: string | null;
+  conditionValue: string | null;
+  rate: number | null;
+  val1?: number | null;
+  vals?: unknown;
 }
 
 export interface MobSummary {
@@ -187,6 +204,7 @@ export interface MobSummary {
   spawnAmount?: number;
   hasWorldSpawn?: boolean;
   summons?: MobSummon[];
+  skills?: MobSkill[];
 }
 
 export interface MobDrop {
@@ -232,6 +250,7 @@ export interface MobDetail extends MobSummary {
   ai?: string | null;
   modes?: Record<string, boolean> | null;
   drops: MobDrop[];
+  skills?: MobSkill[];
   spawns?: MobSpawnPoint[];
 }
 

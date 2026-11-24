@@ -1813,10 +1813,17 @@ a {
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
+  /* Al menos hasta el borde inferior de la imagen; crece si spawns/meta piden más */
+  min-height: 168px;
+}
+
+.result-card--mob .mob-card-top:has(.result-card-image--mvp) .mob-card-top-meta {
+  min-height: calc(168px + 1.75rem);
 }
 
 .result-card--mob .mob-card-top-meta .result-card-header {
   margin-bottom: 0;
+  flex: 0 0 auto;
 }
 
 .result-card--mob .mob-card-top-meta .result-card-section {
@@ -1827,26 +1834,31 @@ a {
   display: flex;
   gap: 0.65rem;
   align-items: stretch;
+  flex: 1 1 auto;
   min-width: 0;
+  min-height: 0;
 }
 
-/* La columna meta define la altura; spawns la rellena sin empujar el layout */
+/* Spawns + meta: misma altura, mínimo el hueco bajo el título hasta el pie de la imagen */
 .result-card--mob .mob-spawn-wrap {
   flex: 1;
   min-width: 0;
-  position: relative;
+  display: flex;
+  align-items: stretch;
 }
 
 .result-card--mob .mob-card-top-row .mob-spawn-section {
-  position: absolute;
-  inset: 0;
+  position: static;
+  flex: 1;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
   margin: 0;
+  overflow: visible;
 }
 
 .result-card--mob .mob-card-top-row .mob-spawn-list {
+  flex: 1;
   align-content: flex-start;
 }
 
@@ -1863,47 +1875,81 @@ a {
   box-sizing: border-box;
 }
 
+.result-card--mob .mob-side-meta-heading {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #666;
+}
+
 .result-card--mob .mob-side-meta-empty {
   font-size: 0.78rem;
   color: #999;
   font-style: italic;
 }
 
-.result-card--mob .mob-side-meta-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.12rem;
-}
-
-.result-card--mob .mob-side-meta-label {
-  font-size: 0.68rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: #888;
-}
-
-.result-card--mob .mob-side-meta-value {
-  font-size: 0.82rem;
-  color: #333;
-  font-weight: 500;
-  word-break: break-word;
-}
-
 .result-card--mob .mob-side-meta-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem;
+  gap: 0.3rem;
+  align-content: flex-start;
 }
 
 .result-card--mob .mob-side-meta-tag {
-  display: inline-block;
-  padding: 0.12rem 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.45rem;
   border-radius: 999px;
+  background: #f4f1ec;
+  border: 1px solid #e2d9cf;
+  color: #5a5048;
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.result-card--mob .mob-side-meta-tag.is-action {
+  cursor: pointer;
+  background: #fff5f3;
+  border-color: #f0c4bb;
+  color: #c45b4a;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.result-card--mob .mob-side-meta-tag.is-action:hover {
+  border-color: #ff8d7f;
+  background: #ffece8;
+}
+
+.result-card--mob .mob-side-meta-tag.is-group {
   background: #f3effc;
-  border: 1px solid #d8cdf0;
+  border-color: #d8cdf0;
   color: #5b3fa0;
-  font-size: 0.7rem;
+}
+
+.result-card--mob .mob-side-meta-tag.spawn-type-permanent {
+  background: #eef5ec;
+  border-color: #c5d9c0;
+  color: #3d6b45;
+}
+
+.result-card--mob .mob-side-meta-tag.spawn-type-scripted {
+  background: #eef3fa;
+  border-color: #c2d0e6;
+  color: #3a5680;
+}
+
+.result-card--mob .mob-side-meta-tag.spawn-type-instance {
+  background: #f3effc;
+  border-color: #d8cdf0;
+  color: #5b3fa0;
+}
+
+.result-card--mob .mob-side-meta-tag.spawn-type-event {
+  background: #fff4e8;
+  border-color: #efd0a8;
+  color: #9a5b18;
 }
 
 .result-card--mob .mob-card-body {
@@ -1973,18 +2019,16 @@ a {
     width: 100%;
   }
 
-  .result-card--mob .mob-card-top-row {
-    flex-direction: column;
-  }
-
-  .result-card--mob .mob-spawn-wrap {
-    position: static;
+  .result-card--mob .mob-card-top-meta {
     min-height: 0;
   }
 
-  .result-card--mob .mob-card-top-row .mob-spawn-section {
-    position: static;
-    max-height: 10rem;
+  .result-card--mob .mob-card-top:has(.result-card-image--mvp) .mob-card-top-meta {
+    min-height: 0;
+  }
+
+  .result-card--mob .mob-card-top-row {
+    flex-direction: column;
   }
 
   .result-card--mob .mob-side-meta {
@@ -2047,14 +2091,36 @@ a {
 }
 
 .mob-spawn-map:hover {
-  border-color: #ff8d7f;
   text-decoration: none;
+  filter: brightness(0.97);
 }
 
-.mob-spawn-map.is-instance {
+.mob-spawn-map.spawn-type-permanent {
+  background: #eef5ec;
+  border-color: #c5d9c0;
+  color: #3d6b45;
+}
+
+.mob-spawn-map.spawn-type-scripted {
+  background: #eef3fa;
+  border-color: #c2d0e6;
+  color: #3a5680;
+}
+
+.mob-spawn-map.spawn-type-instance {
   background: #f3effc;
   border-color: #d8cdf0;
   color: #5b3fa0;
+}
+
+.mob-spawn-map.spawn-type-event {
+  background: #fff4e8;
+  border-color: #efd0a8;
+  color: #9a5b18;
+}
+
+.mob-spawn-map.is-boss {
+  box-shadow: inset 0 0 0 1px rgba(180, 60, 60, 0.35);
 }
 
 .mob-spawn-amount {

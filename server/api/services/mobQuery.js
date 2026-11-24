@@ -212,6 +212,47 @@ async function loadSummonsForMobs(mobIds) {
     return byParent;
 }
 
+async function loadSkillsForMobs(mobIds) {
+    const ids = [...new Set((mobIds || []).map((id) => Number(id)).filter(Number.isFinite))];
+    if (ids.length === 0) return new Map();
+
+    const placeholders = ids.map(() => '?').join(', ');
+    let rows;
+    try {
+        rows = await query(
+            `SELECT mob_id, skill_id, skill_name, skill_lv, state, condition_type, condition_value, rate, val1, vals
+             FROM \`${T.MOB_SKILLS}\`
+             WHERE mob_id IN (${placeholders})
+             ORDER BY mob_id ASC, skill_name ASC, skill_lv DESC, state ASC`,
+            ids
+        );
+    } catch (error) {
+        // Optional table — missing in older DBs should not break mob detail.
+        if (error && (error.errno === 1146 || error.code === 'ER_NO_SUCH_TABLE')) {
+            return new Map();
+        }
+        throw error;
+    }
+
+    const byMob = new Map();
+    for (const row of rows) {
+        const mobId = Number(row.mob_id);
+        if (!byMob.has(mobId)) byMob.set(mobId, []);
+        byMob.get(mobId).push({
+            skillId: num(row.skill_id),
+            skillName: row.skill_name || null,
+            skillLv: num(row.skill_lv),
+            state: row.state || null,
+            conditionType: row.condition_type || null,
+            conditionValue: row.condition_value || null,
+            rate: num(row.rate),
+            val1: num(row.val1),
+            vals: parseJsonColumn(row.vals, null)
+        });
+    }
+    return byMob;
+}
+
 export async function attachSpawnSummaries(targets) {
     if (!Array.isArray(targets) || targets.length === 0) return targets;
 
@@ -234,7 +275,9 @@ export async function attachSpawnSummaries(targets) {
                 SUM(COALESCE(s.amount, 0)) AS amount,
                 COUNT(*) AS points,
                 MAX(COALESCE(s.boss_flag, 0)) AS boss,
-                MAX(CASE WHEN s.spawn_type = 'instance' OR mp.is_instance = 1 THEN 1 ELSE 0 END) AS instance
+                MAX(CASE WHEN s.spawn_type = 'instance' OR mp.is_instance = 1 THEN 1 ELSE 0 END) AS instance,
+                MAX(CASE WHEN s.spawn_type = 'event' THEN 1 ELSE 0 END) AS is_event,
+                MAX(CASE WHEN s.spawn_type = 'scripted' THEN 1 ELSE 0 END) AS is_scripted
          FROM \`${T.SPAWNS}\` s
          LEFT JOIN \`${T.MAPS}\` mp ON mp.map_id = s.map_id
          WHERE s.mob_id IN (${placeholders})
@@ -249,13 +292,18 @@ export async function attachSpawnSummaries(targets) {
     for (const row of rows) {
         const mobId = Number(row.mob_id);
         if (!byMob.has(mobId)) byMob.set(mobId, []);
+        let type = 'permanent';
+        if (Number(row.instance) === 1) type = 'instance';
+        else if (Number(row.is_event) === 1) type = 'event';
+        else if (Number(row.is_scripted) === 1) type = 'scripted';
         byMob.get(mobId).push({
             map: row.map,
             mapName: row.map,
             amount: Number(row.amount) || 0,
             points: Number(row.points) || 0,
             boss: Boolean(row.boss),
-            instance: Boolean(row.instance)
+            instance: Boolean(row.instance),
+            type
         });
     }
 
@@ -485,9 +533,14 @@ export async function searchMobs(params) {
     const total = Number(countRows[0].total);
 
     const results = await attachDropsToMobRows(rows);
-    const summons = await loadSummonsForMobs(results.map((r) => r.id));
+    const mobIds = results.map((r) => r.id);
+    const [summons, skills] = await Promise.all([
+        loadSummonsForMobs(mobIds),
+        loadSkillsForMobs(mobIds)
+    ]);
     for (const mob of results) {
         mob.summons = summons.get(Number(mob.id)) || [];
+        mob.skills = skills.get(Number(mob.id)) || [];
     }
     await attachSpawnSummaries(results);
 
@@ -502,8 +555,12 @@ export async function getMobById(id) {
     if (rows.length === 0) return null;
 
     const [detail] = await attachDropsToMobRows(rows);
-    const summons = await loadSummonsForMobs([id]);
+    const [summons, skills] = await Promise.all([
+        loadSummonsForMobs([id]),
+        loadSkillsForMobs([id])
+    ]);
     detail.summons = summons.get(Number(id)) || [];
+    detail.skills = skills.get(Number(id)) || [];
     detail.spawns = await getMobSpawns(id);
     await attachSpawnSummaries([detail]);
     return detail;

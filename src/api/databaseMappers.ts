@@ -363,6 +363,15 @@ export function mapMobToCard(mob: MobSummary | MobDetail, sprite = PLACEHOLDER_M
       skillId: summon.skillId ?? null,
       skillName: summon.skillName ?? null,
       conditions: summon.conditions ?? null
+    })),
+    skills: (detail.skills || []).map((skill) => ({
+      skillId: skill.skillId ?? null,
+      skillName: skill.skillName ?? null,
+      skillLv: skill.skillLv ?? null,
+      state: skill.state ?? null,
+      conditionType: skill.conditionType ?? null,
+      conditionValue: skill.conditionValue ?? null,
+      rate: skill.rate ?? null
     }))
   };
 }

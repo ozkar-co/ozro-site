@@ -29,6 +29,16 @@ interface MobSummon {
   conditions?: Record<string, unknown> | null;
 }
 
+interface MobSkill {
+  skillId: number | null;
+  skillName: string | null;
+  skillLv: number | null;
+  state: string | null;
+  conditionType: string | null;
+  conditionValue: string | null;
+  rate: number | null;
+}
+
 interface MobResult {
   id: string;
   name: string;
@@ -82,6 +92,7 @@ interface MobResult {
   spawnAmount?: number;
   hasWorldSpawn?: boolean;
   summons?: MobSummon[];
+  skills?: MobSkill[];
 }
 
 const displayStat = (value: number | null | undefined): string | null => {
@@ -145,6 +156,7 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
   const [expanded, setExpanded] = useState(false);
   const [spriteModalOpen, setSpriteModalOpen] = useState(false);
   const [summonsModalOpen, setSummonsModalOpen] = useState(false);
+  const [skillsModalOpen, setSkillsModalOpen] = useState(false);
   const [farming, setFarming] = useState<FarmingMob | null>(null);
   const [farmingOpen, setFarmingOpen] = useState(false);
   const [farmingLoading, setFarmingLoading] = useState(false);
@@ -152,10 +164,12 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
 
   const closeSpriteModal = useCallback(() => setSpriteModalOpen(false), []);
   const closeSummonsModal = useCallback(() => setSummonsModalOpen(false), []);
+  const closeSkillsModal = useCallback(() => setSkillsModalOpen(false), []);
   const canOpenSprite = !isPlaceholderAsset(result.sprite);
   const normalDrops = (result.drop || []).filter((d) => d.type !== 'mvp');
   const mvpDrops = (result.drop || []).filter((d) => d.type === 'mvp');
   const summons = result.summons || [];
+  const skills = result.skills || [];
   const groupedSummons = useMemo(() => groupSummons(summons), [summons]);
 
   const toggleFarming = async () => {
@@ -264,19 +278,20 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
                 <div className="mob-spawn-header">Spawns:</div>
                 {result.spawnMaps && result.spawnMaps.length > 0 ? (
                   <div className="mob-spawn-list">
-                    {result.spawnMaps.map((spawn) => (
-                      <Link
-                        key={spawn.map}
-                        to={`/database?tab=maps&map=${encodeURIComponent(spawn.map)}`}
-                        className={`mob-spawn-map${spawn.instance ? ' is-instance' : ''}`}
-                        title={`${spawn.points} punto(s) de spawn · ${spawn.amount} mobs`}
-                      >
-                        {spawn.map}
-                        <span className="mob-spawn-amount">{spawn.amount}</span>
-                        {spawn.boss && <span className="mob-spawn-badge">Boss</span>}
-                        {spawn.instance && <span className="mob-spawn-badge">Instancia</span>}
-                      </Link>
-                    ))}
+                    {result.spawnMaps.map((spawn) => {
+                      const spawnType = spawn.type
+                        || (spawn.instance ? 'instance' : 'permanent');
+                      return (
+                        <Link
+                          key={spawn.map}
+                          to={`/database?tab=maps&map=${encodeURIComponent(spawn.map)}`}
+                          className={`mob-spawn-map spawn-type-${spawnType}${spawn.boss ? ' is-boss' : ''}`}
+                        >
+                          {spawn.map}
+                          <span className="mob-spawn-amount">{spawn.amount}</span>
+                        </Link>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="mob-spawn-empty">
@@ -288,39 +303,48 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
               </div>
             </div>
 
-            <aside className="mob-side-meta" aria-label="Metadatos del mob">
-              {result.mobRole && (
-                <div className="mob-side-meta-row">
-                  <span className="mob-side-meta-label">Role</span>
-                  <span className="mob-side-meta-value">{formatFilterLabel(result.mobRole)}</span>
-                </div>
-              )}
-              {result.ai != null && result.ai !== '' && (
-                <div className="mob-side-meta-row">
-                  <span className="mob-side-meta-label">AI</span>
-                  <span className="mob-side-meta-value">{result.ai}</span>
-                </div>
-              )}
-              {result.title && (
-                <div className="mob-side-meta-row">
-                  <span className="mob-side-meta-label">Title</span>
-                  <span className="mob-side-meta-value">{result.title}</span>
-                </div>
-              )}
-              {result.raceGroups && result.raceGroups.length > 0 && (
-                <div className="mob-side-meta-row mob-side-meta-row--stack">
-                  <span className="mob-side-meta-label">Groups</span>
-                  <div className="mob-side-meta-tags">
-                    {result.raceGroups.map((group) => (
-                      <span key={group} className="mob-side-meta-tag">{formatFilterLabel(group)}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {!result.mobRole && result.ai == null && !result.title
-                && !(result.raceGroups && result.raceGroups.length > 0) && (
-                <div className="mob-side-meta-empty">Sin meta</div>
-              )}
+            <aside className="mob-side-meta" aria-label="Extra Data">
+              <div className="mob-side-meta-heading">Extra Data</div>
+              <div className="mob-side-meta-tags">
+                {skills.length > 0 && (
+                  <button
+                    type="button"
+                    className="mob-side-meta-tag is-action"
+                    onClick={() => setSkillsModalOpen(true)}
+                  >
+                    {skills.length} skill{skills.length === 1 ? '' : 's'}
+                  </button>
+                )}
+                {result.mobRole && (
+                  <span className="mob-side-meta-tag">
+                    {formatFilterLabel(result.mobRole)}
+                  </span>
+                )}
+                {result.title && (
+                  <span className="mob-side-meta-tag">{result.title}</span>
+                )}
+                {[...new Set(
+                  (result.spawnMaps || [])
+                    .map((spawn) => spawn.type || (spawn.instance ? 'instance' : null))
+                    .filter((type): type is string => Boolean(type))
+                )].map((type) => (
+                  <span key={`spawn-${type}`} className={`mob-side-meta-tag spawn-type-${type}`}>
+                    {formatFilterLabel(type)}
+                  </span>
+                ))}
+                {(result.raceGroups || []).map((group) => (
+                  <span key={group} className="mob-side-meta-tag is-group">
+                    {formatFilterLabel(group)}
+                  </span>
+                ))}
+                {skills.length === 0
+                  && !result.mobRole
+                  && !result.title
+                  && !(result.spawnMaps && result.spawnMaps.length > 0)
+                  && !(result.raceGroups && result.raceGroups.length > 0) && (
+                  <span className="mob-side-meta-empty">Sin datos</span>
+                )}
+              </div>
             </aside>
           </div>
         </div>
@@ -719,6 +743,68 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
                       {summon.amount > 0 ? `${summon.mobId != null ? ' · ' : ''}x${summon.amount}` : ''}
                     </span>
                     <span className="box-group-item-chance" />
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>,
+        document.body
+      )}
+      {skillsModalOpen && skills.length > 0 && createPortal(
+        <div
+          className="item-desc-modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeSkillsModal();
+          }}
+        >
+          <div
+            className="item-desc-modal item-box-group-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`mob-skills-title-${result.id}`}
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="item-desc-modal-head">
+              <div>
+                <h4 id={`mob-skills-title-${result.id}`}>Skills</h4>
+                <p className="item-desc-modal-subtitle">
+                  {result.name} · {skills.length} entradas
+                </p>
+              </div>
+              <button
+                type="button"
+                className="item-desc-modal-close"
+                onClick={closeSkillsModal}
+                aria-label="Cerrar"
+              >
+                Cerrar
+              </button>
+            </div>
+            <ul className="box-group-list">
+              {skills.map((skill, index) => {
+                const label = skill.skillName
+                  || (skill.skillId != null ? `#${skill.skillId}` : '—');
+                const rateText = skill.rate != null
+                  ? `${(skill.rate / 100).toFixed(skill.rate % 100 === 0 ? 0 : 1)}%`
+                  : null;
+                const metaParts = [
+                  skill.skillId != null ? `#${skill.skillId}` : null,
+                  skill.skillLv != null ? `Lv ${skill.skillLv}` : null,
+                  skill.state || null,
+                  skill.conditionType
+                    ? `${skill.conditionType}${skill.conditionValue != null && skill.conditionValue !== '' ? ` ${skill.conditionValue}` : ''}`
+                    : null
+                ].filter(Boolean);
+                return (
+                  <li
+                    key={`${skill.skillId ?? 's'}-${skill.state ?? ''}-${index}`}
+                    className="box-group-item"
+                  >
+                    <span className="box-group-item-name">{label}</span>
+                    <span className="box-group-item-meta">{metaParts.join(' · ')}</span>
+                    <span className="box-group-item-chance">{rateText || ''}</span>
                   </li>
                 );
               })}

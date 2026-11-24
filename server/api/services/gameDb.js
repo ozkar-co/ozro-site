@@ -11,6 +11,7 @@ export const OZRO_PREFIX = process.env.OZRO_TABLE_PREFIX || 'ozro_';
 export const T = {
     MOBS: `${OZRO_PREFIX}mobs`,
     MOB_DROPS: `${OZRO_PREFIX}mob_drops`,
+    MOB_SKILLS: `${OZRO_PREFIX}mob_skills`,
     SPAWNS: `${OZRO_PREFIX}spawns`,
     MAPS: `${OZRO_PREFIX}maps`,
     ITEMS: `${OZRO_PREFIX}items`,
@@ -131,6 +132,7 @@ export async function initializeGameDb() {
         optional: {
             item_scripts: tableSet.has(T.ITEM_SCRIPTS),
             skill_summons: tableSet.has(T.SKILL_SUMMONS),
+            mob_skills: tableSet.has(T.MOB_SKILLS),
             level_penalty: tableSet.has(T.LEVEL_PENALTY),
             acquisition: hasAcquisition
         }
