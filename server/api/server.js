@@ -10,6 +10,7 @@ import itemsRouter from './routes/items.js';
 import mvpsRouter from './routes/mvps.js';
 import skillsRouter from './routes/skills.js';
 import npcsRouter from './routes/npcs.js';
+import mapsRouter from './routes/maps.js';
 import farmingRouter from './routes/farming.js';
 import marketRouter from './routes/market.js';
 import { BANK_VAULT_KEY, bankVaultValueSql, T, excludeInternalAccountsSql, isMobDataAvailable, statsPlayerAccountSql, statsPlayerAccountWhereClause } from './services/gameDb.js';
@@ -47,6 +48,7 @@ api.use('/items', itemsRouter);
 api.use('/mvps', mvpsRouter);
 api.use('/skills', skillsRouter);
 api.use('/npcs', npcsRouter);
+api.use('/maps', mapsRouter);
 api.use('/farming', farmingRouter);
 api.use('/market', marketRouter);
 

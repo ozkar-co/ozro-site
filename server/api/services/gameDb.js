@@ -20,6 +20,7 @@ export const T = {
     NPC_SHOPS: `${OZRO_PREFIX}npc_shops`,
     SPAWNS: `${OZRO_PREFIX}spawns`,
     MAPS: `${OZRO_PREFIX}maps`,
+    MAP_CONNECTIONS: `${OZRO_PREFIX}map_connections`,
     ITEMS: `${OZRO_PREFIX}items`,
     ITEM_SCRIPTS: `${OZRO_PREFIX}item_scripts`,
     SKILL_SUMMONS: `${OZRO_PREFIX}skill_summons`,

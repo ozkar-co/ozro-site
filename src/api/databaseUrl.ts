@@ -50,6 +50,16 @@ function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): bo
     if (options.skillHasPrereq) return true;
     return false;
   }
+  if (tab === 'maps') {
+    if (options.selectedMapCategories.length > 0) return true;
+    if (options.mapTownOnly) return true;
+    if (options.mapDungeonOnly) return true;
+    if (options.mapQuestOnly) return true;
+    if (options.mapHasSpawns) return true;
+    if (options.mapHasNpcs) return true;
+    if (options.mapShowInstances) return true;
+    return false;
+  }
   if (options.selectedElements.length > 0) return true;
   if (options.selectedRaces.length > 0) return true;
   if (options.selectedSizes.length > 0) return true;
@@ -161,6 +171,20 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
   const skillHasPrereq = parseBoolParam(params.get('hasPrereq'));
   if (skillHasPrereq !== undefined) options.skillHasPrereq = skillHasPrereq;
 
+  options.selectedMapCategories = parseCsvList(params.get('mapCategory'));
+  const mapTown = parseBoolParam(params.get('mapTown'));
+  if (mapTown !== undefined) options.mapTownOnly = mapTown;
+  const mapDungeon = parseBoolParam(params.get('mapDungeon'));
+  if (mapDungeon !== undefined) options.mapDungeonOnly = mapDungeon;
+  const mapQuest = parseBoolParam(params.get('mapQuest'));
+  if (mapQuest !== undefined) options.mapQuestOnly = mapQuest;
+  const mapHasSpawns = parseBoolParam(params.get('mapHasSpawns'));
+  if (mapHasSpawns !== undefined) options.mapHasSpawns = mapHasSpawns;
+  const mapHasNpcs = parseBoolParam(params.get('mapHasNpcs'));
+  if (mapHasNpcs !== undefined) options.mapHasNpcs = mapHasNpcs;
+  const mapInstances = parseBoolParam(params.get('mapInstances'));
+  if (mapInstances !== undefined) options.mapShowInstances = mapInstances;
+
   const kinds = params.get('kinds');
   if (kinds) {
     const set = new Set(kinds.split(',').map((k) => k.trim().toLowerCase()));
@@ -182,7 +206,7 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
   return { tab, q, page, run, options };
 }
 
-/** Parse /database query string. Supports legacy ?item= / ?mob= via redirect elsewhere. */
+/** Deep links ?mob= / ?item= → tab search by id. */
 export function getLegacyDeepLinkId(search: string): { tab: DatabaseTab; q: string } | null {
   const params = new URLSearchParams(search);
   const mobId = params.get('mob');
@@ -269,6 +293,18 @@ export function buildDatabaseSearchParams(
     if (options.skillHasItemCost) params.set('hasItemCost', '1');
     if (options.skillHasTeacher) params.set('hasTeacher', '1');
     if (options.skillHasPrereq) params.set('hasPrereq', '1');
+  }
+
+  if (tab === 'maps') {
+    if (options.selectedMapCategories.length > 0) {
+      params.set('mapCategory', options.selectedMapCategories.join(','));
+    }
+    if (options.mapTownOnly) params.set('mapTown', '1');
+    if (options.mapDungeonOnly) params.set('mapDungeon', '1');
+    if (options.mapQuestOnly) params.set('mapQuest', '1');
+    if (options.mapHasSpawns) params.set('mapHasSpawns', '1');
+    if (options.mapHasNpcs) params.set('mapHasNpcs', '1');
+    if (options.mapShowInstances) params.set('mapInstances', '1');
   }
 
   if (tab === 'mobs') {

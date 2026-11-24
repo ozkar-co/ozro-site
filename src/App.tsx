@@ -15,7 +15,7 @@ const NotFound = lazy(() => import('./components/NotFound'));
 
 const MapRedirect = () => {
   const { map } = useParams<{ map: string }>();
-  return <Navigate to={`/database?tab=maps&map=${encodeURIComponent(map ?? '')}`} replace />;
+  return <Navigate to={`/database?tab=maps&q=${encodeURIComponent(map ?? '')}&run=1`} replace />;
 };
 
 const App = () => {

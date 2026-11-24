@@ -50,7 +50,7 @@ const NpcCard = ({ result }: NpcCardProps) => {
         <div className="npc-card-meta">
           {result.mapId ? (
             <Link
-              to={`/database?tab=maps&map=${encodeURIComponent(result.mapId)}`}
+              to={`/database?tab=maps&q=${encodeURIComponent(result.mapId)}&run=1`}
               className="dropped-by-map"
             >
               {result.mapId}

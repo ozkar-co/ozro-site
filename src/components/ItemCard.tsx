@@ -706,7 +706,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
                                 .map((spawn) => (
                                   <Link
                                     key={spawn.map}
-                                    to={`/database?tab=maps&map=${encodeURIComponent(spawn.map)}`}
+                                    to={`/database?tab=maps&q=${encodeURIComponent(spawn.map)}&run=1`}
                                     className="dropped-by-map"
                                   >
                                     {spawn.map}
@@ -745,7 +745,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
                             <>
                               {' · '}
                               <Link
-                                to={`/database?tab=maps&map=${encodeURIComponent(shop.mapId)}`}
+                                to={`/database?tab=maps&q=${encodeURIComponent(shop.mapId)}&run=1`}
                                 className="dropped-by-map"
                               >
                                 {shop.mapId}
@@ -905,7 +905,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
                             <>
                               {' · '}
                               <Link
-                                to={`/database?tab=maps&map=${encodeURIComponent(reward.mapId)}`}
+                                to={`/database?tab=maps&q=${encodeURIComponent(reward.mapId)}&run=1`}
                                 className="dropped-by-map"
                               >
                                 {reward.mapId}

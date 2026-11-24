@@ -160,6 +160,14 @@ export interface SearchOptions {
   skillHasItemCost: boolean;
   skillHasTeacher: boolean;
   skillHasPrereq: boolean;
+  /** Maps tab filters */
+  selectedMapCategories: string[];
+  mapTownOnly: boolean;
+  mapDungeonOnly: boolean;
+  mapQuestOnly: boolean;
+  mapHasSpawns: boolean;
+  mapHasNpcs: boolean;
+  mapShowInstances: boolean;
 }
 
 export const defaultSearchOptions = (): SearchOptions => ({
@@ -197,8 +205,35 @@ export const defaultSearchOptions = (): SearchOptions => ({
   skillHasMobUse: false,
   skillHasItemCost: false,
   skillHasTeacher: false,
-  skillHasPrereq: false
+  skillHasPrereq: false,
+  selectedMapCategories: [],
+  mapTownOnly: false,
+  mapDungeonOnly: false,
+  mapQuestOnly: false,
+  mapHasSpawns: false,
+  mapHasNpcs: false,
+  mapShowInstances: false
 });
+
+export function buildMapSearchParams(
+  searchTerm: string,
+  options: SearchOptions,
+  page: number,
+  limit: number
+): Record<string, string | number> {
+  const params: Record<string, string | number> = { page: page + 1, limit };
+  if (searchTerm.trim()) params.q = searchTerm.trim();
+  if (options.selectedMapCategories.length > 0) {
+    params.category = options.selectedMapCategories.join(',');
+  }
+  if (options.mapTownOnly) params.town = 1;
+  if (options.mapDungeonOnly) params.dungeon = 1;
+  if (options.mapQuestOnly) params.quest = 1;
+  if (options.mapHasSpawns) params.hasSpawns = 1;
+  if (options.mapHasNpcs) params.hasNpcs = 1;
+  if (!options.mapShowInstances) params.instance = 0;
+  return params;
+}
 
 export function buildSkillSearchParams(
   searchTerm: string,

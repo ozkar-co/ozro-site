@@ -553,6 +553,71 @@ export interface NpcDetail extends NpcSummary {
   functions?: string[];
 }
 
+export interface MapSummary {
+  id: string;
+  name: string;
+  category: string | null;
+  categories: string[];
+  isTown: boolean;
+  isDungeon: boolean;
+  isInstance: boolean;
+  isQuestMap: boolean;
+  isGuildMap: boolean;
+  isInterior: boolean;
+  isAccessible: boolean;
+  width: number | null;
+  height: number | null;
+  hasClientResource: boolean;
+  spawnSpecies: number;
+  spawnAmount: number;
+  spawnPoints: number;
+  hasBossSpawn: boolean;
+  npcCount: number;
+}
+
+export interface MapConnection {
+  id: string;
+  type: string | null;
+  from: string | null;
+  to: string | null;
+  fromX: number | null;
+  fromY: number | null;
+  toX: number | null;
+  toY: number | null;
+  warpName: string | null;
+  zenyCost: number | null;
+}
+
+export interface MapDetail extends MapSummary {
+  client?: unknown;
+  connections?: MapConnection[];
+}
+
+export interface MapMetaResponse {
+  categories: string[];
+  counts: {
+    total: number;
+    towns: number;
+    dungeons: number;
+    instances: number;
+    questMaps: number;
+  };
+}
+
+export interface MapSearchParams {
+  q?: string;
+  page?: number;
+  limit?: number;
+  category?: string;
+  town?: number | boolean;
+  dungeon?: number | boolean;
+  instance?: number | boolean;
+  quest?: number | boolean;
+  hasSpawns?: number | boolean;
+  hasNpcs?: number | boolean;
+  accessible?: number | boolean;
+}
+
 export interface ItemMetaResponse {
   types: string[];
   armorSubtypes: string[];
@@ -653,5 +718,12 @@ export const apiClient = {
 
   getNpc: (id: string) => apiFetch<NpcDetail>(`/npcs/${encodeURIComponent(id)}`),
 
-  getNpcMeta: () => apiFetch<{ types: string[] }>('/npcs/meta')
+  getNpcMeta: () => apiFetch<{ types: string[] }>('/npcs/meta'),
+
+  searchMaps: (params: MapSearchParams) =>
+    apiFetch<PaginatedResponse<MapSummary>>(`/maps${buildQuery(params as Record<string, string | number | undefined>)}`),
+
+  getMap: (id: string) => apiFetch<MapDetail>(`/maps/${encodeURIComponent(id)}`),
+
+  getMapMeta: () => apiFetch<MapMetaResponse>('/maps/meta')
 };

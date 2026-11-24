@@ -2,13 +2,14 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
-import Maps from './Maps';
 import Mvps from './Mvps';
 import ItemCard, { SearchResult } from './ItemCard';
 import MobCard, { MobResult } from './MobCard';
 import SkillCard, { type SkillResult } from './SkillCard';
 import NpcCard, { type NpcResult } from './NpcCard';
+import MapCard, { type MapResult } from './MapCard';
 import '../styles/Database.css';
+import '../styles/Maps.css';
 import { apiClient } from '../api/client';
 import { hasManifestSprite, loadManifest, resolveSprite, type SpriteRect } from '../api/assets';
 import {
@@ -20,6 +21,7 @@ import {
 import { skillPrefixLabel } from '../api/skillPrefixes';
 import {
   buildItemSearchParams,
+  buildMapSearchParams,
   buildMobSearchParams,
   buildSkillSearchParams,
   formatFilterLabel,
@@ -50,7 +52,7 @@ type MobResultRow = MobResult & { hasSprite?: boolean };
 interface SearchState {
   total: number;
   currentPage: number;
-  results: (ItemResult | MobResultRow | SkillResult | NpcResult)[];
+  results: (ItemResult | MobResultRow | SkillResult | NpcResult | MapResult)[];
   totalPages: number;
 }
 
@@ -99,6 +101,9 @@ const Database = () => {
   const [skillTargetTypes, setSkillTargetTypes] = useState<string[]>([]);
   const [skillMetaError, setSkillMetaError] = useState<string | null>(null);
   const [skillMetaLoading, setSkillMetaLoading] = useState(false);
+  const [mapCategories, setMapCategories] = useState<string[]>([]);
+  const [mapMetaError, setMapMetaError] = useState<string | null>(null);
+  const [mapMetaLoading, setMapMetaLoading] = useState(false);
   const searchOptionsRef = useRef(searchOptions);
   const searchOptionsPanelRef = useRef<HTMLDivElement>(null);
 
@@ -204,6 +209,31 @@ const Database = () => {
       })
       .finally(() => {
         if (!cancelled) setSkillMetaLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== 'maps') return;
+    let cancelled = false;
+    setMapMetaLoading(true);
+    setMapMetaError(null);
+    apiClient.getMapMeta()
+      .then((meta) => {
+        if (cancelled) return;
+        setMapCategories(Array.isArray(meta.categories) ? meta.categories : []);
+        setMapMetaError(null);
+      })
+      .catch((error: Error) => {
+        if (cancelled) return;
+        console.error('Fallo cargando maps/meta', error);
+        setMapCategories([]);
+        setMapMetaError(error?.message || String(error));
+      })
+      .finally(() => {
+        if (!cancelled) setMapMetaLoading(false);
       });
     return () => {
       cancelled = true;
@@ -336,6 +366,38 @@ const Database = () => {
       };
     }
 
+    if (tab === 'maps') {
+      // Exact map_id → detail card. Name/filter search otherwise.
+      const looksLikeMapId = Boolean(trimmed) && /^[A-Za-z0-9_@.-]+$/.test(trimmed);
+      if (looksLikeMapId) {
+        try {
+          const map = await apiClient.getMap(trimmed);
+          return {
+            total: 1,
+            currentPage: 0,
+            results: [{ ...map, detailed: true }],
+            totalPages: 1
+          };
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          // 404 → empty result (same as skill/item id miss). Other errors bubble.
+          if (/404|no encontrad/i.test(message)) {
+            return { total: 0, currentPage: 0, results: [], totalPages: 0 };
+          }
+          throw error;
+        }
+      }
+      const data = await apiClient.searchMaps(
+        buildMapSearchParams(trimmed, options, page, RESULTS_PER_PAGE)
+      );
+      return {
+        total: data.total,
+        currentPage: page,
+        results: data.results,
+        totalPages: Math.max(1, Math.ceil(data.total / RESULTS_PER_PAGE))
+      };
+    }
+
     if (tab === 'npcs') {
       if (/^npc_[0-9a-f]+$/i.test(trimmed)) {
         const npc = await apiClient.getNpc(trimmed).catch(() => null);
@@ -420,7 +482,7 @@ const Database = () => {
     setSearchTerm(q);
     setSearchOptions(options);
 
-    if (tab === 'maps' || tab === 'mvps') {
+    if (tab === 'mvps') {
       setSearchState(emptySearchState());
       setSearchError(null);
       setIsSearching(false);
@@ -556,9 +618,9 @@ const Database = () => {
             MVPs
           </button>
         </div>
-        <div className={`database-container${activeTab === 'maps' || activeTab === 'mvps' ? ' database-embed' : ''}`}>
-          {activeTab === 'maps' || activeTab === 'mvps' ? (
-            activeTab === 'maps' ? <Maps /> : <Mvps />
+        <div className={`database-container${activeTab === 'mvps' ? ' database-embed' : ''}`}>
+          {activeTab === 'mvps' ? (
+            <Mvps />
           ) : (
             <>
           <div className="search-section">
@@ -576,7 +638,9 @@ const Database = () => {
                           ? 'Buscar por nombre o ID del monstruo...'
                           : activeTab === 'skills'
                             ? 'Buscar skill por nombre o ID...'
-                            : 'Buscar NPC por nombre, mapa o ID...'
+                            : activeTab === 'maps'
+                              ? 'Buscar mapa por nombre o ID...'
+                              : 'Buscar NPC por nombre, mapa o ID...'
                     }
                     className="search-input"
                   />
@@ -586,14 +650,116 @@ const Database = () => {
                 </div>
               </form>
               <div className="search-options-container" ref={searchOptionsPanelRef}>
-                {(activeTab === 'items' || activeTab === 'mobs' || activeTab === 'skills') && (
+                {(activeTab === 'items' || activeTab === 'mobs' || activeTab === 'skills' || activeTab === 'maps') && (
                 <button className="search-options-toggle" onClick={handleOptionsToggle}>
                   <i className={`arrow-icon ${isOptionsVisible ? 'up' : 'down'}`}></i>
                 </button>
                 )}
-                {isOptionsVisible && (activeTab === 'items' || activeTab === 'mobs' || activeTab === 'skills') && (
+                {isOptionsVisible && (activeTab === 'items' || activeTab === 'mobs' || activeTab === 'skills' || activeTab === 'maps') && (
                   <div className={`search-options-panel ${isClosing ? 'closing' : ''}`}>
-                    {activeTab === 'skills' ? (
+                    {activeTab === 'maps' ? (
+                      <>
+                        {mapMetaError && (
+                          <div className="search-filter-hint">{mapMetaError}</div>
+                        )}
+                        {mapMetaLoading && (
+                          <div className="search-filter-hint">Cargando filtros…</div>
+                        )}
+                        <div className="search-types">
+                          <div className="search-types-title">Tipo:</div>
+                          <div className="search-types-grid">
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.mapTownOnly}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  mapTownOnly: !prev.mapTownOnly
+                                }))}
+                              />
+                              Ciudades
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.mapDungeonOnly}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  mapDungeonOnly: !prev.mapDungeonOnly
+                                }))}
+                              />
+                              Dungeons
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.mapQuestOnly}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  mapQuestOnly: !prev.mapQuestOnly
+                                }))}
+                              />
+                              Quest maps
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.mapHasSpawns}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  mapHasSpawns: !prev.mapHasSpawns
+                                }))}
+                              />
+                              Con spawns
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.mapHasNpcs}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  mapHasNpcs: !prev.mapHasNpcs
+                                }))}
+                              />
+                              Con NPCs
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.mapShowInstances}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  mapShowInstances: !prev.mapShowInstances
+                                }))}
+                              />
+                              Incluir instancias
+                            </label>
+                          </div>
+                        </div>
+                        {mapCategories.length > 0 && (
+                          <div className="search-types">
+                            <div className="search-types-title">Categoría:</div>
+                            <div className="search-types-grid">
+                              {mapCategories.map((cat) => (
+                                <label key={cat} className="type-checkbox">
+                                  <input
+                                    type="checkbox"
+                                    checked={searchOptions.selectedMapCategories.includes(cat)}
+                                    onChange={() => setSearchOptions((prev) => ({
+                                      ...prev,
+                                      selectedMapCategories: prev.selectedMapCategories.includes(cat)
+                                        ? prev.selectedMapCategories.filter((c) => c !== cat)
+                                        : [...prev.selectedMapCategories, cat]
+                                    }))}
+                                  />
+                                  {formatFilterLabel(cat)}
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : activeTab === 'skills' ? (
                       <>
                         {skillMetaError && (
                           <div className="search-filter-hint">{skillMetaError}</div>
@@ -1320,6 +1486,10 @@ const Database = () => {
                     if (activeTab === 'npcs') {
                       const npc = result as NpcResult;
                       return <NpcCard key={npc.id} result={npc} />;
+                    }
+                    if (activeTab === 'maps') {
+                      const map = result as MapResult;
+                      return <MapCard key={map.id} result={map} />;
                     }
                     const compactView = searchOptions.hideWithoutSprite
                       && (result as ItemResult | MobResultRow).hasSprite !== true;

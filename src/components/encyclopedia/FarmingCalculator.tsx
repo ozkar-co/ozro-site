@@ -158,7 +158,7 @@ function MobDetail({
         <div className="farm-spawn-list">
           {mob.spawnMaps.map((spawn) => (
             <div key={`${spawn.map}-${spawn.instance}`} className="farm-spawn-row">
-              <Link to={`/database?tab=maps&map=${encodeURIComponent(spawn.map)}`}>{spawn.map}</Link>
+              <Link to={`/database?tab=maps&q=${encodeURIComponent(spawn.map)}&run=1`}>{spawn.map}</Link>
               <span className={accessClass(spawn.accessDepth)}>{spawn.accessLabel}</span>
               <span>{formatNumber(spawn.amount)} mobs</span>
               <span>{formatDuration(spawn.respawnMs)} respawn</span>

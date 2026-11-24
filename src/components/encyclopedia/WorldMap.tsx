@@ -379,7 +379,7 @@ const WorldMap = () => {
                 </p>
               )}
 
-              <Link className="world-link" to={`/database?tab=maps&map=${encodeURIComponent(selectedEntry.map)}`}>
+              <Link className="world-link" to={`/database?tab=maps&q=${encodeURIComponent(selectedEntry.map)}&run=1`}>
                 Ver spawns en la base de datos
               </Link>
             </div>
