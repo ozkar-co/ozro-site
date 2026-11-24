@@ -154,29 +154,34 @@ async function attachDropsToMobRows(rows) {
 
 async function loadSummonsForMobs(mobIds) {
     if (!mobIds.length) return new Map();
-    try {
-        const placeholders = mobIds.map(() => '?').join(', ');
-        const rows = await query(
-            `SELECT parent_mob_id, summoned_mob_id, amount, summon_kind, skill_id
-             FROM \`${T.SKILL_SUMMONS}\`
-             WHERE parent_mob_id IN (${placeholders})`,
-            mobIds
-        );
-        const byParent = new Map();
-        for (const row of rows) {
-            const parent = Number(row.parent_mob_id);
-            if (!byParent.has(parent)) byParent.set(parent, []);
-            byParent.get(parent).push({
-                mobId: row.summoned_mob_id,
-                amount: row.amount,
-                kind: row.summon_kind,
-                skillId: row.skill_id
-            });
-        }
-        return byParent;
-    } catch {
-        return new Map();
+    const placeholders = mobIds.map(() => '?').join(', ');
+    const rows = await query(
+        `SELECT s.parent_mob_id, s.summoned_mob_id, s.amount, s.summon_kind,
+                s.skill_id, s.skill_name, s.conditions,
+                m.name AS summoned_name, m.aegis_name AS summoned_aegis
+         FROM \`${T.SKILL_SUMMONS}\` s
+         LEFT JOIN \`${T.MOBS}\` m ON m.mob_id = s.summoned_mob_id
+         WHERE s.parent_mob_id IN (${placeholders})
+         ORDER BY s.skill_name, s.summoned_mob_id`,
+        mobIds
+    );
+    const byParent = new Map();
+    for (const row of rows) {
+        const parent = Number(row.parent_mob_id);
+        if (!byParent.has(parent)) byParent.set(parent, []);
+        const conditions = parseJsonColumn(row.conditions, null);
+        byParent.get(parent).push({
+            mobId: num(row.summoned_mob_id),
+            mobName: row.summoned_name || null,
+            mobAegis: row.summoned_aegis || null,
+            amount: num(row.amount),
+            kind: row.summon_kind || null,
+            skillId: num(row.skill_id),
+            skillName: row.skill_name || null,
+            conditions: conditions && typeof conditions === 'object' ? conditions : null
+        });
     }
+    return byParent;
 }
 
 export async function attachSpawnSummaries(targets) {

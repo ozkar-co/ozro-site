@@ -8,6 +8,8 @@ interface AtlasSpriteProps {
   fallback?: string;
   /** Scale atlas rect to fit inside this box (centered). Omit for 1:1. */
   fit?: { maxWidth: number; maxHeight: number };
+  /** Explicit multiplier (e.g. 2 for 2×). Ignored when `fit` is set. */
+  scale?: number;
 }
 
 const AtlasSprite = ({
@@ -15,7 +17,8 @@ const AtlasSprite = ({
   alt = '',
   className = '',
   fallback = PLACEHOLDER_ITEM_ICON,
-  fit
+  fit,
+  scale: scaleProp = 1
 }: AtlasSpriteProps) => {
   if (!sprite) {
     return <img src={fallback} alt={alt} className={className} />;
@@ -26,11 +29,19 @@ const AtlasSprite = ({
       ? {
           maxWidth: fit.maxWidth,
           maxHeight: fit.maxHeight,
-          width: 'auto',
-          height: 'auto',
-          objectFit: 'contain' as const
+          width: 'auto' as const,
+          height: 'auto' as const,
+          objectFit: 'contain' as const,
+          imageRendering: 'pixelated' as const
         }
-      : undefined;
+      : scaleProp !== 1
+        ? {
+            imageRendering: 'pixelated' as const,
+            // Non-standard but reserves layout for 2× URL sprites in Chromium
+            zoom: scaleProp
+          }
+        : { imageRendering: 'pixelated' as const };
+
     return (
       <img
         src={sprite}
@@ -46,7 +57,7 @@ const AtlasSprite = ({
 
   const scale = fit
     ? Math.min(1, fit.maxWidth / Math.max(1, sprite.w), fit.maxHeight / Math.max(1, sprite.h))
-    : 1;
+    : Math.max(0.01, scaleProp);
   const layoutW = Math.max(1, Math.round(sprite.w * scale));
   const layoutH = Math.max(1, Math.round(sprite.h * scale));
 

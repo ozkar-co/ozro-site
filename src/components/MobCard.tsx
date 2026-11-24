@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import type { SpriteRect } from '../api/assets';
@@ -19,11 +19,14 @@ interface MobDrop {
 }
 
 interface MobSummon {
-  mobId: number;
+  mobId: number | null;
   mobAegis?: string | null;
-  mobName: string;
-  amount: number;
-  conditions?: string[];
+  mobName?: string | null;
+  amount: number | null;
+  kind?: string | null;
+  skillId?: number | null;
+  skillName?: string | null;
+  conditions?: Record<string, unknown> | null;
 }
 
 interface MobResult {
@@ -81,18 +84,55 @@ interface MobCardProps {
   compact?: boolean;
 }
 
-const MOB_SPRITE_FIT = { maxWidth: 96, maxHeight: 96 };
+interface GroupedSummon {
+  mobId: number | null;
+  mobAegis?: string | null;
+  mobName?: string | null;
+  amount: number;
+}
+
+const MOB_SPRITE_FIT = { maxWidth: 148, maxHeight: 148 };
+
+const groupSummons = (summons: MobSummon[]): GroupedSummon[] => {
+  const map = new Map<string, GroupedSummon>();
+  for (const summon of summons) {
+    const key = summon.mobId != null
+      ? `id:${summon.mobId}`
+      : `name:${summon.mobAegis || summon.mobName || '?'}`;
+    const existing = map.get(key);
+    const amount = summon.amount ?? 0;
+    if (existing) {
+      existing.amount += amount;
+      if (!existing.mobName && summon.mobName) existing.mobName = summon.mobName;
+      if (!existing.mobAegis && summon.mobAegis) existing.mobAegis = summon.mobAegis;
+      continue;
+    }
+    map.set(key, {
+      mobId: summon.mobId,
+      mobAegis: summon.mobAegis,
+      mobName: summon.mobName,
+      amount,
+    });
+  }
+  return [...map.values()];
+};
 
 const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
   const [expanded, setExpanded] = useState(false);
   const [spriteModalOpen, setSpriteModalOpen] = useState(false);
+  const [summonsModalOpen, setSummonsModalOpen] = useState(false);
   const [farming, setFarming] = useState<FarmingMob | null>(null);
   const [farmingOpen, setFarmingOpen] = useState(false);
   const [farmingLoading, setFarmingLoading] = useState(false);
   const [farmingError, setFarmingError] = useState<string | null>(null);
 
   const closeSpriteModal = useCallback(() => setSpriteModalOpen(false), []);
+  const closeSummonsModal = useCallback(() => setSummonsModalOpen(false), []);
   const canOpenSprite = !isPlaceholderAsset(result.sprite);
+  const normalDrops = (result.drop || []).filter((d) => d.type !== 'mvp');
+  const mvpDrops = (result.drop || []).filter((d) => d.type === 'mvp');
+  const summons = result.summons || [];
+  const groupedSummons = useMemo(() => groupSummons(summons), [summons]);
 
   const toggleFarming = async () => {
     if (farmingOpen) {
@@ -144,32 +184,32 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
   const nameDetailsText = formatMobNameDetails(result.nameJapanese, result.nameAegis);
 
   return (
-    <div className="result-card">
-      <div className="result-card-content">
-        <div className="result-card-image">
-            {result.isMvp === true && (
-            <div className="mvp-icon">
-              <img src="/icons/mvp.gif" alt="MVP" />
+    <div className="result-card result-card--mob">
+      <div className="mob-card-top">
+        <div className={`result-card-image${result.isMvp === true ? ' result-card-image--mvp' : ''}`}>
+          <button
+            type="button"
+            className={`result-card-image-button${canOpenSprite ? '' : ' is-static'}`}
+            onClick={() => {
+              if (canOpenSprite) setSpriteModalOpen(true);
+            }}
+            disabled={!canOpenSprite}
+            aria-label={canOpenSprite ? `Ver sprite de ${result.name}` : undefined}
+            title={canOpenSprite ? 'Ver sprite completo' : undefined}
+          >
+            <AtlasSprite
+              sprite={result.sprite}
+              alt={result.name}
+              fit={MOB_SPRITE_FIT}
+            />
+          </button>
+          {result.isMvp === true && (
+            <div className="mvp-icon" aria-hidden="true">
+              <img src="/icons/mvp.gif" alt="" />
             </div>
-            )}
-            <button
-              type="button"
-              className={`result-card-image-button${canOpenSprite ? '' : ' is-static'}`}
-              onClick={() => {
-                if (canOpenSprite) setSpriteModalOpen(true);
-              }}
-              disabled={!canOpenSprite}
-              aria-label={canOpenSprite ? `Ver sprite de ${result.name}` : undefined}
-              title={canOpenSprite ? 'Ver sprite completo' : undefined}
-            >
-              <AtlasSprite
-                sprite={result.sprite}
-                alt={result.name}
-                fit={MOB_SPRITE_FIT}
-              />
-            </button>
+          )}
         </div>
-        <div className="result-card-info">
+        <div className="mob-card-top-meta">
           <div className="result-card-header">
             <div className="result-card-title">
               <div className="title-container">
@@ -220,7 +260,10 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
               </div>
             )}
           </div>
+        </div>
+      </div>
 
+      <div className="mob-card-body">
           {result.spawns && result.spawns.length > 0 && (
             <div className="result-card-section mob-spawn-detail">
               <div className="result-card-script-header">Puntos de spawn:</div>
@@ -331,7 +374,7 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
             </div>
           </div>
 
-          <div className="result-card-section stats-modes-grid">
+          <div className="result-card-section stats-modes-stack">
             <div className="result-card-stats">
               <div className="stats-grid">
                 {([
@@ -362,54 +405,81 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
             )}
           </div>
 
-          {result.drop && result.drop.length > 0 && (
+          {(normalDrops.length > 0 || mvpDrops.length > 0) && (
             <div className="result-card-section">
               <div className="result-card-drops">
-                <div className="result-card-drops-grid normal-drops">
-                  {result.drop.map((drop, index) => {
-                    const chanceText = drop.chancePercent != null
-                      ? `${drop.chancePercent.toFixed(2)}%`
-                      : null;
-                    return (
-                      <div
-                        key={`${drop.id}-${index}`}
-                        className={`result-card-drop${drop.type ? ` ${drop.type}` : ''}`}
-                      >
-                        <AtlasSprite
-                          sprite={drop.itemIcon}
-                          alt={drop.itemName}
-                          className="drop-icon"
-                        />
-                        <span className="drop-name">
-                          <Link to={`/database?tab=items&q=${drop.id}`}>{drop.itemName}</Link>
-                          {drop.type === 'mvp' ? ' (MVP)' : ''}
-                        </span>
-                        {chanceText && (
-                          <span className="drop-chance">{chanceText}</span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                {normalDrops.length > 0 && (
+                  <div className="mob-drop-block">
+                    <div className="result-card-drops-header">Drops</div>
+                    <div className="result-card-drops-grid">
+                      {normalDrops.map((drop, index) => {
+                        const chanceText = drop.chancePercent != null
+                          ? `${drop.chancePercent.toFixed(2)}%`
+                          : null;
+                        return (
+                          <div
+                            key={`n-${drop.id}-${index}`}
+                            className={`result-card-drop${drop.type && drop.type !== 'normal' ? ` ${drop.type}` : ''}`}
+                          >
+                            <AtlasSprite
+                              sprite={drop.itemIcon}
+                              alt={drop.itemName}
+                              className="drop-icon"
+                            />
+                            <span className="drop-name">
+                              <Link to={`/database?tab=items&q=${drop.id}`}>{drop.itemName}</Link>
+                            </span>
+                            {chanceText && (
+                              <span className="drop-chance">{chanceText}</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {mvpDrops.length > 0 && (
+                  <div className="mob-drop-block">
+                    <div className="result-card-drops-header">Drops MVP</div>
+                    <div className="result-card-drops-grid">
+                      {mvpDrops.map((drop, index) => {
+                        const chanceText = drop.chancePercent != null
+                          ? `${drop.chancePercent.toFixed(2)}%`
+                          : null;
+                        return (
+                          <div
+                            key={`m-${drop.id}-${index}`}
+                            className="result-card-drop mvp"
+                          >
+                            <AtlasSprite
+                              sprite={drop.itemIcon}
+                              alt={drop.itemName}
+                              className="drop-icon"
+                            />
+                            <span className="drop-name">
+                              <Link to={`/database?tab=items&q=${drop.id}`}>{drop.itemName}</Link>
+                            </span>
+                            {chanceText && (
+                              <span className="drop-chance">{chanceText}</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
-          {result.summons && result.summons.length > 0 && (
-            <div className="result-card-section">
-              <div className="mob-summons">
-                <h4>Invocaciones</h4>
-                <ul>
-                  {result.summons.map((summon) => (
-                    <li key={`${summon.mobId}-${summon.amount}`}>
-                      <Link to={`/database?tab=mobs&q=${summon.mobId}`}>{summon.mobName}</Link>
-                      {summon.amount > 1 ? ` x${summon.amount}` : ''}
-                      {summon.conditions && summon.conditions.length > 0
-                        ? ` · ${summon.conditions.join(', ')}`
-                        : ''}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+          {groupedSummons.length > 0 && (
+            <div className="result-card-section mob-farm-section">
+              <button
+                type="button"
+                className="result-card-toggle"
+                onClick={() => setSummonsModalOpen(true)}
+              >
+                Ver invocaciones ({groupedSummons.length})
+              </button>
             </div>
           )}
           <div className="result-card-section mob-farm-section">
@@ -459,7 +529,6 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
               </>
             )}
           </div>
-        </div>
       </div>
       {spriteModalOpen && canOpenSprite && createPortal(
         <div
@@ -485,11 +554,76 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
               ×
             </button>
             <div className="mob-sprite-modal-body">
-              <AtlasSprite sprite={result.sprite} alt={result.name} />
+              <AtlasSprite sprite={result.sprite} alt={result.name} scale={2} />
             </div>
             <p className="mob-sprite-modal-caption">
               {result.name} <span>#{result.id}</span>
             </p>
+          </div>
+        </div>,
+        document.body
+      )}
+      {summonsModalOpen && groupedSummons.length > 0 && createPortal(
+        <div
+          className="item-desc-modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeSummonsModal();
+          }}
+        >
+          <div
+            className="item-desc-modal item-box-group-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`mob-summons-title-${result.id}`}
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="item-desc-modal-head">
+              <div>
+                <h4 id={`mob-summons-title-${result.id}`}>Invocaciones</h4>
+                <p className="item-desc-modal-subtitle">
+                  {result.name} · {groupedSummons.length} tipos
+                </p>
+              </div>
+              <button
+                type="button"
+                className="item-desc-modal-close"
+                onClick={closeSummonsModal}
+                aria-label="Cerrar"
+              >
+                Cerrar
+              </button>
+            </div>
+            <ul className="box-group-list">
+              {groupedSummons.map((summon, index) => {
+                const label = summon.mobName
+                  || summon.mobAegis
+                  || (summon.mobId != null ? `#${summon.mobId}` : null);
+                return (
+                  <li
+                    key={`${summon.mobId ?? 'x'}-${index}`}
+                    className="box-group-item"
+                  >
+                    {summon.mobId != null && label ? (
+                      <Link
+                        to={`/database?tab=mobs&q=${summon.mobId}`}
+                        className="box-group-item-name"
+                        onClick={closeSummonsModal}
+                      >
+                        {label}
+                      </Link>
+                    ) : (
+                      <span className="box-group-item-name">{label || '—'}</span>
+                    )}
+                    <span className="box-group-item-meta">
+                      {summon.mobId != null ? `#${summon.mobId}` : ''}
+                      {summon.amount > 0 ? `${summon.mobId != null ? ' · ' : ''}x${summon.amount}` : ''}
+                    </span>
+                    <span className="box-group-item-chance" />
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </div>,
         document.body

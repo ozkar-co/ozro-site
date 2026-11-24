@@ -469,10 +469,16 @@ const Mvps = () => {
                 <div className="mvp-modal-summons">
                   <span>Invocaciones</span>
                   <ul>
-                    {selected.summons.map((summon) => (
-                      <li key={`${summon.mobId}-${summon.amount}`}>
-                        <Link to={`/database?tab=mobs&q=${summon.mobId}`}>{summon.mobName}</Link>
-                        {summon.amount > 1 ? ` x${summon.amount}` : ''}
+                    {selected.summons.map((summon, index) => (
+                      <li key={`${summon.mobId ?? 'x'}-${index}`}>
+                        {summon.mobId != null ? (
+                          <Link to={`/database?tab=mobs&q=${summon.mobId}`}>
+                            {summon.mobName || summon.mobAegis || `#${summon.mobId}`}
+                          </Link>
+                        ) : (
+                          <span>{summon.mobName || summon.mobAegis || '—'}</span>
+                        )}
+                        {summon.amount != null && summon.amount > 1 ? ` x${summon.amount}` : ''}
                       </li>
                     ))}
                   </ul>

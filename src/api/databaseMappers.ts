@@ -338,7 +338,16 @@ export function mapMobToCard(mob: MobSummary | MobDetail, sprite = PLACEHOLDER_M
     spawnMapCount: mob.spawnMapCount,
     spawnAmount: mob.spawnAmount,
     hasWorldSpawn: mob.hasWorldSpawn,
-    summons: mob.summons
+    summons: (mob.summons || []).map((summon) => ({
+      mobId: summon.mobId ?? null,
+      mobName: summon.mobName ?? null,
+      mobAegis: summon.mobAegis ?? null,
+      amount: summon.amount ?? null,
+      kind: summon.kind ?? null,
+      skillId: summon.skillId ?? null,
+      skillName: summon.skillName ?? null,
+      conditions: summon.conditions ?? null
+    }))
   };
 }
 

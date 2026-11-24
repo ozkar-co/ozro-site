@@ -149,11 +149,14 @@ export interface MobSpawnPoint {
 }
 
 export interface MobSummon {
-  mobId: number;
+  mobId: number | null;
   mobAegis?: string | null;
-  mobName: string;
-  amount: number;
-  conditions?: string[];
+  mobName?: string | null;
+  amount: number | null;
+  kind?: string | null;
+  skillId?: number | null;
+  skillName?: string | null;
+  conditions?: Record<string, unknown> | null;
 }
 
 export interface MobSummary {
