@@ -22,8 +22,13 @@ function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): bo
   if (tab === 'items') {
     if (options.selectedTypes.length > 0) return true;
     if (options.selectedArmorSubtypes.length > 0) return true;
+    if (options.selectedCostumeSubtypes.length > 0) return true;
     if (options.selectedWeaponSubtypes.length > 0) return true;
     if (options.selectedCardLocations.length > 0) return true;
+    if (options.selectedShadowSubtypes.length > 0) return true;
+    if (options.selectedAmmoSubtypes.length > 0) return true;
+    if (options.selectedJobs.length > 0) return true;
+    if (options.selectedClasses.length > 0) return true;
     if (options.scriptQuery.trim()) return true;
     if (options.selectedAcquisitionSources.length > 0) return true;
     if (options.hideItemsWithoutNaturalDrop !== defaults.hideItemsWithoutNaturalDrop) return true;
@@ -90,13 +95,24 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
     options.selectedTypes = [...selected];
   } else if (params.get('subtype')) {
     options.selectedTypes = [ITEM_TYPE_ARMOR];
+  } else if (params.get('costumeSubtype')) {
+    options.selectedTypes = ['Costume'];
   } else if (params.get('weaponSubtype')) {
     options.selectedTypes = [ITEM_TYPE_WEAPON];
+  } else if (params.get('shadowSubtype')) {
+    options.selectedTypes = ['Shadowgear'];
+  } else if (params.get('ammoSubtype')) {
+    options.selectedTypes = ['Ammo'];
   }
 
   options.selectedArmorSubtypes = parseCsvList(params.get('subtype'));
+  options.selectedCostumeSubtypes = parseCsvList(params.get('costumeSubtype'));
   options.selectedWeaponSubtypes = parseCsvList(params.get('weaponSubtype'));
-  options.selectedCardLocations = parseCsvList(params.get('location'));
+  options.selectedCardLocations = parseCsvList(params.get('cardInsert'));
+  options.selectedShadowSubtypes = parseCsvList(params.get('shadowSubtype'));
+  options.selectedAmmoSubtypes = parseCsvList(params.get('ammoSubtype'));
+  options.selectedJobs = parseCsvList(params.get('jobs'));
+  options.selectedClasses = parseCsvList(params.get('class'));
   options.scriptQuery = params.get('script') ?? '';
   options.selectedAcquisitionSources = parseCsvList(params.get('sourceType'));
 
@@ -168,11 +184,26 @@ export function buildDatabaseSearchParams(
     if (options.selectedArmorSubtypes.length > 0) {
       params.set('subtype', options.selectedArmorSubtypes.join(','));
     }
+    if (options.selectedCostumeSubtypes.length > 0) {
+      params.set('costumeSubtype', options.selectedCostumeSubtypes.join(','));
+    }
     if (options.selectedWeaponSubtypes.length > 0) {
       params.set('weaponSubtype', options.selectedWeaponSubtypes.join(','));
     }
     if (options.selectedCardLocations.length > 0) {
-      params.set('location', options.selectedCardLocations.join(','));
+      params.set('cardInsert', options.selectedCardLocations.join(','));
+    }
+    if (options.selectedShadowSubtypes.length > 0) {
+      params.set('shadowSubtype', options.selectedShadowSubtypes.join(','));
+    }
+    if (options.selectedAmmoSubtypes.length > 0) {
+      params.set('ammoSubtype', options.selectedAmmoSubtypes.join(','));
+    }
+    if (options.selectedJobs.length > 0) {
+      params.set('jobs', options.selectedJobs.join(','));
+    }
+    if (options.selectedClasses.length > 0) {
+      params.set('class', options.selectedClasses.join(','));
     }
     const script = options.scriptQuery.trim();
     if (script) params.set('script', script);

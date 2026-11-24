@@ -15,19 +15,16 @@ import {
   PLACEHOLDER_MOB_SPRITE
 } from '../api/placeholders';
 import {
-  ACQUISITION_SOURCE_OPTIONS,
-  ARMOR_SUBTYPE_LABELS,
-  armorSubtypeLabel,
   buildItemSearchParams,
   buildMobSearchParams,
-  CARD_LOCATION_OPTIONS,
+  formatFilterLabel,
+  ITEM_TYPE_AMMO,
   ITEM_TYPE_ARMOR,
   ITEM_TYPE_CARD,
-  ITEM_TYPE_FILTER_ORDER,
+  ITEM_TYPE_COSTUME,
+  ITEM_TYPE_ENCHANT,
+  ITEM_TYPE_SHADOWGEAR,
   ITEM_TYPE_WEAPON,
-  itemTypeFilterLabel,
-  WEAPON_SUBTYPE_LABELS,
-  weaponSubtypeLabel,
   mapItemToCard,
   mapMobToCard,
   SearchOptions,
@@ -77,7 +74,16 @@ const Database = () => {
   const [searchOptions, setSearchOptions] = useState<SearchOptions>(defaultSearchOptions());
   const [armorSubtypes, setArmorSubtypes] = useState<string[]>([]);
   const [weaponSubtypes, setWeaponSubtypes] = useState<string[]>([]);
-  const [itemTypeFilters, setItemTypeFilters] = useState<string[]>([...ITEM_TYPE_FILTER_ORDER]);
+  const [cardLocations, setCardLocations] = useState<string[]>([]);
+  const [shadowSubtypes, setShadowSubtypes] = useState<string[]>([]);
+  const [ammoSubtypes, setAmmoSubtypes] = useState<string[]>([]);
+  const [costumeSubtypes, setCostumeSubtypes] = useState<string[]>([]);
+  const [jobFilters, setJobFilters] = useState<string[]>([]);
+  const [classFilters, setClassFilters] = useState<string[]>([]);
+  const [acquisitionSources, setAcquisitionSources] = useState<string[]>([]);
+  const [itemTypeFilters, setItemTypeFilters] = useState<string[]>([]);
+  const [itemMetaError, setItemMetaError] = useState<string | null>(null);
+  const [itemMetaLoading, setItemMetaLoading] = useState(false);
   const searchOptionsRef = useRef(searchOptions);
   const searchOptionsPanelRef = useRef<HTMLDivElement>(null);
 
@@ -104,26 +110,60 @@ const Database = () => {
 
   useEffect(() => {
     if (activeTab !== 'items') return;
+    let cancelled = false;
+    setItemMetaLoading(true);
+    setItemMetaError(null);
     apiClient.getItemMeta()
       .then((meta) => {
-        const armorList = meta.armorSubtypes ?? [];
-        setArmorSubtypes(armorList.length > 0 ? armorList : Object.keys(ARMOR_SUBTYPE_LABELS));
-        const weaponList = meta.weaponSubtypes ?? [];
-        setWeaponSubtypes(weaponList.length > 0 ? weaponList : Object.keys(WEAPON_SUBTYPE_LABELS));
-        const metaTypes = (meta.types ?? [])
+        if (cancelled) return;
+        const metaTypes = (meta.types || [])
           .map((t) => (t === 'Delayconsume' ? 'DelayConsume' : t))
           .filter((t) => t && t !== 'Armor2');
-        if (metaTypes.length > 0) {
-          const preferred = ITEM_TYPE_FILTER_ORDER.filter((t) => metaTypes.includes(t));
-          const extras = metaTypes.filter((t) => !ITEM_TYPE_FILTER_ORDER.includes(t as typeof ITEM_TYPE_FILTER_ORDER[number]));
-          setItemTypeFilters([...preferred, ...extras]);
+        if (metaTypes.length === 0) {
+          throw new Error('items/meta: types vacío (sin fallback)');
         }
+        if (!Array.isArray(meta.armorSubtypes) || !Array.isArray(meta.costumeSubtypes)
+          || !Array.isArray(meta.weaponSubtypes) || !Array.isArray(meta.cardLocations)
+          || !Array.isArray(meta.shadowSubtypes) || !Array.isArray(meta.ammoSubtypes)
+          || !Array.isArray(meta.acquisitionSources) || !Array.isArray(meta.jobs)
+          || !Array.isArray(meta.classes)) {
+          throw new Error(
+            'items/meta incompleto: faltan listas de filtros (armor/costume/weapon/card/shadow/ammo/acquisition/jobs/classes)'
+          );
+        }
+        setArmorSubtypes(meta.armorSubtypes);
+        setCostumeSubtypes(meta.costumeSubtypes);
+        setWeaponSubtypes(meta.weaponSubtypes);
+        setCardLocations(meta.cardLocations);
+        setShadowSubtypes(meta.shadowSubtypes);
+        setAmmoSubtypes(meta.ammoSubtypes);
+        setAcquisitionSources(meta.acquisitionSources);
+        setJobFilters(meta.jobs);
+        setClassFilters(meta.classes);
+        setItemTypeFilters(metaTypes);
+        setItemMetaError(null);
       })
-      .catch(() => {
-        setArmorSubtypes(Object.keys(ARMOR_SUBTYPE_LABELS));
-        setWeaponSubtypes(Object.keys(WEAPON_SUBTYPE_LABELS));
-        setItemTypeFilters([...ITEM_TYPE_FILTER_ORDER]);
+      .catch((error: Error) => {
+        if (cancelled) return;
+        console.error('Fallo cargando items/meta', error);
+        setArmorSubtypes([]);
+        setCostumeSubtypes([]);
+        setWeaponSubtypes([]);
+        setCardLocations([]);
+        setShadowSubtypes([]);
+        setAmmoSubtypes([]);
+        setAcquisitionSources([]);
+        setJobFilters([]);
+        setClassFilters([]);
+        setItemTypeFilters([]);
+        setItemMetaError(error?.message || String(error));
+      })
+      .finally(() => {
+        if (!cancelled) setItemMetaLoading(false);
       });
+    return () => {
+      cancelled = true;
+    };
   }, [activeTab]);
 
   useEffect(() => {
@@ -423,18 +463,27 @@ const Database = () => {
                                         : prev.selectedWeaponSubtypes,
                                       selectedCardLocations: typeName === ITEM_TYPE_CARD && selected
                                         ? []
-                                        : prev.selectedCardLocations
+                                        : prev.selectedCardLocations,
+                                      selectedShadowSubtypes: typeName === ITEM_TYPE_SHADOWGEAR && selected
+                                        ? []
+                                        : prev.selectedShadowSubtypes,
+                                      selectedAmmoSubtypes: typeName === ITEM_TYPE_AMMO && selected
+                                        ? []
+                                        : prev.selectedAmmoSubtypes,
+                                      selectedCostumeSubtypes: typeName === ITEM_TYPE_COSTUME && selected
+                                        ? []
+                                        : prev.selectedCostumeSubtypes
                                     };
                                   })}
                                 />
-                                {itemTypeFilterLabel(typeName)}
+                                {formatFilterLabel(typeName)}
                               </label>
                             ))}
                           </div>
                         </div>
                         {searchOptions.selectedTypes.includes(ITEM_TYPE_ARMOR) && armorSubtypes.length > 0 && (
                           <div className="search-types">
-                            <div className="search-types-title">Subtipo de armadura:</div>
+                            <div className="search-types-title">Slot de armadura:</div>
                             <select
                               className="search-filter-select"
                               multiple
@@ -447,7 +496,29 @@ const Database = () => {
                             >
                               {armorSubtypes.map((subtype) => (
                                 <option key={subtype} value={subtype}>
-                                  {armorSubtypeLabel(subtype)}
+                                  {formatFilterLabel(subtype)}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="search-filter-hint">Ctrl+clic para varios</div>
+                          </div>
+                        )}
+                        {searchOptions.selectedTypes.includes(ITEM_TYPE_COSTUME) && costumeSubtypes.length > 0 && (
+                          <div className="search-types">
+                            <div className="search-types-title">Slot de costume:</div>
+                            <select
+                              className="search-filter-select"
+                              multiple
+                              size={Math.min(8, costumeSubtypes.length)}
+                              value={searchOptions.selectedCostumeSubtypes}
+                              onChange={(e) => {
+                                const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
+                                setSearchOptions((prev) => ({ ...prev, selectedCostumeSubtypes: selected }));
+                              }}
+                            >
+                              {costumeSubtypes.map((subtype) => (
+                                <option key={subtype} value={subtype}>
+                                  {formatFilterLabel(subtype)}
                                 </option>
                               ))}
                             </select>
@@ -469,28 +540,112 @@ const Database = () => {
                             >
                               {weaponSubtypes.map((subtype) => (
                                 <option key={subtype} value={subtype}>
-                                  {weaponSubtypeLabel(subtype)}
+                                  {formatFilterLabel(subtype)}
                                 </option>
                               ))}
                             </select>
                             <div className="search-filter-hint">Ctrl+clic para varios</div>
                           </div>
                         )}
-                        {searchOptions.selectedTypes.includes(ITEM_TYPE_CARD) && (
+                        {searchOptions.selectedTypes.includes(ITEM_TYPE_CARD) && cardLocations.length > 0 && (
                           <div className="search-types">
-                            <div className="search-types-title">Ubicación de carta:</div>
+                            <div className="search-types-title">Inserción de carta:</div>
                             <select
                               className="search-filter-select"
                               multiple
-                              size={Math.min(8, Object.keys(CARD_LOCATION_OPTIONS).length)}
+                              size={Math.min(8, cardLocations.length)}
                               value={searchOptions.selectedCardLocations}
                               onChange={(e) => {
                                 const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
                                 setSearchOptions((prev) => ({ ...prev, selectedCardLocations: selected }));
                               }}
                             >
-                              {Object.entries(CARD_LOCATION_OPTIONS).map(([key, label]) => (
-                                <option key={key} value={key}>{label}</option>
+                              {cardLocations.map((key) => (
+                                <option key={key} value={key}>{formatFilterLabel(key)}</option>
+                              ))}
+                            </select>
+                            <div className="search-filter-hint">Ctrl+clic para varios</div>
+                          </div>
+                        )}
+                        {searchOptions.selectedTypes.includes(ITEM_TYPE_SHADOWGEAR) && shadowSubtypes.length > 0 && (
+                          <div className="search-types">
+                            <div className="search-types-title">Slot shadow:</div>
+                            <select
+                              className="search-filter-select"
+                              multiple
+                              size={Math.min(8, shadowSubtypes.length)}
+                              value={searchOptions.selectedShadowSubtypes}
+                              onChange={(e) => {
+                                const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
+                                setSearchOptions((prev) => ({ ...prev, selectedShadowSubtypes: selected }));
+                              }}
+                            >
+                              {shadowSubtypes.map((subtype) => (
+                                <option key={subtype} value={subtype}>
+                                  {formatFilterLabel(subtype)}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="search-filter-hint">Ctrl+clic para varios</div>
+                          </div>
+                        )}
+                        {searchOptions.selectedTypes.includes(ITEM_TYPE_AMMO) && ammoSubtypes.length > 0 && (
+                          <div className="search-types">
+                            <div className="search-types-title">Subtipo de munición:</div>
+                            <select
+                              className="search-filter-select"
+                              multiple
+                              size={Math.min(8, ammoSubtypes.length)}
+                              value={searchOptions.selectedAmmoSubtypes}
+                              onChange={(e) => {
+                                const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
+                                setSearchOptions((prev) => ({ ...prev, selectedAmmoSubtypes: selected }));
+                              }}
+                            >
+                              {ammoSubtypes.map((subtype) => (
+                                <option key={subtype} value={subtype}>
+                                  {formatFilterLabel(subtype)}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="search-filter-hint">Ctrl+clic para varios</div>
+                          </div>
+                        )}
+                        {jobFilters.length > 0 && (
+                          <div className="search-types">
+                            <div className="search-types-title">Jobs:</div>
+                            <select
+                              className="search-filter-select"
+                              multiple
+                              size={Math.min(8, jobFilters.length)}
+                              value={searchOptions.selectedJobs}
+                              onChange={(e) => {
+                                const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
+                                setSearchOptions((prev) => ({ ...prev, selectedJobs: selected }));
+                              }}
+                            >
+                              {jobFilters.map((job) => (
+                                <option key={job} value={job}>{formatFilterLabel(job)}</option>
+                              ))}
+                            </select>
+                            <div className="search-filter-hint">Ctrl+clic para varios</div>
+                          </div>
+                        )}
+                        {classFilters.length > 0 && (
+                          <div className="search-types">
+                            <div className="search-types-title">Clases:</div>
+                            <select
+                              className="search-filter-select"
+                              multiple
+                              size={Math.min(8, classFilters.length)}
+                              value={searchOptions.selectedClasses}
+                              onChange={(e) => {
+                                const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
+                                setSearchOptions((prev) => ({ ...prev, selectedClasses: selected }));
+                              }}
+                            >
+                              {classFilters.map((cls) => (
+                                <option key={cls} value={cls}>{formatFilterLabel(cls)}</option>
                               ))}
                             </select>
                             <div className="search-filter-hint">Ctrl+clic para varios</div>
@@ -509,40 +664,50 @@ const Database = () => {
                             placeholder="Ej: bonus bStr, heal"
                           />
                         </div>
-                        <div className="search-types">
-                          <div className="search-types-title">Obtención (tiene fuente):</div>
-                          <div className="search-types-grid">
-                            {ACQUISITION_SOURCE_OPTIONS.map((source) => (
-                              <label key={source.id} className="type-checkbox">
-                                <input
-                                  type="checkbox"
-                                  checked={searchOptions.selectedAcquisitionSources.includes(source.id)}
-                                  onChange={() => setSearchOptions((prev) => {
-                                    const selected = prev.selectedAcquisitionSources.includes(source.id);
-                                    const selectedAcquisitionSources = selected
-                                      ? prev.selectedAcquisitionSources.filter((id) => id !== source.id)
-                                      : [...prev.selectedAcquisitionSources, source.id];
-                                    // Si filtras por tienda/craft/etc., no ocultar sin drop natural
-                                    const nonDropSelected = selectedAcquisitionSources.some(
-                                      (id) => id !== 'mob_drop' && id !== 'map_drop'
-                                    );
-                                    return {
-                                      ...prev,
-                                      selectedAcquisitionSources,
-                                      hideItemsWithoutNaturalDrop: nonDropSelected
-                                        ? false
-                                        : prev.hideItemsWithoutNaturalDrop
-                                    };
-                                  })}
-                                />
-                                {source.label}
-                              </label>
-                            ))}
+                        {itemMetaLoading && (
+                          <div className="search-meta-status">Cargando filtros desde ozro_items…</div>
+                        )}
+                        {itemMetaError && (
+                          <div className="search-meta-error" role="alert">
+                            <strong>Meta de filtros falló (sin fallback):</strong>
+                            <div>{itemMetaError}</div>
                           </div>
-                          <div className="search-filter-hint">
-                            Varios = OR (cualquiera de las fuentes)
+                        )}
+                        {acquisitionSources.length > 0 && (
+                          <div className="search-types">
+                            <div className="search-types-title">Obtención (tiene fuente):</div>
+                            <div className="search-types-grid">
+                              {acquisitionSources.map((sourceId) => (
+                                <label key={sourceId} className="type-checkbox">
+                                  <input
+                                    type="checkbox"
+                                    checked={searchOptions.selectedAcquisitionSources.includes(sourceId)}
+                                    onChange={() => setSearchOptions((prev) => {
+                                      const selected = prev.selectedAcquisitionSources.includes(sourceId);
+                                      const selectedAcquisitionSources = selected
+                                        ? prev.selectedAcquisitionSources.filter((id) => id !== sourceId)
+                                        : [...prev.selectedAcquisitionSources, sourceId];
+                                      const nonDropSelected = selectedAcquisitionSources.some(
+                                        (id) => id !== 'mob_drop' && id !== 'map_drop'
+                                      );
+                                      return {
+                                        ...prev,
+                                        selectedAcquisitionSources,
+                                        hideItemsWithoutNaturalDrop: nonDropSelected
+                                          ? false
+                                          : prev.hideItemsWithoutNaturalDrop
+                                      };
+                                    })}
+                                  />
+                                  {formatFilterLabel(sourceId)}
+                                </label>
+                              ))}
+                            </div>
+                            <div className="search-filter-hint">
+                              Varios = OR (cualquiera de las fuentes)
+                            </div>
                           </div>
-                        </div>
+                        )}
                         <div className="search-types">
                           <div className="search-types-title">Fuente de obtención:</div>
                           <div className="search-types-grid">

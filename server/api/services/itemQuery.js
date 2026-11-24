@@ -26,12 +26,10 @@ import {
     parseCsv,
     parseBool,
     parseJsonColumn,
-    ITEM_TYPES,
     ITEM_CLASSES,
     ITEM_ARMOR_DB_TYPES,
     ITEM_LOCATION_JSON_KEYS,
-    ITEM_JOB_JSON_KEYS,
-    ARMOR_SUBTYPE_LOCATION_JSON
+    ITEM_JOB_JSON_KEYS
 } from './gameDb.js';
 
 function jsonTruthy(alias, jsonCol, pathKey) {
@@ -232,21 +230,40 @@ function buildItemFilters(params) {
         }
     }
 
-    const types = parseCsv(params.type);
+    const types = parseCsv(params.type).map((t) => (t === 'Delayconsume' ? 'DelayConsume' : t));
     if (types.length > 0) {
-        const expandedTypes = [];
-        for (const typeName of types) {
-            // Normalize legacy / alternate casings from older clients
-            const normalized = typeName === 'Delayconsume' ? 'DelayConsume' : typeName;
-            if (normalized === 'Armor') {
-                expandedTypes.push(...ITEM_ARMOR_DB_TYPES);
+        const typeParts = [];
+        const wantsCostume = types.includes('Costume');
+        const wantsEnchant = types.includes('Enchant');
+        const plainTypes = types.filter((t) => t !== 'Costume' && t !== 'Enchant');
+
+        for (const typeName of plainTypes) {
+            if (typeName === 'Armor') {
+                // Real gear only — costumes are a separate virtual type.
+                typeParts.push(
+                    `(i.type IN (${ITEM_ARMOR_DB_TYPES.map(() => '?').join(', ')}) AND COALESCE(i.is_costume, 0) = 0)`
+                );
+                values.push(...ITEM_ARMOR_DB_TYPES);
+            } else if (typeName === 'Card') {
+                typeParts.push(
+                    `(i.type = 'Card' AND COALESCE(i.item_subcategory, '') <> 'Enchant')`
+                );
             } else {
-                expandedTypes.push(normalized);
+                typeParts.push('i.type = ?');
+                values.push(typeName);
             }
         }
-        const uniqueTypes = [...new Set(expandedTypes)];
-        conditions.push(`i.type IN (${uniqueTypes.map(() => '?').join(', ')})`);
-        values.push(...uniqueTypes);
+        if (wantsCostume) {
+            typeParts.push(`(COALESCE(i.is_costume, 0) = 1 OR i.item_category = 'Costume')`);
+        }
+        if (wantsEnchant) {
+            typeParts.push(`(i.type = 'Card' AND i.item_subcategory = 'Enchant')`);
+        }
+        if (typeParts.length === 1) {
+            conditions.push(typeParts[0]);
+        } else if (typeParts.length > 1) {
+            conditions.push(`(${typeParts.join(' OR ')})`);
+        }
     }
 
     const classes = parseCsv(params.class);
@@ -298,30 +315,64 @@ function buildItemFilters(params) {
     }
 
     const armorSubtypes = parseCsv(params.subtype);
+    const costumeSubtypes = parseCsv(params.costumeSubtype);
     const weaponSubtypes = parseCsv(params.weaponSubtype);
+    const shadowSubtypes = parseCsv(params.shadowSubtype);
+    const ammoSubtypes = parseCsv(params.ammoSubtype);
     const subtypeParts = [];
 
+    // Armor "subtypes" in ozro_* come from item_subcategory / equip_slot_key (subtype column is empty).
     if (armorSubtypes.length > 0) {
-        const locParts = armorSubtypes
-            .map((st) => ARMOR_SUBTYPE_LOCATION_JSON[st])
-            .filter(Boolean)
-            .map((jsonKey) => jsonTruthy('i', 'locations', jsonKey));
-        if (locParts.length > 0) {
-            subtypeParts.push(
-                `(i.subtype IN (${armorSubtypes.map(() => '?').join(', ')}) OR (${locParts.join(' OR ')}))`
-            );
-            values.push(...armorSubtypes);
-        } else {
-            subtypeParts.push(`i.subtype IN (${armorSubtypes.map(() => '?').join(', ')})`);
-            values.push(...armorSubtypes);
-        }
+        const placeholders = armorSubtypes.map(() => '?').join(', ');
+        const armorTypeList = ITEM_ARMOR_DB_TYPES.map(() => '?').join(', ');
+        subtypeParts.push(
+            `(i.type IN (${armorTypeList}) AND COALESCE(i.is_costume, 0) = 0 AND (
+                i.item_subcategory IN (${placeholders})
+                OR i.equip_slot_key IN (${placeholders})
+                OR i.subtype IN (${placeholders})
+            ))`
+        );
+        values.push(
+            ...ITEM_ARMOR_DB_TYPES,
+            ...armorSubtypes,
+            ...armorSubtypes,
+            ...armorSubtypes
+        );
+    }
+
+    if (costumeSubtypes.length > 0) {
+        const placeholders = costumeSubtypes.map(() => '?').join(', ');
+        subtypeParts.push(
+            `((COALESCE(i.is_costume, 0) = 1 OR i.item_category = 'Costume') AND (
+                i.item_subcategory IN (${placeholders})
+                OR i.equip_slot_key IN (${placeholders})
+            ))`
+        );
+        values.push(...costumeSubtypes, ...costumeSubtypes);
     }
 
     if (weaponSubtypes.length > 0) {
+        const placeholders = weaponSubtypes.map(() => '?').join(', ');
         subtypeParts.push(
-            `(i.type = 'Weapon' AND i.subtype IN (${weaponSubtypes.map(() => '?').join(', ')}))`
+            `(i.type = 'Weapon' AND (i.subtype IN (${placeholders}) OR i.item_subcategory IN (${placeholders})))`
         );
-        values.push(...weaponSubtypes);
+        values.push(...weaponSubtypes, ...weaponSubtypes);
+    }
+
+    if (shadowSubtypes.length > 0) {
+        const placeholders = shadowSubtypes.map(() => '?').join(', ');
+        subtypeParts.push(
+            `(i.type = 'Shadowgear' AND (i.item_subcategory IN (${placeholders}) OR i.equip_slot_key IN (${placeholders})))`
+        );
+        values.push(...shadowSubtypes, ...shadowSubtypes);
+    }
+
+    if (ammoSubtypes.length > 0) {
+        const placeholders = ammoSubtypes.map(() => '?').join(', ');
+        subtypeParts.push(
+            `(i.type = 'Ammo' AND (i.subtype IN (${placeholders}) OR i.item_subcategory IN (${placeholders})))`
+        );
+        values.push(...ammoSubtypes, ...ammoSubtypes);
     }
 
     if (subtypeParts.length === 1) {
@@ -330,15 +381,16 @@ function buildItemFilters(params) {
         conditions.push(`(${subtypeParts.join(' OR ')})`);
     }
 
-    const locations = parseCsv(params.location);
-    if (locations.length > 0) {
-        const locationConditions = locations
-            .map((key) => ITEM_LOCATION_JSON_KEYS[key])
-            .filter(Boolean)
-            .map((jsonKey) => jsonTruthy('i', 'locations', jsonKey));
-        if (locationConditions.length > 0) {
-            conditions.push(`(${locationConditions.join(' OR ')})`);
-        }
+    const cardInserts = parseCsv(params.cardInsert);
+    if (cardInserts.length > 0) {
+        const placeholders = cardInserts.map(() => '?').join(', ');
+        conditions.push(
+            `(i.type = 'Card' AND (
+                i.card_insert_key IN (${placeholders})
+                OR i.item_subcategory IN (${placeholders})
+            ))`
+        );
+        values.push(...cardInserts, ...cardInserts);
     }
 
     if (params.script) {
@@ -458,31 +510,141 @@ export async function getItemById(id) {
 }
 
 export async function getItemMeta() {
-    const [types, armorSubtypes, weaponSubtypes] = await Promise.all([
+    const armorTypePlaceholders = ITEM_ARMOR_DB_TYPES.map(() => '?').join(', ');
+    const acquisitionSourcesPromise = isAcquisitionAvailable()
+        ? query(
+            `SELECT DISTINCT source_type AS value FROM \`${T.ACQUISITION}\`
+             WHERE COALESCE(source_type, '') <> ''
+             ORDER BY source_type`
+        )
+        : Promise.resolve([]);
+
+    const [
+        types,
+        armorSubtypes,
+        costumeSubtypes,
+        weaponSubtypes,
+        cardLocations,
+        shadowSubtypes,
+        ammoSubtypes,
+        acquisitionSources,
+        costumeCount,
+        enchantCount
+    ] = await Promise.all([
         query(`SELECT DISTINCT type AS value FROM \`${T.ITEMS}\` WHERE type IS NOT NULL ORDER BY type`),
+        // Real armor only (exclude costumes).
         query(
-            `SELECT DISTINCT subtype AS value FROM \`${T.ITEMS}\`
-             WHERE type IN (${ITEM_ARMOR_DB_TYPES.map(() => '?').join(', ')})
-               AND COALESCE(subtype, '') <> ''
-             ORDER BY subtype`,
-            ITEM_ARMOR_DB_TYPES
+            `SELECT DISTINCT value FROM (
+                SELECT item_subcategory AS value FROM \`${T.ITEMS}\`
+                 WHERE type IN (${armorTypePlaceholders})
+                   AND COALESCE(is_costume, 0) = 0
+                   AND COALESCE(item_subcategory, '') <> ''
+                UNION
+                SELECT equip_slot_key AS value FROM \`${T.ITEMS}\`
+                 WHERE type IN (${armorTypePlaceholders})
+                   AND COALESCE(is_costume, 0) = 0
+                   AND COALESCE(equip_slot_key, '') <> ''
+             ) AS armor_slots
+             ORDER BY value`,
+            [...ITEM_ARMOR_DB_TYPES, ...ITEM_ARMOR_DB_TYPES]
         ),
         query(
-            `SELECT DISTINCT subtype AS value FROM \`${T.ITEMS}\`
-             WHERE type = 'Weapon' AND COALESCE(subtype, '') <> ''
-             ORDER BY subtype`
+            `SELECT DISTINCT value FROM (
+                SELECT item_subcategory AS value FROM \`${T.ITEMS}\`
+                 WHERE (COALESCE(is_costume, 0) = 1 OR item_category = 'Costume')
+                   AND COALESCE(item_subcategory, '') <> ''
+                UNION
+                SELECT equip_slot_key AS value FROM \`${T.ITEMS}\`
+                 WHERE (COALESCE(is_costume, 0) = 1 OR item_category = 'Costume')
+                   AND COALESCE(equip_slot_key, '') <> ''
+             ) AS costume_slots
+             ORDER BY value`
+        ),
+        query(
+            `SELECT DISTINCT value FROM (
+                SELECT subtype AS value FROM \`${T.ITEMS}\`
+                 WHERE type = 'Weapon' AND COALESCE(subtype, '') <> ''
+                UNION
+                SELECT item_subcategory AS value FROM \`${T.ITEMS}\`
+                 WHERE type = 'Weapon' AND COALESCE(item_subcategory, '') <> ''
+             ) AS weapon_subs
+             ORDER BY value`
+        ),
+        // Cards only — Enchant is a separate virtual type.
+        query(
+            `SELECT DISTINCT value FROM (
+                SELECT card_insert_key AS value FROM \`${T.ITEMS}\`
+                 WHERE type = 'Card'
+                   AND COALESCE(item_subcategory, '') <> 'Enchant'
+                   AND COALESCE(card_insert_key, '') <> ''
+                UNION
+                SELECT item_subcategory AS value FROM \`${T.ITEMS}\`
+                 WHERE type = 'Card'
+                   AND COALESCE(item_subcategory, '') <> ''
+                   AND item_subcategory <> 'Enchant'
+             ) AS card_slots
+             ORDER BY value`
+        ),
+        query(
+            `SELECT DISTINCT value FROM (
+                SELECT item_subcategory AS value FROM \`${T.ITEMS}\`
+                 WHERE type = 'Shadowgear' AND COALESCE(item_subcategory, '') <> ''
+                UNION
+                SELECT equip_slot_key AS value FROM \`${T.ITEMS}\`
+                 WHERE type = 'Shadowgear' AND COALESCE(equip_slot_key, '') <> ''
+             ) AS shadow_slots
+             ORDER BY value`
+        ),
+        query(
+            `SELECT DISTINCT value FROM (
+                SELECT subtype AS value FROM \`${T.ITEMS}\`
+                 WHERE type = 'Ammo' AND COALESCE(subtype, '') <> ''
+                UNION
+                SELECT item_subcategory AS value FROM \`${T.ITEMS}\`
+                 WHERE type = 'Ammo' AND COALESCE(item_subcategory, '') <> ''
+             ) AS ammo_subs
+             ORDER BY value`
+        ),
+        acquisitionSourcesPromise,
+        query(
+            `SELECT COUNT(*) AS c FROM \`${T.ITEMS}\`
+             WHERE COALESCE(is_costume, 0) = 1 OR item_category = 'Costume'`
+        ),
+        query(
+            `SELECT COUNT(*) AS c FROM \`${T.ITEMS}\`
+             WHERE type = 'Card' AND item_subcategory = 'Enchant'`
         )
     ]);
 
+    const typeValues = types.map((r) => r.value).filter(Boolean);
+    if (typeValues.length === 0) {
+        const err = new Error('ozro_items.type DISTINCT vacío — meta de filtros no usable');
+        err.status = 500;
+        throw err;
+    }
+
+    // Virtual filter types (not ozro_items.type values).
+    if (Number(costumeCount[0]?.c || 0) > 0 && !typeValues.includes('Costume')) {
+        const armorIdx = typeValues.indexOf('Armor');
+        if (armorIdx >= 0) typeValues.splice(armorIdx + 1, 0, 'Costume');
+        else typeValues.push('Costume');
+    }
+    if (Number(enchantCount[0]?.c || 0) > 0 && !typeValues.includes('Enchant')) {
+        const cardIdx = typeValues.indexOf('Card');
+        if (cardIdx >= 0) typeValues.splice(cardIdx + 1, 0, 'Enchant');
+        else typeValues.push('Enchant');
+    }
+
     return {
-        types: types.map((r) => r.value),
+        types: typeValues,
         armorSubtypes: armorSubtypes.map((r) => r.value),
+        costumeSubtypes: costumeSubtypes.map((r) => r.value),
         weaponSubtypes: weaponSubtypes.map((r) => r.value),
-        cardLocations: Object.keys(ITEM_LOCATION_JSON_KEYS),
+        cardLocations: cardLocations.map((r) => r.value),
+        shadowSubtypes: shadowSubtypes.map((r) => r.value),
+        ammoSubtypes: ammoSubtypes.map((r) => r.value),
+        acquisitionSources: acquisitionSources.map((r) => r.value),
         classes: ITEM_CLASSES,
-        jobs: Object.keys(ITEM_JOB_JSON_KEYS),
-        defaults: {
-            types: ITEM_TYPES
-        }
+        jobs: Object.keys(ITEM_JOB_JSON_KEYS)
     };
 }

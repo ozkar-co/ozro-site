@@ -73,28 +73,12 @@ const ITEM_TYPE_TO_NUMBER: Record<string, number> = {
   Shadowgear: 13
 };
 
-/** Labels for ozro_items.type filter checkboxes. */
-export const ITEM_TYPE_FILTER_LABELS: Record<string, string> = {
-  Healing: 'Healing',
-  Usable: 'Usable',
-  Etc: 'Etc',
-  Weapon: 'Weapon',
-  Armor: 'Armor',
-  Card: 'Card',
-  Cash: 'Cash',
-  Shadowgear: 'Shadow gear',
-  DelayConsume: 'Delayed usable',
-  Petegg: 'Pet egg',
-  Petarmor: 'Pet equipment',
-  Ammo: 'Ammo',
-  Armor2: 'Armor (alt)'
-};
-
-/** Fallback order when /items/meta is unavailable. */
-export const ITEM_TYPE_FILTER_ORDER = [
-  'Healing', 'Usable', 'Etc', 'Weapon', 'Armor', 'Card',
-  'Cash', 'Shadowgear', 'DelayConsume', 'Petegg', 'Petarmor', 'Ammo'
-] as const;
+/** Display label from a meta key — no dictionary, only mechanical cleanup. */
+export function formatFilterLabel(value: string): string {
+  return String(value || '')
+    .replace(/_/g, ' ')
+    .replace(/\+/g, ' + ');
+}
 
 const JOB_LABELS: Record<string, string> = {
   novice: 'Novice', swordman: 'Swordman', mage: 'Mage', archer: 'Archer',
@@ -172,9 +156,12 @@ const SIZE_FROM_API = Object.fromEntries(
 
 export const ITEM_TYPE_WEAPON = 'Weapon';
 export const ITEM_TYPE_ARMOR = 'Armor';
+export const ITEM_TYPE_COSTUME = 'Costume';
 export const ITEM_TYPE_CARD = 'Card';
+export const ITEM_TYPE_ENCHANT = 'Enchant';
 export const ITEM_TYPE_CASH = 'Cash';
 export const ITEM_TYPE_SHADOWGEAR = 'Shadowgear';
+export const ITEM_TYPE_AMMO = 'Ammo';
 
 /** Debe coincidir con server/api/services/gameDb.js ITEM_ARMOR_DB_TYPES */
 export const ITEM_ARMOR_DB_TYPES = ['Armor', 'Armor2'] as const;
@@ -192,103 +179,17 @@ function itemTypesForApi(selectedTypes: string[]): string[] {
   return [...new Set(names)];
 }
 
-export function itemTypeFilterLabel(typeName: string): string {
-  return ITEM_TYPE_FILTER_LABELS[typeName] || typeName.replace(/_/g, ' ');
-}
-
-export const CARD_LOCATION_OPTIONS: Record<string, string> = {
-  headTop: 'Casco (arriba)',
-  headMid: 'Casco (medio)',
-  headLow: 'Casco (abajo)',
-  armor: 'Armadura',
-  rightHand: 'Mano derecha',
-  leftHand: 'Mano izquierda',
-  garment: 'Capa',
-  shoes: 'Calzado',
-  rightAccessory: 'Accesorio derecho',
-  leftAccessory: 'Accesorio izquierdo',
-  shadowArmor: 'Shadow armadura',
-  shadowWeapon: 'Shadow arma',
-  shadowShield: 'Shadow escudo',
-  shadowShoes: 'Shadow calzado',
-  shadowRightAccessory: 'Shadow acc. derecho',
-  shadowLeftAccessory: 'Shadow acc. izquierdo'
-};
-
-export const ARMOR_SUBTYPE_LABELS: Record<string, string> = {
-  Armor: 'Armadura',
-  Garment: 'Capa',
-  Head_Top: 'Casco (arriba)',
-  Head_Mid: 'Casco (medio)',
-  Head_Low: 'Casco (abajo)',
-  Shoes: 'Calzado',
-  Left_Accessory: 'Accesorio izquierdo',
-  Right_Accessory: 'Accesorio derecho',
-  Both_Hand: 'Dos manos (escudo)',
-  Ammo: 'Munición',
-  Shadow_Armor: 'Shadow armadura',
-  Shadow_Weapon: 'Shadow arma',
-  Shadow_Shield: 'Shadow escudo',
-  Shadow_Shoes: 'Shadow calzado',
-  Shadow_Left_Accessory: 'Shadow acc. izquierdo',
-  Shadow_Right_Accessory: 'Shadow acc. derecho',
-  Costume_Head_Top: 'Disfraz casco (arriba)',
-  Costume_Head_Mid: 'Disfraz casco (medio)',
-  Costume_Head_Low: 'Disfraz casco (abajo)',
-  Costume_Garment: 'Disfraz capa'
-};
-
-export function armorSubtypeLabel(value: string): string {
-  return ARMOR_SUBTYPE_LABELS[value] || value.replace(/_/g, ' ');
-}
-
-export const WEAPON_SUBTYPE_LABELS: Record<string, string> = {
-  Fist: 'Puño',
-  Dagger: 'Daga',
-  '1hSword': 'Espada 1 mano',
-  '2hSword': 'Espada 2 manos',
-  '1hSpear': 'Lanza 1 mano',
-  '2hSpear': 'Lanza 2 manos',
-  '1hAxe': 'Hacha 1 mano',
-  '2hAxe': 'Hacha 2 manos',
-  Mace: 'Maza',
-  Staff: 'Bastón',
-  Bow: 'Arco',
-  Knuckle: 'Puños',
-  Musical: 'Instrumento',
-  Whip: 'Látigo',
-  Book: 'Libro',
-  Katar: 'Katar',
-  Revolver: 'Revólver',
-  Rifle: 'Rifle',
-  Gatling: 'Gatling',
-  Shotgun: 'Escopeta',
-  Grenade: 'Granada',
-  Huuma: 'Huuma',
-  '2hStaff': 'Bastón 2 manos'
-};
-
-export function weaponSubtypeLabel(value: string): string {
-  return WEAPON_SUBTYPE_LABELS[value] || value.replace(/_/g, ' ');
-}
-
-/** Filtros de obtención (API sourceType). */
-export const ACQUISITION_SOURCE_OPTIONS: { id: string; label: string }[] = [
-  { id: 'mob_drop', label: 'Drop monstruo' },
-  { id: 'npc_shop', label: 'Tienda NPC' },
-  { id: 'box_reward', label: 'Cofre / caja' },
-  { id: 'crafting', label: 'Crafteo' },
-  { id: 'npc_barter', label: 'Trueque' },
-  { id: 'npc_reward', label: 'Recompensa NPC' },
-  { id: 'quest_drop', label: 'Drop quest' },
-  { id: 'map_drop', label: 'Drop de mapa' }
-];
 
 export interface SearchOptions {
   selectedTypes: string[];
   selectedArmorSubtypes: string[];
+  selectedCostumeSubtypes: string[];
   selectedWeaponSubtypes: string[];
   selectedCardLocations: string[];
+  selectedShadowSubtypes: string[];
+  selectedAmmoSubtypes: string[];
+  selectedJobs: string[];
+  selectedClasses: string[];
   scriptQuery: string;
   selectedAcquisitionSources: string[];
   selectedElements: number[];
@@ -306,8 +207,13 @@ export interface SearchOptions {
 export const defaultSearchOptions = (): SearchOptions => ({
   selectedTypes: [],
   selectedArmorSubtypes: [],
+  selectedCostumeSubtypes: [],
   selectedWeaponSubtypes: [],
   selectedCardLocations: [],
+  selectedShadowSubtypes: [],
+  selectedAmmoSubtypes: [],
+  selectedJobs: [],
+  selectedClasses: [],
   scriptQuery: '',
   selectedAcquisitionSources: [],
   selectedElements: [],
@@ -388,13 +294,15 @@ export function buildItemSearchParams(
   if (options.selectedTypes.length > 0) {
     params.type = itemTypesForApi(options.selectedTypes).join(',');
   } else if (options.selectedArmorSubtypes.length > 0) {
-    // Subtipos de armadura pueden incluir slots shadow → incluir Shadowgear
-    const shadowSubtype = options.selectedArmorSubtypes.some((s) => s.startsWith('Shadow_'));
-    params.type = shadowSubtype
-      ? [...ITEM_ARMOR_DB_TYPES, ITEM_TYPE_SHADOWGEAR].join(',')
-      : ITEM_ARMOR_DB_TYPES.join(',');
+    params.type = ITEM_TYPE_ARMOR;
+  } else if (options.selectedCostumeSubtypes.length > 0) {
+    params.type = ITEM_TYPE_COSTUME;
   } else if (options.selectedWeaponSubtypes.length > 0) {
-    params.type = 'Weapon';
+    params.type = ITEM_TYPE_WEAPON;
+  } else if (options.selectedShadowSubtypes.length > 0) {
+    params.type = ITEM_TYPE_SHADOWGEAR;
+  } else if (options.selectedAmmoSubtypes.length > 0) {
+    params.type = ITEM_TYPE_AMMO;
   }
 
   if (options.hideItemsWithoutNaturalDrop) {
@@ -405,13 +313,33 @@ export function buildItemSearchParams(
     params.subtype = options.selectedArmorSubtypes.join(',');
   }
 
+  if (options.selectedCostumeSubtypes.length > 0) {
+    params.costumeSubtype = options.selectedCostumeSubtypes.join(',');
+  }
+
   if (options.selectedWeaponSubtypes.length > 0) {
     params.weaponSubtype = options.selectedWeaponSubtypes.join(',');
   }
 
+  if (options.selectedShadowSubtypes.length > 0) {
+    params.shadowSubtype = options.selectedShadowSubtypes.join(',');
+  }
+
+  if (options.selectedAmmoSubtypes.length > 0) {
+    params.ammoSubtype = options.selectedAmmoSubtypes.join(',');
+  }
+
   const cardSelected = options.selectedTypes.includes(ITEM_TYPE_CARD);
   if (cardSelected && options.selectedCardLocations.length > 0) {
-    params.location = options.selectedCardLocations.join(',');
+    params.cardInsert = options.selectedCardLocations.join(',');
+  }
+
+  if (options.selectedJobs.length > 0) {
+    params.jobs = options.selectedJobs.join(',');
+  }
+
+  if (options.selectedClasses.length > 0) {
+    params.class = options.selectedClasses.join(',');
   }
 
   const script = options.scriptQuery.trim();

@@ -494,7 +494,7 @@ async function loadNpcs(npcIds) {
 
 /** SQL fragment: item has any of the given acquisition source_types. */
 export function acquisitionSourceFilterClause(itemAlias, sourceTypes) {
-    const types = (sourceTypes || []).filter((t) => ACQUISITION_SOURCE_TYPES.includes(t));
+    const types = [...new Set((sourceTypes || []).map((t) => String(t).trim()).filter(Boolean))];
     if (!acquisitionAvailable || types.length === 0) return null;
     return {
         clause: `EXISTS (
@@ -509,11 +509,12 @@ export function acquisitionSourceFilterClause(itemAlias, sourceTypes) {
 export function parseAcquisitionSourceTypes(params) {
     const raw = params?.sourceType ?? params?.acquisition;
     if (!raw) return [];
-    const list = String(raw)
-        .split(',')
-        .map((v) => v.trim())
-        .filter((t) => ACQUISITION_SOURCE_TYPES.includes(t));
-    return [...new Set(list)];
+    return [...new Set(
+        String(raw)
+            .split(',')
+            .map((v) => v.trim())
+            .filter(Boolean)
+    )];
 }
 
 export { SOURCE_LABELS, parseBool };

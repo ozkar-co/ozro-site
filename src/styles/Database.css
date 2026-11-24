@@ -876,6 +876,23 @@ a {
   font-weight: 500;
 }
 
+.search-meta-error {
+  margin: 0.75rem 0;
+  padding: 0.75rem 0.9rem;
+  border: 2px solid #c0392b;
+  background: #fdecea;
+  color: #7b1e14;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.search-meta-status {
+  margin: 0.5rem 0;
+  color: #666;
+  font-size: 0.85rem;
+}
+
 .acquisition-chips {
   display: flex;
   flex-wrap: wrap;

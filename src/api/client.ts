@@ -395,13 +395,14 @@ export type ItemSearchParams = Record<string, string | number | undefined>;
 export interface ItemMetaResponse {
   types: string[];
   armorSubtypes: string[];
+  costumeSubtypes: string[];
   weaponSubtypes: string[];
   cardLocations: string[];
+  shadowSubtypes: string[];
+  ammoSubtypes: string[];
+  acquisitionSources: string[];
   classes: string[];
   jobs: string[];
-  defaults: {
-    types: string[];
-  };
 }
 
 function buildQuery(params: Record<string, string | number | undefined>): string {
