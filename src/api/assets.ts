@@ -20,6 +20,9 @@ export interface AssetManifest {
     icons: { pages: AtlasPage[] };
     illustrations: { pages: AtlasPage[] };
   };
+  skills?: {
+    icons: { pages: AtlasPage[] };
+  };
   mobs: {
     sprites: { pages: AtlasPage[] };
   };
@@ -28,7 +31,12 @@ export interface AssetManifest {
   };
 }
 
-type AssetCategory = 'items/icons' | 'items/illustrations' | 'mobs/sprites' | 'npcs/sprites';
+type AssetCategory =
+  | 'items/icons'
+  | 'items/illustrations'
+  | 'skills/icons'
+  | 'mobs/sprites'
+  | 'npcs/sprites';
 
 export const ASSETS_BASE = '/assets';
 
@@ -63,9 +71,11 @@ async function loadPageMapping(
     ? manifest.items.icons
     : category === 'items/illustrations'
       ? manifest.items.illustrations
-      : category === 'npcs/sprites'
-        ? manifest.npcs?.sprites
-        : manifest.mobs.sprites;
+      : category === 'skills/icons'
+        ? manifest.skills?.icons
+        : category === 'npcs/sprites'
+          ? manifest.npcs?.sprites
+          : manifest.mobs.sprites;
 
   if (!section?.pages?.length) {
     return {};

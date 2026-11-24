@@ -36,6 +36,7 @@ export interface MapImageInfo {
   height: number;
   mapWidth: number;
   mapHeight: number;
+  source?: 'minimap' | 'walkable' | string;
 }
 
 export interface MapImagesIndex {

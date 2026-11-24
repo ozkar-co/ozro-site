@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-11-24T04:38:55.118372+00:00",
+  "generatedAt": "2026-11-24T15:50:28.071920+00:00",
   "items": {
     "icons": {
       "pages": [
@@ -55,6 +55,20 @@
           "count": 8945,
           "width": 4089,
           "height": 3427
+        }
+      ]
+    }
+  },
+  "skills": {
+    "icons": {
+      "pages": [
+        {
+          "page": 0,
+          "image": "skills/icons/atlas_0.webp",
+          "mapping": "skills/icons/atlas_0.json",
+          "count": 1009,
+          "width": 2048,
+          "height": 288
         }
       ]
     }
