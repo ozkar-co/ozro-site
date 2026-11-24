@@ -166,6 +166,9 @@ export interface MobSummary {
   nameJapanese?: string | null;
   level: number | null;
   hp: number | null;
+  hpBase?: number | null;
+  hpStatus?: string | null;
+  hpNote?: string | null;
   baseExp: number | null;
   jobExp: number | null;
   mvpExp: number | null;
@@ -178,6 +181,7 @@ export interface MobSummary {
   size: string | null;
   isMvp: boolean | null;
   class?: string | null;
+  mobRole?: string | null;
   spawnMaps?: MobSpawnMapSummary[];
   spawnMapCount?: number;
   spawnAmount?: number;
@@ -205,20 +209,28 @@ export interface MobMetaResponse {
 }
 
 export interface MobDetail extends MobSummary {
-  str?: number;
-  agi?: number;
-  vit?: number;
-  int?: number;
-  dex?: number;
-  luk?: number;
-  sp?: number;
-  attack2?: number;
-  walkSpeed?: number;
-  attackDelay?: number;
-  skillRange?: number;
-  chaseRange?: number;
-  ai?: string;
-  modes?: Record<string, boolean>;
+  str?: number | null;
+  agi?: number | null;
+  vit?: number | null;
+  int?: number | null;
+  dex?: number | null;
+  luk?: number | null;
+  sp?: number | null;
+  attack2?: number | null;
+  attackRange?: number | null;
+  walkSpeed?: number | null;
+  attackDelay?: number | null;
+  attackMotion?: number | null;
+  damageMotion?: number | null;
+  skillRange?: number | null;
+  chaseRange?: number | null;
+  damageTaken?: number | null;
+  resistance?: number | null;
+  magicResistance?: number | null;
+  raceGroups?: string[] | null;
+  title?: string | null;
+  ai?: string | null;
+  modes?: Record<string, boolean> | null;
   drops: MobDrop[];
   spawns?: MobSpawnPoint[];
 }

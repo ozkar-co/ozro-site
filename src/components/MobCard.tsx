@@ -36,6 +36,9 @@ interface MobResult {
   nameAegis?: string;
   sprite: SpriteRect | string;
   hp: number | null;
+  hpBase?: number | null;
+  hpStatus?: string | null;
+  hpNote?: string | null;
   lvl: number | null;
   def: number | null;
   mdef: number | null;
@@ -57,9 +60,22 @@ interface MobResult {
   drop: MobDrop[];
   activeModes?: string[] | null;
   mobClass?: string | null;
+  mobRole?: string | null;
   attack2?: number | null;
   sp?: number | null;
+  attackRange?: number | null;
   walkSpeed?: number | null;
+  attackDelay?: number | null;
+  attackMotion?: number | null;
+  damageMotion?: number | null;
+  skillRange?: number | null;
+  chaseRange?: number | null;
+  damageTaken?: number | null;
+  resistance?: number | null;
+  magicResistance?: number | null;
+  raceGroups?: string[] | null;
+  title?: string | null;
+  ai?: string | null;
   spawns?: MobSpawnPoint[];
   spawnMaps?: MobSpawnMapSummary[];
   spawnMapCount?: number;
@@ -242,31 +258,70 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
             </div>
           </div>
 
-          <div className="result-card-section mob-spawn-section">
-            <div className="mob-spawn-header">Spawns:</div>
-            {result.spawnMaps && result.spawnMaps.length > 0 ? (
-              <div className="mob-spawn-list">
-                {result.spawnMaps.map((spawn) => (
-                  <Link
-                    key={spawn.map}
-                    to={`/database?tab=maps&map=${encodeURIComponent(spawn.map)}`}
-                    className={`mob-spawn-map${spawn.instance ? ' is-instance' : ''}`}
-                    title={`${spawn.points} punto(s) de spawn · ${spawn.amount} mobs`}
-                  >
-                    {spawn.map}
-                    <span className="mob-spawn-amount">{spawn.amount}</span>
-                    {spawn.boss && <span className="mob-spawn-badge">Boss</span>}
-                    {spawn.instance && <span className="mob-spawn-badge">Instancia</span>}
-                  </Link>
-                ))}
+          <div className="mob-card-top-row">
+            <div className="mob-spawn-wrap">
+              <div className="result-card-section mob-spawn-section">
+                <div className="mob-spawn-header">Spawns:</div>
+                {result.spawnMaps && result.spawnMaps.length > 0 ? (
+                  <div className="mob-spawn-list">
+                    {result.spawnMaps.map((spawn) => (
+                      <Link
+                        key={spawn.map}
+                        to={`/database?tab=maps&map=${encodeURIComponent(spawn.map)}`}
+                        className={`mob-spawn-map${spawn.instance ? ' is-instance' : ''}`}
+                        title={`${spawn.points} punto(s) de spawn · ${spawn.amount} mobs`}
+                      >
+                        {spawn.map}
+                        <span className="mob-spawn-amount">{spawn.amount}</span>
+                        {spawn.boss && <span className="mob-spawn-badge">Boss</span>}
+                        {spawn.instance && <span className="mob-spawn-badge">Instancia</span>}
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mob-spawn-empty">
+                    {result.hasWorldSpawn === false
+                      ? 'Sin spawn en mapas del mundo'
+                      : 'Sin datos de spawn'}
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="mob-spawn-empty">
-                {result.hasWorldSpawn === false
-                  ? 'Sin spawn en mapas del mundo'
-                  : 'Sin datos de spawn'}
-              </div>
-            )}
+            </div>
+
+            <aside className="mob-side-meta" aria-label="Metadatos del mob">
+              {result.mobRole && (
+                <div className="mob-side-meta-row">
+                  <span className="mob-side-meta-label">Role</span>
+                  <span className="mob-side-meta-value">{formatFilterLabel(result.mobRole)}</span>
+                </div>
+              )}
+              {result.ai != null && result.ai !== '' && (
+                <div className="mob-side-meta-row">
+                  <span className="mob-side-meta-label">AI</span>
+                  <span className="mob-side-meta-value">{result.ai}</span>
+                </div>
+              )}
+              {result.title && (
+                <div className="mob-side-meta-row">
+                  <span className="mob-side-meta-label">Title</span>
+                  <span className="mob-side-meta-value">{result.title}</span>
+                </div>
+              )}
+              {result.raceGroups && result.raceGroups.length > 0 && (
+                <div className="mob-side-meta-row mob-side-meta-row--stack">
+                  <span className="mob-side-meta-label">Groups</span>
+                  <div className="mob-side-meta-tags">
+                    {result.raceGroups.map((group) => (
+                      <span key={group} className="mob-side-meta-tag">{formatFilterLabel(group)}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {!result.mobRole && result.ai == null && !result.title
+                && !(result.raceGroups && result.raceGroups.length > 0) && (
+                <div className="mob-side-meta-empty">Sin meta</div>
+              )}
+            </aside>
           </div>
         </div>
       </div>
@@ -326,6 +381,9 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
                 </div>
               )}
             </div>
+            {result.hpStatus === 'not_extractable' && result.hpNote && (
+              <div className="mob-hp-note">{result.hpNote}</div>
+            )}
           </div>
 
           <div className="result-card-section">
@@ -382,8 +440,8 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
             </div>
           </div>
 
-          <div className="result-card-section stats-modes-stack">
-            <div className="result-card-stats">
+          <div className="result-card-section mob-attrs-panel">
+            <div className="mob-attrs-stats">
               <div className="stats-grid">
                 {([
                   ['STR', result.str],
@@ -402,20 +460,49 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
                 ))}
               </div>
             </div>
-            {result.activeModes && result.activeModes.length > 0 && (
-              <div className="result-card-modes">
-                <div className={`modes-active-list${result.activeModes.length > MODE_SINGLE_ROW_MAX ? ' is-balanced' : ''}`}>
-                  {splitModeRows(result.activeModes).map((row, rowIndex) => (
-                    <div key={rowIndex} className="modes-active-row">
-                      {row.map((mode) => (
-                        <span key={mode} className="mode-tag mode-tag-active">{mode}</span>
-                      ))}
+            <div className="mob-attrs-combat">
+              <div className="mob-combat-grid">
+                {([
+                  ['Atk range', displayStat(result.attackRange)],
+                  ['Skill range', displayStat(result.skillRange)],
+                  ['Chase range', displayStat(result.chaseRange)],
+                  ['Walk speed', displayStat(result.walkSpeed)],
+                  ['Atk delay', displayStat(result.attackDelay)],
+                  ['Atk motion', displayStat(result.attackMotion)],
+                  ['Dmg motion', displayStat(result.damageMotion)],
+                  [
+                    'Dmg taken',
+                    result.damageTaken != null && result.damageTaken !== 100
+                      ? `${result.damageTaken}%`
+                      : null
+                  ],
+                  ['RES', displayStat(result.resistance)],
+                  ['MRES', displayStat(result.magicResistance)]
+                ] as const).map(([label, value]) => (
+                  value != null ? (
+                    <div key={label} className="result-card-property">
+                      <span className="property-label">{label}</span>
+                      <span className="property-value">{value}</span>
                     </div>
-                  ))}
-                </div>
+                  ) : null
+                ))}
               </div>
-            )}
+            </div>
           </div>
+
+          {result.activeModes && result.activeModes.length > 0 && (
+            <div className="result-card-section result-card-modes">
+              <div className={`modes-active-list${result.activeModes.length > MODE_SINGLE_ROW_MAX ? ' is-balanced' : ''}`}>
+                {splitModeRows(result.activeModes).map((row, rowIndex) => (
+                  <div key={rowIndex} className="modes-active-row">
+                    {row.map((mode) => (
+                      <span key={mode} className="mode-tag mode-tag-active">{mode}</span>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {(normalDrops.length > 0 || mvpDrops.length > 0) && (
             <div className="result-card-section">

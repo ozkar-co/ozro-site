@@ -24,6 +24,22 @@ function parseStats(row) {
     return stats && typeof stats === 'object' ? stats : null;
 }
 
+function parseRaceGroups(stats) {
+    if (!stats || stats.race_groups == null) return null;
+    const raw = stats.race_groups;
+    if (Array.isArray(raw)) {
+        const list = raw.map((v) => String(v)).filter(Boolean);
+        return list.length ? list : null;
+    }
+    if (typeof raw === 'object') {
+        const list = Object.entries(raw)
+            .filter(([, value]) => Boolean(value))
+            .map(([key]) => String(key));
+        return list.length ? list : null;
+    }
+    return null;
+}
+
 function parseModes(row) {
     // Prefer modes_effective (Ai ∨ YAML Modes ∨ Class). Sparse YAML `modes` is original-only.
     const raw = parseJsonColumn(row.modes_effective, null)
@@ -58,6 +74,7 @@ function mapMobSummary(row) {
         hp: num(row.hp_effective),
         hpBase: num(row.hp_base),
         hpStatus: row.hp_status || null,
+        hpNote: row.hp_note || null,
         sp: num(row.sp),
         // Effective only — no silent fallback to base (would invent post-rate values).
         baseExp: num(row.base_exp_effective),
@@ -74,6 +91,7 @@ function mapMobSummary(row) {
         size: row.size || null,
         isMvp: row.is_mvp == null ? null : Boolean(row.is_mvp),
         class: row.mob_class || null,
+        mobRole: row.mob_role || null,
         summons: []
     };
 }
@@ -90,8 +108,15 @@ function mapMobDetailFromRow(row, drops = []) {
         luk: stats ? num(stats.luk) : null,
         walkSpeed: stats ? num(stats.walk_speed) : null,
         attackDelay: stats ? num(stats.attack_delay) : null,
+        attackMotion: stats ? num(stats.attack_motion) : null,
+        damageMotion: stats ? num(stats.damage_motion) : null,
         skillRange: stats ? num(stats.skill_range) : null,
         chaseRange: stats ? num(stats.chase_range) : null,
+        damageTaken: stats ? num(stats.damage_taken) : null,
+        resistance: stats ? num(stats.resistance) : null,
+        magicResistance: stats ? num(stats.magic_resistance) : null,
+        raceGroups: parseRaceGroups(stats),
+        title: stats && stats.title != null && stats.title !== '' ? String(stats.title) : null,
         ai: stats && stats.ai != null ? String(stats.ai) : null,
         modes: parseModes(row),
         drops
