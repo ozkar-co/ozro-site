@@ -168,7 +168,9 @@ const Database = () => {
       const iconResolved = await resolveSprite(item.id, 'items/icons');
       const illustrationResolved = await resolveSprite(item.id, 'items/illustrations');
       const icon = iconResolved ?? PLACEHOLDER_ITEM_ICON;
-      const illustration = illustrationResolved ?? iconResolved ?? PLACEHOLDER_ITEM_ILLUSTRATION;
+      // Never fall back to the 24×24 inventory icon in the illustration slot —
+      // that reads as a broken/wrong connection. Use the illustration placeholder instead.
+      const illustration = illustrationResolved ?? PLACEHOLDER_ITEM_ILLUSTRATION;
       const hasSprite = hasManifestSprite(illustrationResolved ?? iconResolved);
       return { ...item, icon, illustration, hasSprite };
     }));

@@ -31,7 +31,9 @@ app.use('/assets', express.static(assetsPath, {
   setHeaders: (res, filePath) => {
     if (
       /transport-(?:map\.svg|layout\.json)$/.test(filePath)
-      || /(?:manifest|build-report|catalog|maps|spawns|index|access|levelPenalty|worldview|routes)\.json$/.test(filePath)
+      || /(?:manifest|build-report|catalog|maps|spawns|index|access|levelPenalty|worldview|routes|alias-map)\.json$/.test(filePath)
+      // Atlas mappings keep stable filenames across rebuilds; never immutable-cache them.
+      || /(?:^|[/\\])atlas_\d+\.json$/.test(filePath)
     ) {
       res.setHeader('Cache-Control', 'no-cache');
     }

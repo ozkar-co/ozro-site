@@ -1,20 +1,233 @@
 {
-  "generatedAt": "2026-11-16T01:07:55.557633+00:00",
-  "total": 558,
+  "generatedAt": "2026-11-24T05:10:38.765163+00:00",
+  "total": 916,
+  "collectorCards": 556,
+  "extraCards": 360,
+  "placeholderSkipped": 187,
+  "missingMapping": [],
+  "missingArt": [
+    [
+      27361,
+      "sorry"
+    ],
+    [
+      27352,
+      "sorry"
+    ],
+    [
+      4495,
+      "봉인된아몬라카드"
+    ],
+    [
+      4496,
+      "봉인된드레이크카드"
+    ],
+    [
+      4536,
+      "봉인된아트로스카드"
+    ],
+    [
+      4537,
+      "봉인된프리오니카드"
+    ],
+    [
+      4540,
+      "봉인된죽은자의주인카드"
+    ],
+    [
+      4541,
+      "봉인된하이위자드카드"
+    ],
+    [
+      4542,
+      "봉인된디타르카드"
+    ],
+    [
+      4543,
+      "봉인된하티카드"
+    ],
+    [
+      4547,
+      "강화뵤르그카드"
+    ],
+    [
+      4548,
+      "강화샐러맨더카드"
+    ],
+    [
+      4549,
+      "강화마야퍼플카드"
+    ],
+    [
+      4550,
+      "강화보우가디언카드"
+    ],
+    [
+      4551,
+      "강화네크로맨서카드"
+    ],
+    [
+      4558,
+      "초록이카드"
+    ],
+    [
+      4611,
+      "RO소녀아미스카드"
+    ],
+    [
+      4612,
+      "RO소녀미아카드"
+    ],
+    [
+      4613,
+      "RO소녀소범카드"
+    ],
+    [
+      4614,
+      "RO소녀소우카드"
+    ],
+    [
+      4615,
+      "RO소녀소연카드"
+    ],
+    [
+      4616,
+      "RO소녀소월카드"
+    ],
+    [
+      4617,
+      "RO소녀이이카드"
+    ],
+    [
+      4618,
+      "RO소녀캣시카드"
+    ],
+    [
+      4619,
+      "RO소녀피피카드"
+    ],
+    [
+      4620,
+      "RO소녀예삐카드"
+    ],
+    [
+      4621,
+      "RO소녀진영카드"
+    ],
+    [
+      4622,
+      "RO소녀달콤카드"
+    ],
+    [
+      4623,
+      "11주년카드"
+    ],
+    [
+      25480,
+      "new_year2018"
+    ],
+    [
+      27021,
+      "jp_ev03"
+    ],
+    [
+      27022,
+      "jp_ev04"
+    ],
+    [
+      27023,
+      "jp_ev05"
+    ],
+    [
+      27024,
+      "jp_ev06"
+    ],
+    [
+      27031,
+      "미궁의바포메트카드"
+    ],
+    [
+      27032,
+      "미궁의드라큐라카드"
+    ],
+    [
+      27050,
+      "애니버서리카드1"
+    ],
+    [
+      27051,
+      "애니버서리카드2"
+    ],
+    [
+      27052,
+      "애니버서리카드3"
+    ],
+    [
+      27053,
+      "애니버서리카드4"
+    ],
+    [
+      27054,
+      "애니버서리카드5"
+    ],
+    [
+      27081,
+      "분노한월야화"
+    ],
+    [
+      27127,
+      "AncientKingGroza"
+    ],
+    [
+      27128,
+      "AbyssAncientKing"
+    ],
+    [
+      27129,
+      "justice"
+    ],
+    [
+      27130,
+      "thestar"
+    ],
+    [
+      27131,
+      "temperance"
+    ],
+    [
+      27132,
+      "thechariot"
+    ],
+    [
+      27133,
+      "death"
+    ],
+    [
+      27134,
+      "thehermit"
+    ]
+  ],
   "pages": [
     {
       "page": 0,
-      "image": "atlas_0.5facb11b3b.webp",
+      "image": "atlas_0.5ff1b79816.webp",
       "width": 3020,
       "height": 4422,
-      "count": 437
+      "count": 435
     },
     {
       "page": 1,
-      "image": "atlas_1.7c4b4eab23.webp",
+      "image": "atlas_1.562f26dac3.webp",
       "width": 3020,
       "height": 1407,
       "count": 121
+    },
+    {
+      "page": 2,
+      "image": "atlas_2.4f12cad440.webp",
+      "width": 3020,
+      "height": 3618,
+      "count": 360
     }
   ],
   "categories": [
@@ -28,7 +241,7 @@
     },
     {
       "code": "C",
-      "total": 31
+      "total": 30
     },
     {
       "code": "D",
@@ -88,7 +301,7 @@
     },
     {
       "code": "R",
-      "total": 19
+      "total": 18
     },
     {
       "code": "S",
@@ -128,9 +341,10 @@
     }
   ],
   "source": {
+    "mode": "grf",
     "npc": "/home/oz/Code/rathena/npc/custom/ozro/card_collector.txt",
     "itemDb": "/home/oz/Code/rathena/db",
-    "mapping": "/home/oz/Code/ozro-cli/tools/cardbmp-map.json",
-    "cardbmpDir": "/tmp/cardbmp-all"
+    "mapping": "data/num2cardillustnametable.txt",
+    "cardbmpDir": "data/texture/유저인터페이스/cardbmp"
   }
 }

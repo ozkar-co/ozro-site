@@ -35,8 +35,11 @@ export const ASSETS_BASE = '/assets';
 let manifestPromise: Promise<AssetManifest | null> | null = null;
 const mappingCache = new Map<string, Record<string, SpriteRect & { page?: number }>>();
 
-export function assetUrl(relativePath: string): string {
-  return `${ASSETS_BASE}/${relativePath.replace(/^\//, '')}`;
+export function assetUrl(relativePath: string, cacheKey?: string): string {
+  const path = `${ASSETS_BASE}/${relativePath.replace(/^\//, '')}`;
+  if (!cacheKey) return path;
+  const sep = path.includes('?') ? '&' : '?';
+  return `${path}${sep}v=${encodeURIComponent(cacheKey)}`;
 }
 
 export async function loadManifest(): Promise<AssetManifest | null> {
@@ -68,6 +71,7 @@ async function loadPageMapping(
     return {};
   }
 
+  const cacheKey = manifest.generatedAt || String(manifest.version || '');
   const merged: Record<string, SpriteRect & { page?: number }> = {};
 
   const pages = await Promise.all(section.pages.map(async (pageInfo) => {
@@ -75,14 +79,14 @@ async function loadPageMapping(
     if (mappingCache.has(key)) {
       return mappingCache.get(key)!;
     }
-    const response = await fetch(assetUrl(pageInfo.mapping));
+    const response = await fetch(assetUrl(pageInfo.mapping, cacheKey));
     if (!response.ok) return {};
     const mapping = await response.json() as Record<string, { x: number; y: number; w: number; h: number; page?: number }>;
     const withUrls: Record<string, SpriteRect & { page?: number }> = {};
     for (const [id, rect] of Object.entries(mapping)) {
       withUrls[id] = {
         ...rect,
-        atlasUrl: assetUrl(pageInfo.image)
+        atlasUrl: assetUrl(pageInfo.image, cacheKey)
       };
     }
     mappingCache.set(key, withUrls);
@@ -99,7 +103,7 @@ async function loadPageMapping(
 const categoryMappings = new Map<AssetCategory, Promise<Record<string, SpriteRect & { page?: number }>>>();
 
 export async function resolveSprite(
-  id: string,
+  id: string | number,
   category: AssetCategory
 ): Promise<SpriteRect | null> {
   const manifest = await loadManifest();
@@ -110,7 +114,8 @@ export async function resolveSprite(
   }
 
   const mapping = await categoryMappings.get(category)!;
-  const rect = mapping[id] ?? mapping[id.toLowerCase()];
+  const key = String(id);
+  const rect = mapping[key] ?? mapping[key.toLowerCase()];
   if (!rect) return null;
 
   return {
