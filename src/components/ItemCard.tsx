@@ -10,7 +10,12 @@ import {
   type CardEntry,
   type CardPage
 } from '../api/cards';
-import { apiClient, type ItemAcquisition, type MobSpawnMapSummary } from '../api/client';
+import {
+  apiClient,
+  type BoxGroupResponse,
+  type ItemAcquisition,
+  type MobSpawnMapSummary
+} from '../api/client';
 import AtlasSprite from './AtlasSprite';
 import {
   PLACEHOLDER_ITEM_ICON,
@@ -377,6 +382,11 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
   const [cardArtLoading, setCardArtLoading] = useState(false);
   const [cardArtError, setCardArtError] = useState(false);
   const [hasCardArt, setHasCardArt] = useState(false);
+  const [boxGroupModalOpen, setBoxGroupModalOpen] = useState(false);
+  const [boxGroupName, setBoxGroupName] = useState<string | null>(null);
+  const [boxGroupData, setBoxGroupData] = useState<BoxGroupResponse | null>(null);
+  const [boxGroupLoading, setBoxGroupLoading] = useState(false);
+  const [boxGroupError, setBoxGroupError] = useState(false);
 
   const scriptMain = result.script?.trim() || '';
   const scriptEquip = result.equipScript?.trim() || '';
@@ -400,6 +410,12 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
   const weaponLevelText = result.weapon_level != null && result.weapon_level > 0
     ? String(result.weapon_level)
     : null;
+  const genderExclusiveText = (() => {
+    const g = (result.gender || '').trim().toLowerCase();
+    if (g === 'male') return 'Exclusivo para Hombre';
+    if (g === 'female') return 'Exclusivo para Mujer';
+    return null;
+  })();
   const nameDetailsText = formatItemNameDetails(result.nameAegis, result.nameEnglish);
 
   const closeDescriptionModal = useCallback(() => {
@@ -412,6 +428,28 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
 
   const closeCardModal = useCallback(() => {
     setCardModalOpen(false);
+  }, []);
+
+  const closeBoxGroupModal = useCallback(() => {
+    setBoxGroupModalOpen(false);
+  }, []);
+
+  const openBoxGroupModal = useCallback(async (groupName: string) => {
+    const name = groupName.trim();
+    if (!name) return;
+    setBoxGroupModalOpen(true);
+    setBoxGroupName(name);
+    setBoxGroupData(null);
+    setBoxGroupError(false);
+    setBoxGroupLoading(true);
+    try {
+      const data = await apiClient.getBoxGroup(name);
+      setBoxGroupData(data);
+    } catch {
+      setBoxGroupError(true);
+    } finally {
+      setBoxGroupLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -569,9 +607,15 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
                 <ResultProperty label="Slots" value={result.slots != null ? String(result.slots) : null} />
                 <ResultProperty label="Nivel Equip" value={equipLevelText} />
                 <ResultProperty label="Refinable" value={result.refineable ? 'Sí' : 'No'} />
+                {result.gradable != null && (
+                  <ResultProperty label="Gradeable" value={result.gradable ? 'Sí' : 'No'} />
+                )}
                 <ResultProperty label="Nivel Arma" value={weaponLevelText} />
                 {result.range != null && result.range > 0 && (
                   <ResultProperty label="Alcance" value={String(result.range)} />
+                )}
+                {genderExclusiveText && (
+                  <ResultProperty label="Género" value={genderExclusiveText} />
                 )}
               </div>
             </div>
@@ -582,10 +626,16 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
                 <ResultProperty label="Slots" value={result.slots != null ? String(result.slots) : null} />
                 <ResultProperty label="Nivel Equip" value={equipLevelText} />
                 <ResultProperty label="Refinable" value={result.refineable ? 'Sí' : 'No'} />
+                {result.gradable != null && (
+                  <ResultProperty label="Gradeable" value={result.gradable ? 'Sí' : 'No'} />
+                )}
                 <ResultProperty
                   label="Ubicación"
                   value={equipLocationsText}
                 />
+                {genderExclusiveText && (
+                  <ResultProperty label="Género" value={genderExclusiveText} />
+                )}
               </div>
             </div>
           )}
@@ -722,10 +772,19 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
                           <span className="acquisition-primary">
                             {box.openers.length > 0
                               ? box.openers.map((o) => o.name).join(', ')
-                              : (box.groupName || 'Caja')}
+                              : 'Caja'}
                           </span>
-                          {box.openers.length > 0 && box.groupName && (
-                            <span className="acquisition-meta"> · grupo {box.groupName}</span>
+                          {box.groupName && (
+                            <>
+                              <span className="acquisition-meta"> · grupo </span>
+                              <button
+                                type="button"
+                                className="acquisition-group-link"
+                                onClick={() => openBoxGroupModal(box.groupName!)}
+                              >
+                                {box.groupName}
+                              </button>
+                            </>
                           )}
                           {box.chanceLabel && (
                             <span className="acquisition-meta"> — {box.chanceLabel}</span>
@@ -1044,6 +1103,71 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
                     role="img"
                     aria-label={cardArt.entry.name}
                   />
+                )}
+              </div>
+            </div>,
+            document.body
+          )}
+          {boxGroupModalOpen && createPortal(
+            <div
+              className="item-desc-modal-backdrop"
+              role="presentation"
+              onMouseDown={(event) => {
+                if (event.target === event.currentTarget) closeBoxGroupModal();
+              }}
+            >
+              <div
+                className="item-desc-modal item-box-group-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={`box-group-title-${result.id}`}
+                onMouseDown={(event) => event.stopPropagation()}
+              >
+                <div className="item-desc-modal-head">
+                  <div>
+                    <h4 id={`box-group-title-${result.id}`}>Grupo de caja</h4>
+                    <p className="item-desc-modal-subtitle">
+                      {boxGroupName}
+                      {boxGroupData ? ` · ${boxGroupData.itemCount} objetos` : ''}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="item-desc-modal-close"
+                    onClick={closeBoxGroupModal}
+                    aria-label="Cerrar"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+                {boxGroupLoading ? (
+                  <div className="item-desc-modal-loading" aria-busy="true" aria-live="polite">
+                    <img src="/logo.png" alt="Cargando grupo…" className="loading-logo" />
+                  </div>
+                ) : boxGroupError || !boxGroupData ? (
+                  <div className="item-desc-modal-body">No se pudo cargar el grupo.</div>
+                ) : (
+                  <ul className="box-group-list">
+                    {boxGroupData.items.map((item) => (
+                      <li key={item.rewardId} className="box-group-item">
+                        <Link
+                          to={`/database?tab=items&q=${item.id}`}
+                          className="box-group-item-name"
+                          onClick={closeBoxGroupModal}
+                        >
+                          {item.name}
+                        </Link>
+                        <span className="box-group-item-meta">
+                          #{item.id}
+                          {item.amount > 1 ? ` · x${item.amount}` : ''}
+                          {item.subgroup != null ? ` · sub ${item.subgroup}` : ''}
+                        </span>
+                        <span className="box-group-item-chance">
+                          {item.chanceLabel || '—'}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </div>
             </div>,

@@ -112,14 +112,21 @@ function num(value) {
     return Number.isFinite(n) ? n : null;
 }
 
+function displayItemType(row) {
+    if (row.is_costume || row.item_category === 'Costume') return 'Costume';
+    if (row.type === 'Card' && row.item_subcategory === 'Enchant') return 'Enchant';
+    if (row.item_category === 'Shadow Gear' || row.type === 'Shadowgear') return 'Shadowgear';
+    return row.type;
+}
+
 function mapItemSummary(row) {
     return {
         id: num(row.item_id),
         name: getItemDisplayName(row.item_id) || row.display_name || row.name || row.aegis_name,
         nameAegis: row.aegis_name,
         nameEnglish: row.name,
-        type: row.type,
-        subtype: row.subtype,
+        type: displayItemType(row),
+        subtype: row.subtype || row.item_subcategory || row.equip_slot_key || null,
         attack: num(row.attack),
         magicAttack: num(row.magic_attack),
         defense: num(row.defense),
@@ -139,8 +146,6 @@ function mapItemDetail(row, scripts = {}) {
         weaponLevel: row.weapon_level,
         armorLevel: row.armor_level,
         refineable: row.refineable == null ? null : Boolean(row.refineable),
-        gradable: null,
-        gender: null,
         script: scripts.Script || null,
         equipScript: scripts.EquipScript || null,
         unequipScript: scripts.UnEquipScript || null,
@@ -237,13 +242,17 @@ function buildItemFilters(params) {
         const wantsEnchant = types.includes('Enchant');
         const plainTypes = types.filter((t) => t !== 'Costume' && t !== 'Enchant');
 
+        let armorRequested = false;
         for (const typeName of plainTypes) {
-            if (typeName === 'Armor') {
+            if (ITEM_ARMOR_DB_TYPES.includes(typeName)) {
                 // Real gear only — costumes are a separate virtual type.
-                typeParts.push(
-                    `(i.type IN (${ITEM_ARMOR_DB_TYPES.map(() => '?').join(', ')}) AND COALESCE(i.is_costume, 0) = 0)`
-                );
-                values.push(...ITEM_ARMOR_DB_TYPES);
+                if (!armorRequested) {
+                    armorRequested = true;
+                    typeParts.push(
+                        `(i.type IN (${ITEM_ARMOR_DB_TYPES.map(() => '?').join(', ')}) AND COALESCE(i.is_costume, 0) = 0)`
+                    );
+                    values.push(...ITEM_ARMOR_DB_TYPES);
+                }
             } else if (typeName === 'Card') {
                 typeParts.push(
                     `(i.type = 'Card' AND COALESCE(i.item_subcategory, '') <> 'Enchant')`
@@ -616,7 +625,9 @@ export async function getItemMeta() {
         )
     ]);
 
-    const typeValues = types.map((r) => r.value).filter(Boolean);
+    const typeValues = types.map((r) => r.value).filter(Boolean)
+        // Armor2 is covered by the Armor filter (server expands DB types).
+        .filter((t) => t !== 'Armor2');
     if (typeValues.length === 0) {
         const err = new Error('ozro_items.type DISTINCT vacío — meta de filtros no usable');
         err.status = 500;

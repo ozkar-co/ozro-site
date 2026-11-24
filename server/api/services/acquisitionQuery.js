@@ -9,6 +9,7 @@ import {
     chanceToPercent,
     parseBool
 } from './gameDb.js';
+import { getItemDisplayName } from './itemInfo.js';
 
 const SHOP_LIST_CAP = 20;
 const BOX_LIST_CAP = 25;
@@ -66,7 +67,7 @@ function cleanNpcName(raw) {
     return hash > 0 ? s.slice(0, hash).trim() : s;
 }
 
-function formatBoxChance(probability, unit, chanceStatus) {
+function formatBoxChance(probability, unit, chanceStatus, subgroupTotalRate = null) {
     if (chanceStatus === 'guaranteed_all') {
         return { label: 'Garantizado', percent: 100 };
     }
@@ -77,12 +78,23 @@ function formatBoxChance(probability, unit, chanceStatus) {
     if (p == null) return { label: null, percent: null };
 
     if (unit === 'per_10000' || unit === 'per_100000') {
+        const percent = chanceToPercent(p, unit);
         return {
-            label: `${chanceToPercent(p, unit).toFixed(2)}%`,
-            percent: chanceToPercent(p, unit)
+            label: `${percent.toFixed(2)}% en el grupo`,
+            percent
         };
     }
-    // raw_group_rate / unknown — do not invent a percent
+
+    // raw_group_rate: normalize against subgroup total when available
+    const total = n(subgroupTotalRate);
+    if (unit === 'raw_group_rate' && total != null && total > 0) {
+        const percent = (p * 100) / total;
+        return {
+            label: `${percent.toFixed(2)}% en el grupo`,
+            percent
+        };
+    }
+
     return { label: `peso ${p} en el grupo`, percent: null };
 }
 
@@ -127,6 +139,7 @@ export async function loadAcquisitionForItems(itemIds) {
 
     const shopRefs = [];
     const boxIds = new Set();
+    const boxRewardIds = new Set();
     const recipeIds = new Set();
     const barterItemIds = new Set();
     const npcIds = new Set();
@@ -134,14 +147,16 @@ export async function loadAcquisitionForItems(itemIds) {
     for (const row of rows) {
         if (row.source_type === 'npc_shop' && row.source_ref) shopRefs.push(row.source_ref);
         if (row.box_id) boxIds.add(row.box_id);
+        if (row.source_type === 'box_reward' && row.source_ref) boxRewardIds.add(row.source_ref);
         if (row.source_type === 'crafting' && row.source_ref) recipeIds.add(row.source_ref);
         if (row.source_type === 'npc_barter' && row.source_ref) barterItemIds.add(row.source_ref);
         if (row.npc_id) npcIds.add(row.npc_id);
     }
 
-    const [shopMap, openerMap, recipeMap, barterReqMap, npcMap] = await Promise.all([
+    const [shopMap, openerMap, boxChanceMap, recipeMap, barterReqMap, npcMap] = await Promise.all([
         loadShopMeta(shopRefs),
         loadBoxOpeners([...boxIds]),
+        loadBoxRewardChances([...boxRewardIds]),
         loadRecipes([...recipeIds]),
         loadBarterRequirements([...barterItemIds]),
         loadNpcs([...npcIds])
@@ -152,6 +167,7 @@ export async function loadAcquisitionForItems(itemIds) {
         result.set(id, buildPayload(byItem.get(id) || [], {
             shopMap,
             openerMap,
+            boxChanceMap,
             recipeMap,
             barterReqMap,
             npcMap
@@ -227,16 +243,18 @@ function buildPayload(rows, ctx) {
 
         if (type === 'box_reward') {
             if (boxes.length >= BOX_LIST_CAP) continue;
+            const reward = ctx.boxChanceMap?.get(row.source_ref) || null;
             const chance = formatBoxChance(
-                row.probability,
-                row.probability_unit,
-                row.chance_status
+                reward?.chanceEffective ?? row.probability,
+                reward?.chanceUnit ?? row.probability_unit,
+                reward?.chanceStatus ?? row.chance_status,
+                reward?.subgroupTotalRate
             );
             boxes.push({
                 boxId: row.box_id,
-                groupName: row.group_name,
-                algorithm: row.algorithm || null,
-                chanceStatus: row.chance_status || null,
+                groupName: row.group_name || reward?.groupName || null,
+                algorithm: reward?.algorithm || row.algorithm || null,
+                chanceStatus: reward?.chanceStatus || row.chance_status || null,
                 chanceLabel: chance.label,
                 chancePercent: chance.percent,
                 quantityMin: n(row.quantity_min),
@@ -403,12 +421,98 @@ async function loadBoxOpeners(boxIds) {
         const list = map.get(row.box_id) || [];
         list.push({
             id: Number(row.item_id),
-            name: row.name,
+            name: getItemDisplayName(row.item_id) || row.name,
             nameAegis: row.aegis_name
         });
         map.set(row.box_id, list);
     }
     return map;
+}
+
+async function loadBoxRewardChances(rewardIds) {
+    const map = new Map();
+    if (rewardIds.length === 0) return map;
+
+    const table = `${OZRO_PREFIX}box_rewards`;
+    const placeholders = rewardIds.map(() => '?').join(', ');
+    const rows = await query(
+        `SELECT reward_id, group_name, algorithm, rate, chance_effective, chance_unit,
+                chance_status, subgroup_total_rate
+         FROM \`${table}\`
+         WHERE reward_id IN (${placeholders})`,
+        rewardIds
+    );
+
+    for (const row of rows) {
+        map.set(row.reward_id, {
+            groupName: row.group_name || null,
+            algorithm: row.algorithm || null,
+            rate: n(row.rate),
+            chanceEffective: n(row.chance_effective),
+            chanceUnit: row.chance_unit || null,
+            chanceStatus: row.chance_status || null,
+            subgroupTotalRate: n(row.subgroup_total_rate)
+        });
+    }
+    return map;
+}
+
+/**
+ * All rewards in an item_group pool, with group-normalized chances.
+ */
+export async function getBoxGroup(groupName) {
+    const name = String(groupName || '').trim();
+    if (!name) {
+        const err = new Error('Nombre de grupo vacío');
+        err.status = 400;
+        throw err;
+    }
+
+    const table = `${OZRO_PREFIX}box_rewards`;
+    const rows = await query(
+        `SELECT r.reward_id, r.item_id, r.amount, r.rate, r.chance_effective, r.chance_unit,
+                r.chance_status, r.subgroup_total_rate, r.algorithm, r.subgroup,
+                r.group_name, i.name, i.aegis_name
+         FROM \`${table}\` r
+         LEFT JOIN \`${T.ITEMS}\` i ON i.item_id = r.item_id
+         WHERE r.group_name = ?
+         ORDER BY r.subgroup, r.chance_effective DESC, r.item_id`,
+        [name]
+    );
+
+    if (rows.length === 0) {
+        const err = new Error(`Grupo no encontrado: ${name}`);
+        err.status = 404;
+        throw err;
+    }
+
+    const items = rows.map((row) => {
+        const chance = formatBoxChance(
+            row.chance_effective,
+            row.chance_unit,
+            row.chance_status,
+            row.subgroup_total_rate
+        );
+        return {
+            rewardId: row.reward_id,
+            id: Number(row.item_id),
+            name: getItemDisplayName(row.item_id) || row.name || row.aegis_name || `#${row.item_id}`,
+            nameAegis: row.aegis_name || null,
+            amount: n(row.amount) ?? 1,
+            rate: n(row.rate),
+            subgroup: n(row.subgroup),
+            algorithm: row.algorithm || null,
+            chanceStatus: row.chance_status || null,
+            chanceLabel: chance.label,
+            chancePercent: chance.percent
+        };
+    });
+
+    return {
+        groupName: name,
+        itemCount: items.length,
+        items
+    };
 }
 
 async function loadRecipes(recipeIds) {

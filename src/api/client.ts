@@ -405,6 +405,26 @@ export interface ItemMetaResponse {
   jobs: string[];
 }
 
+export interface BoxGroupItem {
+  rewardId: string;
+  id: number;
+  name: string;
+  nameAegis?: string | null;
+  amount: number;
+  rate?: number | null;
+  subgroup?: number | null;
+  algorithm?: string | null;
+  chanceStatus?: string | null;
+  chanceLabel?: string | null;
+  chancePercent?: number | null;
+}
+
+export interface BoxGroupResponse {
+  groupName: string;
+  itemCount: number;
+  items: BoxGroupItem[];
+}
+
 function buildQuery(params: Record<string, string | number | undefined>): string {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
@@ -453,5 +473,8 @@ export const apiClient = {
   getItem: (id: number | string) => apiFetch<ItemDetail>(`/items/${id}`),
 
   getItemDescription: (id: number | string) =>
-    apiFetch<ItemDescriptionResponse>(`/items/${id}/description`)
+    apiFetch<ItemDescriptionResponse>(`/items/${id}/description`),
+
+  getBoxGroup: (groupName: string) =>
+    apiFetch<BoxGroupResponse>(`/items/box-groups/${encodeURIComponent(groupName)}`)
 };

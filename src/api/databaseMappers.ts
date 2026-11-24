@@ -63,7 +63,9 @@ const ITEM_TYPE_TO_NUMBER: Record<string, number> = {
   Weapon: 4,
   Armor: 5,
   Armor2: 5,
+  Costume: 5,
   Card: 6,
+  Enchant: 6,
   Petegg: 7,
   Petarmor: 8,
   Ammo: 10,
@@ -167,14 +169,12 @@ export const ITEM_TYPE_AMMO = 'Ammo';
 export const ITEM_ARMOR_DB_TYPES = ['Armor', 'Armor2'] as const;
 
 function itemTypesForApi(selectedTypes: string[]): string[] {
+  // Server expands Armor → Armor/Armor2 and excludes costumes.
+  // Do not send Armor2 as a bare type (that would bypass the costume split).
   const names: string[] = [];
   for (const typeName of selectedTypes) {
-    if (!typeName) continue;
-    if (typeName === ITEM_TYPE_ARMOR) {
-      names.push(...ITEM_ARMOR_DB_TYPES);
-    } else {
-      names.push(typeName);
-    }
+    if (!typeName || typeName === 'Armor2') continue;
+    names.push(typeName);
   }
   return [...new Set(names)];
 }

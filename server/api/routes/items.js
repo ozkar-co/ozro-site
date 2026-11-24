@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { getItemById, getItemMeta, searchItems } from '../services/itemQuery.js';
 import { getItemDescription, isItemInfoAvailable } from '../services/itemInfo.js';
+import { getBoxGroup } from '../services/acquisitionQuery.js';
 import { responseCache } from '../services/responseCache.js';
 import {
     isItemDataAvailable,
@@ -38,6 +39,18 @@ router.get('/meta', async (req, res) => {
         console.error('Error al obtener meta de objetos:', error);
         res.status(error.status || 500).json({
             error: error.message || 'Error al obtener meta de objetos'
+        });
+    }
+});
+
+router.get('/box-groups/:groupName', async (req, res) => {
+    try {
+        const group = await getBoxGroup(decodeURIComponent(req.params.groupName));
+        res.json(group);
+    } catch (error) {
+        console.error('Error al obtener grupo de caja:', error);
+        res.status(error.status || 500).json({
+            error: error.message || 'Error al obtener grupo de caja'
         });
     }
 });

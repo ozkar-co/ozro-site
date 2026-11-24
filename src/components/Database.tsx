@@ -22,7 +22,6 @@ import {
   ITEM_TYPE_ARMOR,
   ITEM_TYPE_CARD,
   ITEM_TYPE_COSTUME,
-  ITEM_TYPE_ENCHANT,
   ITEM_TYPE_SHADOWGEAR,
   ITEM_TYPE_WEAPON,
   mapItemToCard,
@@ -481,8 +480,9 @@ const Database = () => {
                             ))}
                           </div>
                         </div>
+                        <div className="search-filter-columns">
                         {searchOptions.selectedTypes.includes(ITEM_TYPE_ARMOR) && armorSubtypes.length > 0 && (
-                          <div className="search-types">
+                          <div className="search-types search-types--column">
                             <div className="search-types-title">Slot de armadura:</div>
                             <select
                               className="search-filter-select"
@@ -504,7 +504,7 @@ const Database = () => {
                           </div>
                         )}
                         {searchOptions.selectedTypes.includes(ITEM_TYPE_COSTUME) && costumeSubtypes.length > 0 && (
-                          <div className="search-types">
+                          <div className="search-types search-types--column">
                             <div className="search-types-title">Slot de costume:</div>
                             <select
                               className="search-filter-select"
@@ -526,7 +526,7 @@ const Database = () => {
                           </div>
                         )}
                         {searchOptions.selectedTypes.includes(ITEM_TYPE_WEAPON) && weaponSubtypes.length > 0 && (
-                          <div className="search-types">
+                          <div className="search-types search-types--column">
                             <div className="search-types-title">Subtipo de arma:</div>
                             <select
                               className="search-filter-select"
@@ -548,7 +548,7 @@ const Database = () => {
                           </div>
                         )}
                         {searchOptions.selectedTypes.includes(ITEM_TYPE_CARD) && cardLocations.length > 0 && (
-                          <div className="search-types">
+                          <div className="search-types search-types--column">
                             <div className="search-types-title">Inserción de carta:</div>
                             <select
                               className="search-filter-select"
@@ -568,7 +568,7 @@ const Database = () => {
                           </div>
                         )}
                         {searchOptions.selectedTypes.includes(ITEM_TYPE_SHADOWGEAR) && shadowSubtypes.length > 0 && (
-                          <div className="search-types">
+                          <div className="search-types search-types--column">
                             <div className="search-types-title">Slot shadow:</div>
                             <select
                               className="search-filter-select"
@@ -590,7 +590,7 @@ const Database = () => {
                           </div>
                         )}
                         {searchOptions.selectedTypes.includes(ITEM_TYPE_AMMO) && ammoSubtypes.length > 0 && (
-                          <div className="search-types">
+                          <div className="search-types search-types--column">
                             <div className="search-types-title">Subtipo de munición:</div>
                             <select
                               className="search-filter-select"
@@ -612,7 +612,7 @@ const Database = () => {
                           </div>
                         )}
                         {jobFilters.length > 0 && (
-                          <div className="search-types">
+                          <div className="search-types search-types--column">
                             <div className="search-types-title">Jobs:</div>
                             <select
                               className="search-filter-select"
@@ -632,7 +632,7 @@ const Database = () => {
                           </div>
                         )}
                         {classFilters.length > 0 && (
-                          <div className="search-types">
+                          <div className="search-types search-types--column">
                             <div className="search-types-title">Clases:</div>
                             <select
                               className="search-filter-select"
@@ -651,6 +651,7 @@ const Database = () => {
                             <div className="search-filter-hint">Ctrl+clic para varios</div>
                           </div>
                         )}
+                        </div>
                         <div className="search-types">
                           <div className="search-types-title">Texto en script del objeto:</div>
                           <input
