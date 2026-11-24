@@ -4,8 +4,7 @@ import type { MapConnection, MapDetail, MapNpcPoint, MapSpawnPoint } from '../ap
 import {
   loadMapImages,
   resolveMapImageVariant,
-  type MapImageInfo,
-  type MapImageSource
+  type MapImageInfo
 } from '../api/mapData';
 import { resolveSprite, type SpriteRect } from '../api/assets';
 import { PLACEHOLDER_MOB_SPRITE } from '../api/placeholders';
@@ -24,6 +23,7 @@ interface MobGroup {
   hp: number | null;
   amount: number;
   boss: boolean;
+  mvp: boolean;
   respawnMin: number | null;
   respawnMax: number | null;
   respawnUnit: string | null;
@@ -43,6 +43,13 @@ function formatRespawn(min: number | null, max: number | null, unit: string | nu
   return value != null ? `${numberFormat.format(value)}${u}` : null;
 }
 
+function parseArrival(value: string | null): { x: number; y: number } | null {
+  if (!value) return null;
+  const [x, y] = value.split(',').map(Number);
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+  return { x, y };
+}
+
 function pinStyle(x: number, y: number, mapWidth: number, mapHeight: number) {
   return {
     left: `${(x / mapWidth) * 100}%`,
@@ -51,14 +58,17 @@ function pinStyle(x: number, y: number, mapWidth: number, mapHeight: number) {
 }
 
 const MapViewer = ({ map }: MapViewerProps) => {
-  const [, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const arrival = parseArrival(searchParams.get('arrive'));
   const [imageInfo, setImageInfo] = useState<MapImageInfo | null>(null);
-  const [imageSource, setImageSource] = useState<MapImageSource>('minimap');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedMobId, setSelectedMobId] = useState<number | null>(null);
   const [selectedNpcId, setSelectedNpcId] = useState<string | null>(null);
   const [mobSprites, setMobSprites] = useState<Record<number, SpriteRect | string>>({});
+  const [minimapOpen, setMinimapOpen] = useState(false);
+  const [mobsOpen, setMobsOpen] = useState(true);
+  const [npcsOpen, setNpcsOpen] = useState(true);
 
   const spawns = map.spawns ?? [];
   const npcs = map.npcs ?? [];
@@ -85,10 +95,9 @@ const MapViewer = ({ map }: MapViewerProps) => {
           throw new Error(`Sin imagen de mapa en assets para ${map.id}`);
         }
         setImageInfo(info);
-        // Always default to schematic when available — most reliable for coordinates.
-        if (info.walkable) setImageSource('walkable');
-        else if (info.minimap) setImageSource('minimap');
-        else setImageSource((info.defaultSource === 'minimap' ? 'minimap' : 'walkable'));
+        setMinimapOpen(false);
+        setMobsOpen(true);
+        setNpcsOpen(true);
       })
       .catch((error) => {
         if (!cancelled) {
@@ -113,6 +122,7 @@ const MapViewer = ({ map }: MapViewerProps) => {
         current.amount += spawn.amount;
         current.points.push(spawn);
         current.boss = current.boss || spawn.boss;
+        current.mvp = current.mvp || spawn.mvp;
         if (current.respawnMin == null) current.respawnMin = spawn.respawnMin;
         if (current.respawnMax == null) current.respawnMax = spawn.respawnMax;
         if (!current.respawnUnit) current.respawnUnit = spawn.respawnUnit;
@@ -124,6 +134,7 @@ const MapViewer = ({ map }: MapViewerProps) => {
           hp: spawn.hp,
           amount: spawn.amount,
           boss: spawn.boss,
+          mvp: spawn.mvp,
           respawnMin: spawn.respawnMin,
           respawnMax: spawn.respawnMax,
           respawnUnit: spawn.respawnUnit,
@@ -156,12 +167,13 @@ const MapViewer = ({ map }: MapViewerProps) => {
     };
   }, [mobGroups]);
 
+  // Canvas always uses schematic when available (coordinate-accurate).
   const activeVariant = useMemo(() => {
     if (!imageInfo) return null;
-    return resolveMapImageVariant(imageInfo, imageSource);
-  }, [imageInfo, imageSource]);
+    return resolveMapImageVariant(imageInfo, 'walkable');
+  }, [imageInfo]);
 
-  const canToggle = Boolean(imageInfo?.minimap && imageInfo?.walkable);
+  const minimapVariant = imageInfo?.minimap ?? null;
 
   const goToWarp = (warp: MapConnection) => {
     if (!warp.to) return;
@@ -183,15 +195,43 @@ const MapViewer = ({ map }: MapViewerProps) => {
     [npcs]
   );
 
-  const selectMob = (mobId: number | null) => {
+  const clearSelection = () => {
+    setSelectedMobId(null);
     setSelectedNpcId(null);
-    setSelectedMobId((prev) => (prev === mobId ? null : mobId));
+    setMobsOpen(true);
+    setNpcsOpen(true);
+  };
+
+  const selectMob = (mobId: number | null) => {
+    if (mobId == null || selectedMobId === mobId) {
+      clearSelection();
+      return;
+    }
+    setSelectedNpcId(null);
+    setSelectedMobId(mobId);
+    setMobsOpen(true);
+    setNpcsOpen(false);
   };
 
   const selectNpc = (npcId: string | null) => {
+    if (npcId == null || selectedNpcId === npcId) {
+      clearSelection();
+      return;
+    }
     setSelectedMobId(null);
-    setSelectedNpcId((prev) => (prev === npcId ? null : npcId));
+    setSelectedNpcId(npcId);
+    setNpcsOpen(true);
+    setMobsOpen(false);
   };
+
+  const listedMobs = selectedMobId != null
+    ? mobGroups.filter((g) => g.mobId === selectedMobId)
+    : mobGroups;
+  const listedNpcs = selectedNpcId != null
+    ? visibleNpcs.filter((n) => n.id === selectedNpcId)
+    : visibleNpcs;
+  const showMobsSection = mobGroups.length > 0 && (selectedNpcId == null);
+  const showNpcsSection = visibleNpcs.length > 0 && (selectedMobId == null);
 
   if (loadError) {
     return (
@@ -214,28 +254,14 @@ const MapViewer = ({ map }: MapViewerProps) => {
           {numberFormat.format(map.npcCount)} NPCs ·{' '}
           {numberFormat.format(warps.length)} warps
         </div>
-        {canToggle && (
-          <div className="maps-source-toggle" role="group" aria-label="Tipo de imagen">
-            <button
-              type="button"
-              className={imageSource === 'minimap' ? 'is-active' : ''}
-              onClick={() => setImageSource('minimap')}
-            >
-              Minimap
-            </button>
-            <button
-              type="button"
-              className={imageSource === 'walkable' ? 'is-active' : ''}
-              onClick={() => setImageSource('walkable')}
-            >
-              Esquemático
-            </button>
-          </div>
-        )}
-        {!canToggle && imageInfo?.source && (
-          <span className="maps-source-label">
-            {imageInfo.source === 'walkable' ? 'Esquemático' : 'Minimap'}
-          </span>
+        {minimapVariant && (
+          <button
+            type="button"
+            className="maps-minimap-button"
+            onClick={() => setMinimapOpen(true)}
+          >
+            Ver minimap
+          </button>
         )}
       </div>
 
@@ -266,7 +292,8 @@ const MapViewer = ({ map }: MapViewerProps) => {
                       key={spawn.id}
                       className={[
                         'maps-pin',
-                        spawn.boss ? 'is-boss' : '',
+                        spawn.mvp ? 'is-mvp' : '',
+                        !spawn.mvp && spawn.boss ? 'is-boss' : '',
                         active ? 'is-active' : '',
                         selectedMobId != null && !active ? 'is-dimmed' : ''
                       ].filter(Boolean).join(' ')}
@@ -288,6 +315,16 @@ const MapViewer = ({ map }: MapViewerProps) => {
                   onClick={() => goToWarp(warp)}
                 />
               ))}
+
+            {activeVariant && arrival && (
+              <span
+                className="maps-arrival"
+                style={pinStyle(arrival.x, arrival.y, mapW, mapH)}
+                title={`Punto de llegada · ${arrival.x}, ${arrival.y}`}
+              >
+                <span className="maps-arrival-label">Llegada</span>
+              </span>
+            )}
 
             {activeVariant &&
               visibleNpcs.map((npc) => {
@@ -313,25 +350,32 @@ const MapViewer = ({ map }: MapViewerProps) => {
           <div className="maps-legend">
             <span><i className="legend-dot" /> Mob</span>
             <span><i className="legend-dot is-boss" /> Boss</span>
+            <span><i className="legend-dot is-mvp" /> MVP</span>
             <span><i className="legend-dot is-npc" /> NPC</span>
             <span><i className="legend-dot is-warp" /> Warp</span>
-            <span className="maps-source-hint">
-              Vista: {activeVariant?.source === 'walkable' ? 'esquemático' : 'minimap'}
-            </span>
+            {arrival && <span><i className="legend-dot is-arrival" /> Llegada</span>}
           </div>
         </div>
 
         <aside className="maps-sidebar">
-          {mobGroups.length > 0 && (
-            <>
-              <div className="maps-sidebar-head">
-                <h3>Monstruos ({mobGroups.length})</h3>
-                {selectedMobId != null && (
-                  <button type="button" onClick={() => selectMob(null)}>Quitar marca</button>
-                )}
-              </div>
+          {(selectedMobId != null || selectedNpcId != null) && (
+            <button type="button" className="maps-clear-selection" onClick={clearSelection}>
+              Ver todos
+            </button>
+          )}
+
+          {showMobsSection && (
+            <details
+              className="maps-side-section"
+              open={mobsOpen}
+              onToggle={(event) => setMobsOpen((event.target as HTMLDetailsElement).open)}
+            >
+              <summary>
+                Monstruos ({selectedMobId != null ? listedMobs.length : mobGroups.length}
+                {selectedMobId == null ? '' : ` / ${mobGroups.length}`})
+              </summary>
               <div className="maps-entity-list">
-                {mobGroups.map((group) => {
+                {listedMobs.map((group) => {
                   const respawn = formatRespawn(group.respawnMin, group.respawnMax, group.respawnUnit);
                   return (
                     <button
@@ -340,16 +384,18 @@ const MapViewer = ({ map }: MapViewerProps) => {
                       className={`maps-entity-card${selectedMobId === group.mobId ? ' is-selected' : ''}`}
                       onClick={() => selectMob(group.mobId)}
                     >
-                      <AtlasSprite
-                        sprite={mobSprites[group.mobId] ?? PLACEHOLDER_MOB_SPRITE}
-                        alt={group.name}
-                        className="maps-entity-sprite"
-                        scale={1}
-                      />
+                      <span className="maps-entity-sprite">
+                        <AtlasSprite
+                          sprite={mobSprites[group.mobId] ?? PLACEHOLDER_MOB_SPRITE}
+                          alt={group.name}
+                          fit={{ maxWidth: 40, maxHeight: 40 }}
+                        />
+                      </span>
                       <span className="maps-entity-body">
                         <span className="maps-entity-title">
                           {group.name}
-                          {group.boss && <span className="map-tag map-tag-boss">Boss</span>}
+                          {group.mvp && <span className="map-tag map-tag-mvp">MVP</span>}
+                          {!group.mvp && group.boss && <span className="map-tag map-tag-boss">Boss</span>}
                         </span>
                         <span className="maps-entity-meta">
                           {group.level != null && <span>Lv {group.level}</span>}
@@ -369,19 +415,21 @@ const MapViewer = ({ map }: MapViewerProps) => {
                   );
                 })}
               </div>
-            </>
+            </details>
           )}
 
-          {visibleNpcs.length > 0 && (
-            <>
-              <div className="maps-sidebar-head">
-                <h3>NPCs ({visibleNpcs.length})</h3>
-                {selectedNpcId != null && (
-                  <button type="button" onClick={() => selectNpc(null)}>Quitar marca</button>
-                )}
-              </div>
+          {showNpcsSection && (
+            <details
+              className="maps-side-section"
+              open={npcsOpen}
+              onToggle={(event) => setNpcsOpen((event.target as HTMLDetailsElement).open)}
+            >
+              <summary>
+                NPCs ({selectedNpcId != null ? listedNpcs.length : visibleNpcs.length}
+                {selectedNpcId == null ? '' : ` / ${visibleNpcs.length}`})
+              </summary>
               <div className="maps-entity-list">
-                {visibleNpcs.map((npc: MapNpcPoint) => (
+                {listedNpcs.map((npc: MapNpcPoint) => (
                   <button
                     type="button"
                     key={npc.id}
@@ -394,11 +442,18 @@ const MapViewer = ({ map }: MapViewerProps) => {
                         {npc.type && <span>{formatFilterLabel(npc.type)}</span>}
                         <span>{npc.x}, {npc.y}</span>
                       </span>
+                      <Link
+                        className="maps-mob-link"
+                        to={`/database?tab=npcs&q=${encodeURIComponent(npc.id)}&run=1`}
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        Ver ficha
+                      </Link>
                     </span>
                   </button>
                 ))}
               </div>
-            </>
+            </details>
           )}
 
           {mobGroups.length === 0 && visibleNpcs.length === 0 && (
@@ -406,6 +461,42 @@ const MapViewer = ({ map }: MapViewerProps) => {
           )}
         </aside>
       </div>
+
+      {minimapOpen && minimapVariant && (
+        <div
+          className="item-desc-modal-backdrop"
+          role="presentation"
+          onClick={() => setMinimapOpen(false)}
+        >
+          <div
+            className="item-desc-modal maps-minimap-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Minimap ${map.id}`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="item-desc-modal-head">
+              <div>
+                <h4>Minimap</h4>
+                <p className="item-desc-modal-subtitle">{map.name} ({map.id})</p>
+              </div>
+              <button
+                type="button"
+                className="item-desc-modal-close"
+                onClick={() => setMinimapOpen(false)}
+              >
+                Cerrar
+              </button>
+            </div>
+            <div className="maps-minimap-modal-body">
+              <img
+                src={minimapVariant.image}
+                alt={`Minimap ${map.id}`}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

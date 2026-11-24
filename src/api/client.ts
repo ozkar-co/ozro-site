@@ -604,6 +604,7 @@ export interface MapSpawnPoint {
   respawnMax: number | null;
   respawnUnit: string | null;
   boss: boolean;
+  mvp: boolean;
   spawnType: string | null;
   spawnKind: string | null;
 }

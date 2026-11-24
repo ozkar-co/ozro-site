@@ -292,7 +292,8 @@ export async function getMapById(mapId) {
             respawnMin: num(row.respawn_min),
             respawnMax: num(row.respawn_max),
             respawnUnit: row.respawn_unit || null,
-            boss: bool(row.boss_flag) || bool(row.is_mvp),
+            boss: bool(row.boss_flag),
+            mvp: bool(row.is_mvp),
             spawnType: row.spawn_type || null,
             spawnKind: row.spawn_kind || null
         })),
