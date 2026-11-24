@@ -8,6 +8,13 @@ export interface UpdateEntry {
 /** Changelog OzRo derivado del git log de rathena (17 ene 2026 – hoy). */
 export const recentUpdates: UpdateEntry[] = [
   {
+    date: '23 de noviembre de 2026',
+    title: 'Storage a 800 items',
+    paragraphs: [
+      'Se aumentó la capacidad del storage a 800 items.',
+    ],
+  },
+  {
     date: '22 de noviembre de 2026',
     title: 'Cartas de monstruos normales a 50x',
     paragraphs: [

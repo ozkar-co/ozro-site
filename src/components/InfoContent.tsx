@@ -200,6 +200,7 @@ const contentMap: Record<string, ReactNode> = {
         </ul>
         <h3>Economía y sistemas activos</h3>
         <ul>
+          <li>Storage: 800 items</li>
           <li>Bounty Boards en 25 ciudades (Eclage deshabilitado)</li>
           <li>18 quests repetibles de EXP (50 kills por tramo)</li>
           <li>Banco de Rune-Midgard: el botón del menú fue retirado; el servicio se abre hablando con el Banquero en las principales ciudades</li>

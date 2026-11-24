@@ -55,6 +55,7 @@ const progression: Field[] = [
   ['ASPD máxima normal', '190'],
   ['ASPD máxima 3rd / extended', '193'],
   ['HP máximo nivel 175', '1.100.000'],
+  ['Storage', '800 items'],
   ['Respawn', '50% HP y 50% SP'],
   ['Skill points por nivel', 'Sin límite'],
   ['Reset de personaje', 'Disponible (gema + zeny)'],
