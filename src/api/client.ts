@@ -224,6 +224,7 @@ export interface MobMetaResponse {
   races: string[];
   sizes: string[];
   classes: string[];
+  roles: string[];
 }
 
 export interface MobDetail extends MobSummary {

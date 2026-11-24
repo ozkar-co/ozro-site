@@ -138,6 +138,11 @@ export interface SearchOptions {
   selectedElements: string[];
   selectedRaces: string[];
   selectedSizes: string[];
+  selectedRoles: string[];
+  levelMin: string;
+  levelMax: string;
+  hpMin: string;
+  hpMax: string;
   showBoss: boolean;
   showNormal: boolean;
   showMvp: boolean;
@@ -162,6 +167,11 @@ export const defaultSearchOptions = (): SearchOptions => ({
   selectedElements: [],
   selectedRaces: [],
   selectedSizes: [],
+  selectedRoles: [],
+  levelMin: '',
+  levelMax: '',
+  hpMin: '',
+  hpMax: '',
   showBoss: true,
   showNormal: true,
   showMvp: true,
@@ -193,6 +203,27 @@ export function buildMobSearchParams(
 
   if (options.selectedSizes.length > 0) {
     params.size = options.selectedSizes.join(',');
+  }
+
+  if (options.selectedRoles.length > 0) {
+    params.role = options.selectedRoles.join(',');
+  }
+
+  const levelMin = options.levelMin.trim();
+  if (levelMin !== '' && Number.isFinite(Number(levelMin))) {
+    params.levelMin = Number(levelMin);
+  }
+  const levelMax = options.levelMax.trim();
+  if (levelMax !== '' && Number.isFinite(Number(levelMax))) {
+    params.levelMax = Number(levelMax);
+  }
+  const hpMin = options.hpMin.trim();
+  if (hpMin !== '' && Number.isFinite(Number(hpMin))) {
+    params.hpMin = Number(hpMin);
+  }
+  const hpMax = options.hpMax.trim();
+  if (hpMax !== '' && Number.isFinite(Number(hpMax))) {
+    params.hpMax = Number(hpMax);
   }
 
   const kinds: string[] = [];

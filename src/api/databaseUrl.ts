@@ -41,6 +41,9 @@ function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): bo
   if (options.selectedElements.length > 0) return true;
   if (options.selectedRaces.length > 0) return true;
   if (options.selectedSizes.length > 0) return true;
+  if (options.selectedRoles.length > 0) return true;
+  if (options.levelMin.trim() || options.levelMax.trim()) return true;
+  if (options.hpMin.trim() || options.hpMax.trim()) return true;
   if (options.hideMobsWithoutSpawn !== defaults.hideMobsWithoutSpawn) return true;
   if (options.includeInstanceSpawns !== defaults.includeInstanceSpawns) return true;
   if (options.showBoss !== defaults.showBoss) return true;
@@ -124,6 +127,11 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
   options.selectedElements = parseCsvList(params.get('element'));
   options.selectedRaces = parseCsvList(params.get('race'));
   options.selectedSizes = parseCsvList(params.get('size'));
+  options.selectedRoles = parseCsvList(params.get('role'));
+  options.levelMin = params.get('levelMin') ?? '';
+  options.levelMax = params.get('levelMax') ?? '';
+  options.hpMin = params.get('hpMin') ?? '';
+  options.hpMax = params.get('hpMax') ?? '';
 
   const kinds = params.get('kinds');
   if (kinds) {
@@ -227,6 +235,13 @@ export function buildDatabaseSearchParams(
     if (options.selectedSizes.length > 0) {
       params.set('size', options.selectedSizes.join(','));
     }
+    if (options.selectedRoles.length > 0) {
+      params.set('role', options.selectedRoles.join(','));
+    }
+    if (options.levelMin.trim()) params.set('levelMin', options.levelMin.trim());
+    if (options.levelMax.trim()) params.set('levelMax', options.levelMax.trim());
+    if (options.hpMin.trim()) params.set('hpMin', options.hpMin.trim());
+    if (options.hpMax.trim()) params.set('hpMax', options.hpMax.trim());
 
     const kinds: string[] = [];
     if (options.showMvp) kinds.push('mvp');

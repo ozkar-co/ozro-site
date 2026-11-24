@@ -446,28 +446,22 @@ function buildMobFilters(params) {
         values.push(levelMax);
     }
 
-    const baseExpMin = parseIntParam(params.baseExpMin);
-    if (baseExpMin !== null) {
-        conditions.push('m.base_exp_effective >= ?');
-        values.push(baseExpMin);
+    const hpMin = parseIntParam(params.hpMin);
+    if (hpMin !== null) {
+        conditions.push('m.hp_effective >= ?');
+        values.push(hpMin);
     }
 
-    const baseExpMax = parseIntParam(params.baseExpMax);
-    if (baseExpMax !== null) {
-        conditions.push('m.base_exp_effective <= ?');
-        values.push(baseExpMax);
+    const hpMax = parseIntParam(params.hpMax);
+    if (hpMax !== null) {
+        conditions.push('m.hp_effective <= ?');
+        values.push(hpMax);
     }
 
-    const jobExpMin = parseIntParam(params.jobExpMin);
-    if (jobExpMin !== null) {
-        conditions.push('m.job_exp_effective >= ?');
-        values.push(jobExpMin);
-    }
-
-    const jobExpMax = parseIntParam(params.jobExpMax);
-    if (jobExpMax !== null) {
-        conditions.push('m.job_exp_effective <= ?');
-        values.push(jobExpMax);
+    const roles = parseCsv(params.role);
+    if (roles.length > 0) {
+        conditions.push(`m.mob_role IN (${roles.map(() => '?').join(', ')})`);
+        values.push(...roles);
     }
 
     const kinds = parseCsv(params.kinds).map((k) => k.toLowerCase());
@@ -567,11 +561,12 @@ export async function getMobById(id) {
 }
 
 export async function getMobMeta() {
-    const [elements, races, sizes, classes] = await Promise.all([
+    const [elements, races, sizes, classes, roles] = await Promise.all([
         query(`SELECT DISTINCT element AS value FROM \`${T.MOBS}\` WHERE COALESCE(element, '') <> '' ORDER BY element`),
         query(`SELECT DISTINCT race AS value FROM \`${T.MOBS}\` WHERE COALESCE(race, '') <> '' ORDER BY race`),
         query(`SELECT DISTINCT size AS value FROM \`${T.MOBS}\` WHERE COALESCE(size, '') <> '' ORDER BY size`),
-        query(`SELECT DISTINCT mob_class AS value FROM \`${T.MOBS}\` WHERE COALESCE(mob_class, '') <> '' ORDER BY mob_class`)
+        query(`SELECT DISTINCT mob_class AS value FROM \`${T.MOBS}\` WHERE COALESCE(mob_class, '') <> '' ORDER BY mob_class`),
+        query(`SELECT DISTINCT mob_role AS value FROM \`${T.MOBS}\` WHERE COALESCE(mob_role, '') <> '' ORDER BY mob_role`)
     ]);
 
     const elementValues = elements.map((r) => r.value).filter(Boolean);
@@ -589,7 +584,8 @@ export async function getMobMeta() {
         elements: elementValues,
         races: raceValues,
         sizes: sizeValues,
-        classes: classes.map((r) => r.value).filter(Boolean)
+        classes: classes.map((r) => r.value).filter(Boolean),
+        roles: roles.map((r) => r.value).filter(Boolean)
     };
 }
 

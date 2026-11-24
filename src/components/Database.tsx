@@ -88,6 +88,7 @@ const Database = () => {
   const [mobElements, setMobElements] = useState<string[]>([]);
   const [mobRaces, setMobRaces] = useState<string[]>([]);
   const [mobSizes, setMobSizes] = useState<string[]>([]);
+  const [mobRoles, setMobRoles] = useState<string[]>([]);
   const [mobMetaError, setMobMetaError] = useState<string | null>(null);
   const [mobMetaLoading, setMobMetaLoading] = useState(false);
   const searchOptionsRef = useRef(searchOptions);
@@ -188,6 +189,7 @@ const Database = () => {
         setMobElements(meta.elements);
         setMobRaces(meta.races);
         setMobSizes(meta.sizes);
+        setMobRoles(Array.isArray(meta.roles) ? meta.roles : []);
         setMobMetaError(null);
       })
       .catch((error: Error) => {
@@ -196,6 +198,7 @@ const Database = () => {
         setMobElements([]);
         setMobRaces([]);
         setMobSizes([]);
+        setMobRoles([]);
         setMobMetaError(error?.message || String(error));
       })
       .finally(() => {
@@ -903,6 +906,67 @@ const Database = () => {
                             </label>
                           </div>
                         </div>
+                        <div className="search-types">
+                          <div className="search-types-title">Nivel / HP:</div>
+                          <div className="search-range-grid">
+                            <label className="search-range-field">
+                              <span>Nivel mín</span>
+                              <input
+                                type="number"
+                                className="search-filter-input"
+                                inputMode="numeric"
+                                min={0}
+                                value={searchOptions.levelMin}
+                                onChange={(e) => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  levelMin: e.target.value
+                                }))}
+                              />
+                            </label>
+                            <label className="search-range-field">
+                              <span>Nivel máx</span>
+                              <input
+                                type="number"
+                                className="search-filter-input"
+                                inputMode="numeric"
+                                min={0}
+                                value={searchOptions.levelMax}
+                                onChange={(e) => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  levelMax: e.target.value
+                                }))}
+                              />
+                            </label>
+                            <label className="search-range-field">
+                              <span>HP mín</span>
+                              <input
+                                type="number"
+                                className="search-filter-input"
+                                inputMode="numeric"
+                                min={0}
+                                value={searchOptions.hpMin}
+                                onChange={(e) => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  hpMin: e.target.value
+                                }))}
+                              />
+                            </label>
+                            <label className="search-range-field">
+                              <span>HP máx</span>
+                              <input
+                                type="number"
+                                className="search-filter-input"
+                                inputMode="numeric"
+                                min={0}
+                                value={searchOptions.hpMax}
+                                onChange={(e) => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  hpMax: e.target.value
+                                }))}
+                              />
+                            </label>
+                          </div>
+                        </div>
                         {mobMetaLoading && (
                           <div className="search-meta-status">Cargando filtros desde ozro_mobs…</div>
                         )}
@@ -910,6 +974,28 @@ const Database = () => {
                           <div className="search-meta-error" role="alert">
                             <strong>Meta de monstruos falló (sin fallback):</strong>
                             <div>{mobMetaError}</div>
+                          </div>
+                        )}
+                        {mobRoles.length > 0 && (
+                          <div className="search-types">
+                            <div className="search-types-title">Filtrar por rol:</div>
+                            <div className="search-types-grid">
+                              {mobRoles.map((role) => (
+                                <label key={role} className="type-checkbox">
+                                  <input
+                                    type="checkbox"
+                                    checked={searchOptions.selectedRoles.includes(role)}
+                                    onChange={() => setSearchOptions((prev) => ({
+                                      ...prev,
+                                      selectedRoles: prev.selectedRoles.includes(role)
+                                        ? prev.selectedRoles.filter((r) => r !== role)
+                                        : [...prev.selectedRoles, role]
+                                    }))}
+                                  />
+                                  {formatFilterLabel(role)}
+                                </label>
+                              ))}
+                            </div>
                           </div>
                         )}
                         {mobElements.length > 0 && (

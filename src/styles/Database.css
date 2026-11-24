@@ -851,6 +851,30 @@ a {
   color: #fff;
 }
 
+.search-range-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem 0.75rem;
+}
+
+.search-range-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.search-range-field .search-filter-input {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .search-range-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 .search-filter-input {
   width: 100%;
   max-width: 420px;
