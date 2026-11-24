@@ -8,6 +8,8 @@ export const PLACEHOLDER_MOB_SPRITE = '/placeholder-icon.png';
 export const PLACEHOLDER_SKILL_ICON = '/placeholder-skill-icon.png';
 /** Standing NPC with "no img" sign when atlas has no sprite for the stem. */
 export const PLACEHOLDER_NPC_SPRITE = '/placeholder-npc.png';
+/** Warp portal effect preview when npc_type is warp/warp2 (no 2D stem). */
+export const PLACEHOLDER_WARP_SPRITE = '/placeholder-warp.png';
 
 export function isPlaceholderAsset(sprite: SpriteRect | string | null | undefined): boolean {
   if (!sprite) return true;
@@ -16,5 +18,6 @@ export function isPlaceholderAsset(sprite: SpriteRect | string | null | undefine
     || sprite === PLACEHOLDER_ITEM_ILLUSTRATION
     || sprite === PLACEHOLDER_MOB_SPRITE
     || sprite === PLACEHOLDER_SKILL_ICON
-    || sprite === PLACEHOLDER_NPC_SPRITE;
+    || sprite === PLACEHOLDER_NPC_SPRITE
+    || sprite === PLACEHOLDER_WARP_SPRITE;
 }

@@ -17,7 +17,8 @@ import {
   PLACEHOLDER_ITEM_ILLUSTRATION,
   PLACEHOLDER_MOB_SPRITE,
   PLACEHOLDER_NPC_SPRITE,
-  PLACEHOLDER_SKILL_ICON
+  PLACEHOLDER_SKILL_ICON,
+  PLACEHOLDER_WARP_SPRITE
 } from '../api/placeholders';
 import { skillPrefixLabel } from '../api/skillPrefixes';
 import {
@@ -377,9 +378,11 @@ const Database = () => {
         ? (await resolveSprite(stem, 'npcs/sprites'))
           ?? (await resolveSprite(stem.toLowerCase(), 'npcs/sprites'))
         : null;
+      const isWarp = npc.type === 'warp' || npc.type === 'warp2';
+      const fallback = isWarp ? PLACEHOLDER_WARP_SPRITE : PLACEHOLDER_NPC_SPRITE;
       return {
         ...npc,
-        sprite: spriteResolved ?? PLACEHOLDER_NPC_SPRITE,
+        sprite: spriteResolved ?? fallback,
         hasSprite: hasManifestSprite(spriteResolved)
       };
     }));

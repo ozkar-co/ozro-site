@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { SpriteRect } from '../api/assets';
 import { formatFilterLabel } from '../api/databaseMappers';
-import { PLACEHOLDER_NPC_SPRITE } from '../api/placeholders';
+import { PLACEHOLDER_NPC_SPRITE, PLACEHOLDER_WARP_SPRITE } from '../api/placeholders';
 import AtlasSprite from './AtlasSprite';
 
 export interface NpcResult {
@@ -37,6 +37,8 @@ interface NpcCardProps {
 
 const NpcCard = ({ result }: NpcCardProps) => {
   const sprite = result.sprite ?? null;
+  const isWarp = result.type === 'warp' || result.type === 'warp2';
+  const fallback = isWarp ? PLACEHOLDER_WARP_SPRITE : PLACEHOLDER_NPC_SPRITE;
 
   return (
     <div className="result-card result-card--npc">
@@ -45,10 +47,8 @@ const NpcCard = ({ result }: NpcCardProps) => {
           sprite={sprite}
           alt={result.name}
           className="npc-card-sprite"
-          fallback={PLACEHOLDER_NPC_SPRITE}
-          {...(sprite && typeof sprite === 'object'
-            ? { fit: { maxWidth: 64, maxHeight: 64 } }
-            : { fit: { maxWidth: 64, maxHeight: 64 } })}
+          fallback={fallback}
+          fit={{ maxWidth: 64, maxHeight: 64 }}
         />
         <div className="npc-card-heading">
           <h3>
