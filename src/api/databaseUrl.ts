@@ -15,6 +15,8 @@ export interface DatabaseUrlState {
   page: number;
   run: boolean;
   options: SearchOptions;
+  /** Explicit map detail deep link (?map=prontera). Not a search term. */
+  mapId: string | null;
 }
 
 function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): boolean {
@@ -52,12 +54,8 @@ function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): bo
   }
   if (tab === 'maps') {
     if (options.selectedMapCategories.length > 0) return true;
-    if (options.mapTownOnly) return true;
-    if (options.mapDungeonOnly) return true;
-    if (options.mapQuestOnly) return true;
     if (options.mapHasSpawns) return true;
     if (options.mapHasNpcs) return true;
-    if (options.mapShowInstances) return true;
     return false;
   }
   if (options.selectedElements.length > 0) return true;
@@ -76,6 +74,7 @@ function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): bo
 }
 
 export function hasSearchCriteria(state: DatabaseUrlState): boolean {
+  if (state.mapId) return true;
   if (state.run) return true;
   return Boolean(state.q.trim()) || optionsDifferFromDefaults(state.options, state.tab);
 }
@@ -100,6 +99,8 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
   const pageRaw = parseInt(params.get('page') ?? '1', 10);
   const page = Number.isNaN(pageRaw) || pageRaw < 1 ? 0 : pageRaw - 1;
   const run = params.get('run') === '1';
+  const mapIdRaw = params.get('map');
+  const mapId = mapIdRaw && mapIdRaw.trim() ? mapIdRaw.trim() : null;
 
   const options = defaultSearchOptions();
 
@@ -172,18 +173,10 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
   if (skillHasPrereq !== undefined) options.skillHasPrereq = skillHasPrereq;
 
   options.selectedMapCategories = parseCsvList(params.get('mapCategory'));
-  const mapTown = parseBoolParam(params.get('mapTown'));
-  if (mapTown !== undefined) options.mapTownOnly = mapTown;
-  const mapDungeon = parseBoolParam(params.get('mapDungeon'));
-  if (mapDungeon !== undefined) options.mapDungeonOnly = mapDungeon;
-  const mapQuest = parseBoolParam(params.get('mapQuest'));
-  if (mapQuest !== undefined) options.mapQuestOnly = mapQuest;
   const mapHasSpawns = parseBoolParam(params.get('mapHasSpawns'));
   if (mapHasSpawns !== undefined) options.mapHasSpawns = mapHasSpawns;
   const mapHasNpcs = parseBoolParam(params.get('mapHasNpcs'));
   if (mapHasNpcs !== undefined) options.mapHasNpcs = mapHasNpcs;
-  const mapInstances = parseBoolParam(params.get('mapInstances'));
-  if (mapInstances !== undefined) options.mapShowInstances = mapInstances;
 
   const kinds = params.get('kinds');
   if (kinds) {
@@ -203,7 +196,7 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
     options.includeInstanceSpawns = includeInstances;
   }
 
-  return { tab, q, page, run, options };
+  return { tab, q, page, run, options, mapId };
 }
 
 /** Deep links ?mob= / ?item= → tab search by id. */
@@ -299,12 +292,8 @@ export function buildDatabaseSearchParams(
     if (options.selectedMapCategories.length > 0) {
       params.set('mapCategory', options.selectedMapCategories.join(','));
     }
-    if (options.mapTownOnly) params.set('mapTown', '1');
-    if (options.mapDungeonOnly) params.set('mapDungeon', '1');
-    if (options.mapQuestOnly) params.set('mapQuest', '1');
     if (options.mapHasSpawns) params.set('mapHasSpawns', '1');
     if (options.mapHasNpcs) params.set('mapHasNpcs', '1');
-    if (options.mapShowInstances) params.set('mapInstances', '1');
   }
 
   if (tab === 'mobs') {

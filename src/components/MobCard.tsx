@@ -284,7 +284,7 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
                       return (
                         <Link
                           key={spawn.map}
-                          to={`/database?tab=maps&q=${encodeURIComponent(spawn.map)}&run=1`}
+                          to={`/database?tab=maps&map=${encodeURIComponent(spawn.map)}`}
                           className={`mob-spawn-map spawn-type-${spawnType}${spawn.boss ? ' is-boss' : ''}`}
                         >
                           {spawn.map}
@@ -360,7 +360,7 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
                     key={`${spawn.map}-${spawn.x}-${spawn.y}-${index}`}
                     className={`mob-spawn-detail-row${spawn.instance ? ' is-instance' : ''}`}
                   >
-                    <Link to={`/database?tab=maps&q=${encodeURIComponent(spawn.map)}&run=1`}>{spawn.map}</Link>
+                    <Link to={`/database?tab=maps&map=${encodeURIComponent(spawn.map)}`}>{spawn.map}</Link>
                     <span>{spawn.x === 0 && spawn.y === 0 ? 'aleatorio' : `${spawn.x}, ${spawn.y}`}</span>
                     <span>{spawn.amount} mobs</span>
                     <span>{(spawn.delay / 1000).toLocaleString('es')}s respawn</span>

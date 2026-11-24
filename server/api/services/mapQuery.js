@@ -127,22 +127,10 @@ export async function searchMaps(params) {
     const values = [];
 
     if (q) {
-        if (/^[A-Za-z0-9_@.-]+$/.test(q) && !q.includes(' ')) {
-            // Prefer exact map_id, still allow fuzzy name
-            const match = buildTokenMatchClause('m', ['m.map_id', 'm.display_name', 'm.category'], q);
-            const clauses = ['m.map_id = ?'];
-            values.push(q);
-            if (match) {
-                clauses.push(match.clause);
-                values.push(...match.values);
-            }
-            conditions.push(`(${clauses.join(' OR ')})`);
-        } else {
-            const match = buildTokenMatchClause('m', ['m.map_id', 'm.display_name', 'm.category'], q);
-            if (match) {
-                conditions.push(match.clause);
-                values.push(...match.values);
-            }
+        const match = buildTokenMatchClause('m', ['m.map_id', 'm.display_name'], q);
+        if (match) {
+            conditions.push(match.clause);
+            values.push(...match.values);
         }
     }
 
@@ -152,6 +140,7 @@ export async function searchMaps(params) {
         );
         values.push(...categories);
     }
+    // Legacy boolean filters still accepted if sent; UI no longer exposes them.
     if (town === true) conditions.push('m.is_town = 1');
     if (dungeon === true) conditions.push('m.is_dungeon = 1');
     if (instance === true) conditions.push('m.is_instance = 1');
@@ -167,9 +156,19 @@ export async function searchMaps(params) {
         ${SPAWN_AGG}
         ${NPC_AGG}
     `;
+    // Exact map_id → prefix map_id → name contains → alphabetical
     const orderSql = q
-        ? 'm.display_name ASC, m.map_id ASC'
+        ? `CASE
+             WHEN m.map_id = ? THEN 0
+             WHEN m.map_id LIKE ? THEN 1
+             WHEN m.display_name LIKE ? THEN 2
+             ELSE 3
+           END ASC,
+           m.map_id ASC`
         : 'COALESCE(sp.spawn_amount, 0) DESC, m.display_name ASC, m.map_id ASC';
+    const orderValues = q
+        ? [q, `${q}%`, `%${q}%`]
+        : [];
 
     const selectCols = `
         m.map_id, m.display_name, m.category, m.categories,
@@ -191,7 +190,7 @@ export async function searchMaps(params) {
              ${whereClause}
              ORDER BY ${orderSql}
              LIMIT ? OFFSET ?`,
-            [...values, limit, offset]
+            [...values, ...orderValues, limit, offset]
         )
     ]);
 

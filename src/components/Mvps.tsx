@@ -353,7 +353,7 @@ const Mvps = () => {
                               {mvp.souls}
                             </span>
                             <Link
-                              to={`/database?tab=maps&q=${encodeURIComponent(mvp.map)}&run=1`}
+                              to={`/database?tab=maps&map=${encodeURIComponent(mvp.map)}`}
                               onClick={(event) => event.stopPropagation()}
                             >
                               {mvp.map}
@@ -385,7 +385,7 @@ const Mvps = () => {
                           Ficha
                         </Link>
                         <Link
-                          to={`/database?tab=maps&q=${encodeURIComponent(mvp.map)}&run=1`}
+                          to={`/database?tab=maps&map=${encodeURIComponent(mvp.map)}`}
                           onClick={(event) => event.stopPropagation()}
                         >
                           Ver mapa
@@ -494,7 +494,7 @@ const Mvps = () => {
 
               <div className="mvp-modal-links">
                 <Link to={`/database?tab=mobs&q=${selected.mobId}`}>Ver ficha del MVP</Link>
-                <Link to={`/database?tab=maps&q=${encodeURIComponent(selected.map)}&run=1`}>Ver mapa</Link>
+                <Link to={`/database?tab=maps&map=${encodeURIComponent(selected.map)}`}>Ver mapa</Link>
               </div>
             </div>
           </div>

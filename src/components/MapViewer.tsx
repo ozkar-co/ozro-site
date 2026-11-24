@@ -85,15 +85,10 @@ const MapViewer = ({ map }: MapViewerProps) => {
           throw new Error(`Sin imagen de mapa en assets para ${map.id}`);
         }
         setImageInfo(info);
-        const preferred = (info.defaultSource === 'walkable' ? 'walkable' : 'minimap') as MapImageSource;
-        // Prefer walkable for interiors when both exist — coords usually match better.
-        if (map.isInterior && info.walkable) {
-          setImageSource('walkable');
-        } else if (info.minimap) {
-          setImageSource('minimap');
-        } else {
-          setImageSource(preferred);
-        }
+        // Always default to schematic when available — most reliable for coordinates.
+        if (info.walkable) setImageSource('walkable');
+        else if (info.minimap) setImageSource('minimap');
+        else setImageSource((info.defaultSource === 'minimap' ? 'minimap' : 'walkable'));
       })
       .catch((error) => {
         if (!cancelled) {
@@ -107,7 +102,7 @@ const MapViewer = ({ map }: MapViewerProps) => {
     return () => {
       cancelled = true;
     };
-  }, [map.id, map.isInterior]);
+  }, [map.id]);
 
   const mobGroups = useMemo<MobGroup[]>(() => {
     const grouped = new Map<number, MobGroup>();
@@ -174,8 +169,9 @@ const MapViewer = ({ map }: MapViewerProps) => {
     setSearchParams((prev) => {
       const params = new URLSearchParams(prev);
       params.set('tab', 'maps');
-      params.set('q', warp.to!);
-      params.set('run', '1');
+      params.set('map', warp.to!);
+      params.delete('q');
+      params.delete('run');
       if (hasArrival) params.set('arrive', `${warp.toX},${warp.toY}`);
       else params.delete('arrive');
       return params;

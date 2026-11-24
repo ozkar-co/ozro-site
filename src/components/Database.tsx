@@ -367,26 +367,6 @@ const Database = () => {
     }
 
     if (tab === 'maps') {
-      // Exact map_id → detail card. Name/filter search otherwise.
-      const looksLikeMapId = Boolean(trimmed) && /^[A-Za-z0-9_@.-]+$/.test(trimmed);
-      if (looksLikeMapId) {
-        try {
-          const map = await apiClient.getMap(trimmed);
-          return {
-            total: 1,
-            currentPage: 0,
-            results: [{ ...map, detailed: true }],
-            totalPages: 1
-          };
-        } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
-          // 404 → empty result (same as skill/item id miss). Other errors bubble.
-          if (/404|no encontrad/i.test(message)) {
-            return { total: 0, currentPage: 0, results: [], totalPages: 0 };
-          }
-          throw error;
-        }
-      }
       const data = await apiClient.searchMaps(
         buildMapSearchParams(trimmed, options, page, RESULTS_PER_PAGE)
       );
@@ -476,10 +456,11 @@ const Database = () => {
     if (getLegacyDeepLinkId(location.search)) return;
 
     const urlState = parseDatabaseUrl(location.search);
-    const { tab, q, page, options } = urlState;
+    const { tab, q, page, options, mapId } = urlState;
 
     setActiveTab(tab);
-    setSearchTerm(q);
+    // Detail deep link shows the map id in the search box; search uses q.
+    setSearchTerm(mapId || q);
     setSearchOptions(options);
 
     if (tab === 'mvps') {
@@ -506,7 +487,16 @@ const Database = () => {
     setSearchError(null);
     setSearchState(emptySearchState());
 
-    fetchSearchResults(tab, q, options, page)
+    const load = tab === 'maps' && mapId
+      ? apiClient.getMap(mapId).then((map) => ({
+          total: 1,
+          currentPage: 0,
+          results: [{ ...map, detailed: true }],
+          totalPages: 1
+        }))
+      : fetchSearchResults(tab, q, options, page);
+
+    load
       .then((state) => {
         if (!cancelled) {
           setResultsTab(tab);
@@ -531,6 +521,7 @@ const Database = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     closeOptionsPanel();
+    // Buscar always lists — clears any ?map= detail deep link.
     navigateToSearch(activeTab, searchTerm, 0, searchOptions, true);
   };
 
@@ -665,77 +656,6 @@ const Database = () => {
                         {mapMetaLoading && (
                           <div className="search-filter-hint">Cargando filtros…</div>
                         )}
-                        <div className="search-types">
-                          <div className="search-types-title">Tipo:</div>
-                          <div className="search-types-grid">
-                            <label className="type-checkbox">
-                              <input
-                                type="checkbox"
-                                checked={searchOptions.mapTownOnly}
-                                onChange={() => setSearchOptions((prev) => ({
-                                  ...prev,
-                                  mapTownOnly: !prev.mapTownOnly
-                                }))}
-                              />
-                              Ciudades
-                            </label>
-                            <label className="type-checkbox">
-                              <input
-                                type="checkbox"
-                                checked={searchOptions.mapDungeonOnly}
-                                onChange={() => setSearchOptions((prev) => ({
-                                  ...prev,
-                                  mapDungeonOnly: !prev.mapDungeonOnly
-                                }))}
-                              />
-                              Dungeons
-                            </label>
-                            <label className="type-checkbox">
-                              <input
-                                type="checkbox"
-                                checked={searchOptions.mapQuestOnly}
-                                onChange={() => setSearchOptions((prev) => ({
-                                  ...prev,
-                                  mapQuestOnly: !prev.mapQuestOnly
-                                }))}
-                              />
-                              Quest maps
-                            </label>
-                            <label className="type-checkbox">
-                              <input
-                                type="checkbox"
-                                checked={searchOptions.mapHasSpawns}
-                                onChange={() => setSearchOptions((prev) => ({
-                                  ...prev,
-                                  mapHasSpawns: !prev.mapHasSpawns
-                                }))}
-                              />
-                              Con spawns
-                            </label>
-                            <label className="type-checkbox">
-                              <input
-                                type="checkbox"
-                                checked={searchOptions.mapHasNpcs}
-                                onChange={() => setSearchOptions((prev) => ({
-                                  ...prev,
-                                  mapHasNpcs: !prev.mapHasNpcs
-                                }))}
-                              />
-                              Con NPCs
-                            </label>
-                            <label className="type-checkbox">
-                              <input
-                                type="checkbox"
-                                checked={searchOptions.mapShowInstances}
-                                onChange={() => setSearchOptions((prev) => ({
-                                  ...prev,
-                                  mapShowInstances: !prev.mapShowInstances
-                                }))}
-                              />
-                              Incluir instancias
-                            </label>
-                          </div>
-                        </div>
                         {mapCategories.length > 0 && (
                           <div className="search-types">
                             <div className="search-types-title">Categoría:</div>
@@ -758,6 +678,33 @@ const Database = () => {
                             </div>
                           </div>
                         )}
+                        <div className="search-types">
+                          <div className="search-types-title">Contenido:</div>
+                          <div className="search-types-grid">
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.mapHasSpawns}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  mapHasSpawns: !prev.mapHasSpawns
+                                }))}
+                              />
+                              Con spawns
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.mapHasNpcs}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  mapHasNpcs: !prev.mapHasNpcs
+                                }))}
+                              />
+                              Con NPCs
+                            </label>
+                          </div>
+                        </div>
                       </>
                     ) : activeTab === 'skills' ? (
                       <>
@@ -1528,7 +1475,8 @@ const Database = () => {
                     q: searchTerm,
                     page: 0,
                     run: parseDatabaseUrl(location.search).run,
-                    options: searchOptions
+                    options: searchOptions,
+                    mapId: parseDatabaseUrl(location.search).mapId
                   })
                     ? 'No se encontraron resultados'
                     : 'Escribe un nombre o ID, o aplica filtros y pulsa Buscar.'}

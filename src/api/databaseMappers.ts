@@ -160,14 +160,10 @@ export interface SearchOptions {
   skillHasItemCost: boolean;
   skillHasTeacher: boolean;
   skillHasPrereq: boolean;
-  /** Maps tab filters */
+  /** Maps tab filters (DB category + presence flags only) */
   selectedMapCategories: string[];
-  mapTownOnly: boolean;
-  mapDungeonOnly: boolean;
-  mapQuestOnly: boolean;
   mapHasSpawns: boolean;
   mapHasNpcs: boolean;
-  mapShowInstances: boolean;
 }
 
 export const defaultSearchOptions = (): SearchOptions => ({
@@ -207,12 +203,8 @@ export const defaultSearchOptions = (): SearchOptions => ({
   skillHasTeacher: false,
   skillHasPrereq: false,
   selectedMapCategories: [],
-  mapTownOnly: false,
-  mapDungeonOnly: false,
-  mapQuestOnly: false,
   mapHasSpawns: false,
-  mapHasNpcs: false,
-  mapShowInstances: false
+  mapHasNpcs: false
 });
 
 export function buildMapSearchParams(
@@ -226,13 +218,20 @@ export function buildMapSearchParams(
   if (options.selectedMapCategories.length > 0) {
     params.category = options.selectedMapCategories.join(',');
   }
-  if (options.mapTownOnly) params.town = 1;
-  if (options.mapDungeonOnly) params.dungeon = 1;
-  if (options.mapQuestOnly) params.quest = 1;
   if (options.mapHasSpawns) params.hasSpawns = 1;
   if (options.mapHasNpcs) params.hasNpcs = 1;
-  if (!options.mapShowInstances) params.instance = 0;
   return params;
+}
+
+/** Deep link to open one map detail (warps / cross-links). */
+export function mapDetailHref(mapId: string, arrive?: { x: number; y: number } | null): string {
+  const params = new URLSearchParams();
+  params.set('tab', 'maps');
+  params.set('map', mapId);
+  if (arrive && Number.isFinite(arrive.x) && Number.isFinite(arrive.y)) {
+    params.set('arrive', `${arrive.x},${arrive.y}`);
+  }
+  return `/database?${params.toString()}`;
 }
 
 export function buildSkillSearchParams(

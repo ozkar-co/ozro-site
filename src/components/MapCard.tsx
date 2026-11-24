@@ -1,13 +1,16 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MAP_IMAGES_BASE } from '../api/mapData';
+import { loadMapImages, resolveMapImageVariant } from '../api/mapData';
 import type { MapConnection, MapDetail, MapSummary } from '../api/client';
-import { formatFilterLabel } from '../api/databaseMappers';
+import { formatFilterLabel, mapDetailHref } from '../api/databaseMappers';
 import MapViewer from './MapViewer';
 
 export type MapResult = MapSummary & {
   connections?: MapConnection[];
   client?: unknown;
   detailed?: boolean;
+  spawns?: MapDetail['spawns'];
+  npcs?: MapDetail['npcs'];
 };
 
 interface MapCardProps {
@@ -17,29 +20,54 @@ interface MapCardProps {
 const numberFormat = new Intl.NumberFormat('es');
 
 const MapCard = ({ result }: MapCardProps) => {
-  const openHref = `/database?tab=maps&q=${encodeURIComponent(result.id)}&run=1`;
-  const detailed = Boolean(result.detailed || result.connections);
-  const tags: string[] = [];
-  if (result.isTown) tags.push('Ciudad');
-  if (result.isDungeon) tags.push('Dungeon');
-  if (result.isInstance) tags.push('Instancia');
-  if (result.isQuestMap) tags.push('Quest');
-  if (result.isGuildMap) tags.push('Guild');
-  if (result.isInterior) tags.push('Interior');
-  if (result.hasBossSpawn) tags.push('Boss');
+  const openHref = mapDetailHref(result.id);
+  const detailed = Boolean(result.detailed);
+  const [thumb, setThumb] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadMapImages()
+      .then((index) => {
+        if (cancelled) return;
+        const info = index.maps[result.id];
+        if (!info) {
+          throw new Error(`Sin entrada de imagen para ${result.id}`);
+        }
+        // Thumb: real minimap if present; otherwise walkable/default.
+        if (info.minimap) {
+          setThumb(info.minimap.image);
+        } else {
+          const { variant } = resolveMapImageVariant(info, 'walkable');
+          setThumb(variant.image);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error(error);
+          setThumb(null);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [result.id]);
+
+  const categoryLabel = result.category ? formatFilterLabel(result.category) : null;
 
   return (
     <div className={`result-card result-card--map${detailed ? ' result-card--map-detail' : ''}`}>
       <div className="map-card-top">
         <Link to={openHref} className="map-card-thumb" title={result.name}>
-          <img
-            src={`${MAP_IMAGES_BASE}/images/${encodeURIComponent(result.id)}.webp`}
-            alt=""
-            loading="lazy"
-            onError={(event) => {
-              event.currentTarget.style.visibility = 'hidden';
-            }}
-          />
+          {thumb ? (
+            <img
+              src={thumb}
+              alt=""
+              loading="lazy"
+              onError={(event) => {
+                event.currentTarget.style.visibility = 'hidden';
+              }}
+            />
+          ) : null}
         </Link>
         <div className="map-card-heading">
           <div className="result-card-header">
@@ -51,7 +79,7 @@ const MapCard = ({ result }: MapCardProps) => {
               <span className="result-card-id">{result.id}</span>
             </h3>
             <div className="map-card-meta">
-              {result.category && <span>{formatFilterLabel(result.category)}</span>}
+              {categoryLabel && <span>{categoryLabel}</span>}
               {result.spawnSpecies > 0 && (
                 <span>
                   {numberFormat.format(result.spawnSpecies)} especie
@@ -74,11 +102,10 @@ const MapCard = ({ result }: MapCardProps) => {
               )}
             </div>
           </div>
-          {tags.length > 0 && (
+          {categoryLabel && (
             <div className="map-card-tags">
-              {tags.map((tag) => (
-                <span key={tag} className="map-tag">{tag}</span>
-              ))}
+              <span className="map-tag">{categoryLabel}</span>
+              {result.hasBossSpawn && <span className="map-tag map-tag-boss">Boss</span>}
             </div>
           )}
           {!detailed && (
