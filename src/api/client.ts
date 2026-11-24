@@ -588,9 +588,42 @@ export interface MapConnection {
   zenyCost: number | null;
 }
 
+export interface MapSpawnPoint {
+  id: string;
+  mobId: number | null;
+  mobName: string | null;
+  mobAegis: string | null;
+  level: number | null;
+  hp: number | null;
+  amount: number;
+  x: number | null;
+  y: number | null;
+  xArea: number | null;
+  yArea: number | null;
+  respawnMin: number | null;
+  respawnMax: number | null;
+  respawnUnit: string | null;
+  boss: boolean;
+  spawnType: string | null;
+  spawnKind: string | null;
+}
+
+export interface MapNpcPoint {
+  id: string;
+  name: string;
+  nameRaw: string | null;
+  type: string | null;
+  x: number | null;
+  y: number | null;
+  spriteStem: string | null;
+  facing: number | null;
+}
+
 export interface MapDetail extends MapSummary {
   client?: unknown;
   connections?: MapConnection[];
+  spawns?: MapSpawnPoint[];
+  npcs?: MapNpcPoint[];
 }
 
 export interface MapMetaResponse {

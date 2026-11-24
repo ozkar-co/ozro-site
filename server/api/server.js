@@ -42,6 +42,10 @@ app.use('/assets', express.static(assetsPath, {
     }
   }
 }));
+// Missing assets must 404 — never fall through to the SPA HTML (breaks JSON.parse).
+app.use('/assets', (req, res) => {
+  res.status(404).json({ error: 'Asset no encontrado', path: req.path });
+});
 
 api.use('/mobs', mobsRouter);
 api.use('/items', itemsRouter);

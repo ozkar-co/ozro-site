@@ -30,18 +30,33 @@ export interface SpawnPoint {
   instance: boolean;
 }
 
+export type MapImageSource = 'minimap' | 'walkable';
+
+export interface MapImageVariant {
+  image: string;
+  width: number;
+  height: number;
+}
+
 export interface MapImageInfo {
+  /** Preferred/default preview (also used as thumb). */
   image: string;
   width: number;
   height: number;
   mapWidth: number;
   mapHeight: number;
-  source?: 'minimap' | 'walkable' | string;
+  source?: MapImageSource | string;
+  defaultSource?: MapImageSource | string;
+  sources?: string[];
+  minimap?: MapImageVariant;
+  walkable?: MapImageVariant;
 }
 
 export interface MapImagesIndex {
   schemaVersion: number;
   generatedAt: string;
+  prefer?: string;
+  sources?: Record<string, number>;
   maps: Record<string, MapImageInfo>;
 }
 
@@ -52,6 +67,10 @@ async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`No se pudo cargar ${url} (${response.status})`);
+  }
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('application/json') && !contentType.includes('text/json')) {
+    throw new Error(`Respuesta no JSON desde ${url} (${contentType || 'sin content-type'})`);
   }
   return response.json() as Promise<T>;
 }
@@ -78,6 +97,24 @@ export function loadMapImages(): Promise<MapImagesIndex> {
     });
   }
   return mapImagesPromise;
+}
+
+export function resolveMapImageVariant(
+  info: MapImageInfo,
+  preferred: MapImageSource
+): { variant: MapImageVariant; source: MapImageSource } {
+  if (preferred === 'minimap' && info.minimap) {
+    return { variant: info.minimap, source: 'minimap' };
+  }
+  if (preferred === 'walkable' && info.walkable) {
+    return { variant: info.walkable, source: 'walkable' };
+  }
+  if (info.minimap) return { variant: info.minimap, source: 'minimap' };
+  if (info.walkable) return { variant: info.walkable, source: 'walkable' };
+  return {
+    variant: { image: info.image, width: info.width, height: info.height },
+    source: (info.source === 'walkable' ? 'walkable' : 'minimap')
+  };
 }
 
 const mapSpawnsCache = new Map<string, Promise<SpawnPoint[]>>();

@@ -227,16 +227,41 @@ export async function getMapById(mapId) {
     if (rows.length === 0) return null;
 
     const summary = mapSummary(rows[0]);
-    const connections = await query(
-        `SELECT connection_id, connection_type, source_map_id, destination_map_id,
-                source_x, source_y, destination_x, destination_y,
-                warp_name, label, zeny_cost
-         FROM \`${T.MAP_CONNECTIONS}\`
-         WHERE source_map_id = ?
-         ORDER BY destination_map_id ASC
-         LIMIT 80`,
-        [id]
-    ).catch(() => []);
+    const [connections, spawnRows, npcRows] = await Promise.all([
+        query(
+            `SELECT connection_id, connection_type, source_map_id, destination_map_id,
+                    source_x, source_y, destination_x, destination_y,
+                    warp_name, label, zeny_cost
+             FROM \`${T.MAP_CONNECTIONS}\`
+             WHERE source_map_id = ?
+             ORDER BY destination_map_id ASC, connection_type ASC
+             LIMIT 200`,
+            [id]
+        ),
+        query(
+            `SELECT s.spawn_id, s.mob_id, s.amount, s.x, s.y, s.x_area, s.y_area,
+                    s.respawn_min, s.respawn_max, s.respawn_unit, s.boss_flag,
+                    s.spawn_type, s.spawn_kind,
+                    m.name AS mob_name, m.aegis_name AS mob_aegis,
+                    m.level AS mob_level, m.hp_effective AS mob_hp,
+                    m.is_mvp
+             FROM \`${T.SPAWNS}\` s
+             LEFT JOIN \`${T.MOBS}\` m ON m.mob_id = s.mob_id
+             WHERE s.map_id = ?
+             ORDER BY COALESCE(s.amount, 0) DESC, s.mob_id ASC, s.spawn_id ASC
+             LIMIT 500`,
+            [id]
+        ),
+        query(
+            `SELECT n.npc_id, n.name, n.display_name, n.npc_type, n.x, n.y,
+                    n.sprite_stem, n.facing
+             FROM \`${T.NPCS}\` n
+             WHERE n.map_id = ?
+             ORDER BY COALESCE(n.display_name, n.name, n.npc_id) ASC
+             LIMIT 800`,
+            [id]
+        )
+    ]);
 
     return {
         ...summary,
@@ -252,6 +277,35 @@ export async function getMapById(mapId) {
             toY: num(row.destination_y),
             warpName: row.warp_name || row.label || null,
             zenyCost: num(row.zeny_cost)
+        })),
+        spawns: spawnRows.map((row) => ({
+            id: row.spawn_id,
+            mobId: num(row.mob_id),
+            mobName: row.mob_name || row.mob_aegis || (row.mob_id != null ? `Mob #${row.mob_id}` : null),
+            mobAegis: row.mob_aegis || null,
+            level: num(row.mob_level),
+            hp: num(row.mob_hp),
+            amount: num(row.amount) ?? 0,
+            x: num(row.x),
+            y: num(row.y),
+            xArea: num(row.x_area),
+            yArea: num(row.y_area),
+            respawnMin: num(row.respawn_min),
+            respawnMax: num(row.respawn_max),
+            respawnUnit: row.respawn_unit || null,
+            boss: bool(row.boss_flag) || bool(row.is_mvp),
+            spawnType: row.spawn_type || null,
+            spawnKind: row.spawn_kind || null
+        })),
+        npcs: npcRows.map((row) => ({
+            id: row.npc_id,
+            name: row.display_name || row.name || row.npc_id,
+            nameRaw: row.name || null,
+            type: row.npc_type || null,
+            x: num(row.x),
+            y: num(row.y),
+            spriteStem: row.sprite_stem || null,
+            facing: num(row.facing)
         }))
     };
 }
