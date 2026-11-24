@@ -2,12 +2,18 @@
  * Skill catalog: ozro_skills + mob_skills aggregates + client JSONL lore.
  */
 import { query } from '../../services/mariadb.js';
-import { T, parsePagination } from './gameDb.js';
+import {
+    T,
+    parseBool,
+    parseCsv,
+    parsePagination
+} from './gameDb.js';
 import { buildTokenMatchClause } from './textSearch.js';
 import {
     findSkillIdsByDisplayName,
     getClientOnlySkill,
-    getSkillClientPayload
+    getSkillClientPayload,
+    getSkillIdsWithPrerequisites
 } from './skillClientInfo.js';
 import {
     normalizeAegisTail,
@@ -99,9 +105,49 @@ function attachMobCounts(summary, aggregates) {
     };
 }
 
+export async function getSkillMeta() {
+    const [prefixRows, typeRows, targetRows] = await Promise.all([
+        query(
+            `SELECT aegis_prefix AS value, COUNT(*) AS c
+             FROM \`${T.SKILLS}\`
+             WHERE COALESCE(aegis_prefix, '') <> ''
+             GROUP BY aegis_prefix
+             ORDER BY c DESC, aegis_prefix ASC`
+        ),
+        query(
+            `SELECT DISTINCT skill_type AS value
+             FROM \`${T.SKILLS}\`
+             WHERE COALESCE(skill_type, '') <> ''
+             ORDER BY skill_type`
+        ),
+        query(
+            `SELECT DISTINCT target_type AS value
+             FROM \`${T.SKILLS}\`
+             WHERE COALESCE(target_type, '') <> ''
+             ORDER BY target_type`
+        )
+    ]);
+
+    return {
+        prefixes: prefixRows.map((row) => row.value).filter(Boolean),
+        skillTypes: typeRows.map((row) => row.value).filter(Boolean),
+        targetTypes: targetRows.map((row) => row.value).filter(Boolean)
+    };
+}
+
 export async function searchSkills(params) {
     const { page, limit, offset } = parsePagination(params);
     const q = typeof params.q === 'string' ? params.q.trim() : '';
+    const prefixes = parseCsv(params.prefix).map((p) => p.toUpperCase());
+    const skillTypes = parseCsv(params.skillType);
+    const targetTypes = parseCsv(params.targetType);
+    const platinum = parseBool(params.platinum);
+    const quest = parseBool(params.quest);
+    const hasMobUse = parseBool(params.hasMobUse);
+    const hasItemCost = parseBool(params.hasItemCost);
+    const hasTeacher = parseBool(params.hasTeacher);
+    const hasPrereq = parseBool(params.hasPrereq);
+
     const conditions = ['1=1'];
     const values = [];
 
@@ -141,6 +187,61 @@ export async function searchSkills(params) {
         }
     }
 
+    if (prefixes.length > 0) {
+        conditions.push(
+            `sk.aegis_prefix IN (${prefixes.map(() => '?').join(', ')})`
+        );
+        values.push(...prefixes);
+    }
+    if (skillTypes.length > 0) {
+        conditions.push(
+            `sk.skill_type IN (${skillTypes.map(() => '?').join(', ')})`
+        );
+        values.push(...skillTypes);
+    }
+    if (targetTypes.length > 0) {
+        conditions.push(
+            `sk.target_type IN (${targetTypes.map(() => '?').join(', ')})`
+        );
+        values.push(...targetTypes);
+    }
+    if (platinum === true) {
+        conditions.push('sk.is_platinum = 1');
+    }
+    if (quest === true) {
+        conditions.push('sk.is_quest = 1');
+    }
+    if (hasMobUse === true) {
+        conditions.push('COALESCE(ms.use_count, 0) > 0');
+    }
+    if (hasItemCost === true) {
+        conditions.push(
+            `EXISTS (
+                SELECT 1 FROM \`${T.SKILL_ITEM_COSTS}\` c
+                WHERE c.skill_id = sk.skill_id
+             )`
+        );
+    }
+    if (hasTeacher === true) {
+        conditions.push(
+            `EXISTS (
+                SELECT 1 FROM \`${T.SKILL_TEACHERS}\` t
+                WHERE t.skill_id = sk.skill_id
+             )`
+        );
+    }
+    if (hasPrereq === true) {
+        const prereqIds = getSkillIdsWithPrerequisites();
+        if (prereqIds.length === 0) {
+            conditions.push('0 = 1');
+        } else {
+            conditions.push(
+                `sk.skill_id IN (${prereqIds.map(() => '?').join(', ')})`
+            );
+            values.push(...prereqIds);
+        }
+    }
+
     const whereClause = `WHERE ${conditions.join(' AND ')}`;
     const orderSql = q
         ? 'sk.aegis_name ASC, sk.skill_id ASC'
@@ -160,7 +261,7 @@ export async function searchSkills(params) {
     const [countRows, rows] = await Promise.all([
         query(
             `SELECT COUNT(*) AS total
-             FROM \`${T.SKILLS}\` sk
+             ${fromSql}
              ${whereClause}`,
             values
         ),

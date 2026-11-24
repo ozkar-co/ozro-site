@@ -22,6 +22,10 @@ const CANDIDATES = [
 
 /** @type {Map<number, object>} */
 let skillsById = new Map();
+/** @type {Map<string, number>} */
+let skillIdByAegis = new Map();
+/** @type {number[] | null} */
+let skillIdsWithPrereqCache = null;
 let sourcePath = null;
 
 export function isSkillClientInfoAvailable() {
@@ -30,6 +34,25 @@ export function isSkillClientInfoAvailable() {
 
 export function getSkillClientEntry(id) {
     return skillsById.get(Number(id)) || null;
+}
+
+export function findSkillIdByAegisName(aegis) {
+    if (!aegis) return null;
+    const id = skillIdByAegis.get(String(aegis).trim().toUpperCase());
+    return id != null ? id : null;
+}
+
+/** Skill ids that declare at least one client need_skills entry. */
+export function getSkillIdsWithPrerequisites() {
+    if (skillIdsWithPrereqCache) return skillIdsWithPrereqCache;
+    const ids = [];
+    for (const [id, row] of skillsById) {
+        if (Array.isArray(row.need_skills) && row.need_skills.length > 0) {
+            ids.push(id);
+        }
+    }
+    skillIdsWithPrereqCache = ids;
+    return ids;
 }
 
 export function findSkillIdsByDisplayName(term, limit = 200) {
@@ -80,9 +103,29 @@ function mapClientFields(row) {
         attackRange: Array.isArray(row.attack_range) ? row.attack_range : null,
         separateLv: row.separate_lv ?? null,
         apAmount: Array.isArray(row.ap_amount) ? row.ap_amount : null,
-        needSkills: Array.isArray(row.need_skills) ? row.need_skills : null,
+        needSkills: enrichNeedSkills(
+            Array.isArray(row.need_skills) ? row.need_skills : null
+        ),
         skillScale: Array.isArray(row.skill_scale) ? row.skill_scale : null
     };
+}
+
+function enrichNeedSkills(needSkills) {
+    if (!Array.isArray(needSkills) || needSkills.length === 0) return null;
+    return needSkills.map((entry) => {
+        const aegis = entry?.skill != null ? String(entry.skill) : null;
+        const skillId = findSkillIdByAegisName(aegis);
+        const linkedRow = skillId != null ? skillsById.get(skillId) : null;
+        return {
+            skill: aegis,
+            level: entry?.level != null ? Number(entry.level) : null,
+            skillId,
+            displayName: resolveSkillDisplayName({
+                clientDisplayName: linkedRow?.display_name,
+                aegisName: aegis
+            })
+        };
+    });
 }
 
 export function getSkillClientPayload(id) {
@@ -132,10 +175,18 @@ export async function initializeSkillClientInfo() {
             );
         }
         skillsById = await loadJsonl(filePath);
+        skillIdByAegis = new Map();
+        for (const [id, row] of skillsById) {
+            const aegis = row.aegis_name != null ? String(row.aegis_name).trim().toUpperCase() : '';
+            if (aegis) skillIdByAegis.set(aegis, id);
+        }
+        skillIdsWithPrereqCache = null;
         sourcePath = filePath;
         console.log(`Índice de skills cliente listo: ${skillsById.size} desde ${filePath}`);
     } catch (error) {
         skillsById = new Map();
+        skillIdByAegis = new Map();
+        skillIdsWithPrereqCache = null;
         sourcePath = null;
         console.warn(`No se pudo leer descripciones de skills: ${error.message}`);
     }

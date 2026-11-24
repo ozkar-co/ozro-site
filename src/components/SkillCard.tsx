@@ -24,6 +24,12 @@ export interface SkillResult {
   spAmount?: number[] | null;
   attackRange?: number[] | null;
   separateLv?: boolean | null;
+  needSkills?: {
+    skill: string | null;
+    level: number | null;
+    skillId?: number | null;
+    displayName?: string | null;
+  }[] | null;
   icon?: SpriteRect | string | null;
   variants?: {
     skillLv: number | null;
@@ -111,6 +117,7 @@ const SkillCard = ({ result }: SkillCardProps) => {
   const itemCosts = result.itemCosts || [];
   const teachers = result.teachers || [];
   const recipes = result.recipes || [];
+  const needSkills = result.needSkills || [];
 
   return (
     <div className="result-card result-card--skill">
@@ -148,8 +155,10 @@ const SkillCard = ({ result }: SkillCardProps) => {
           <div className="skill-card-meta">
             {result.maxLv != null && <span>Max Lv {result.maxLv}</span>}
             {result.skillType && <span>{result.skillType}</span>}
+            {result.targetType && <span>{result.targetType}</span>}
             {spPreview != null && <span>SP {spPreview}</span>}
             {rangePreview != null && <span>Rango {rangePreview}</span>}
+            {result.separateLv && <span>Lv separado</span>}
             {result.mobCount > 0 && <span>{result.mobCount.toLocaleString()} mobs</span>}
             {result.useCount > 0 && <span>{result.useCount.toLocaleString()} usos</span>}
           </div>
@@ -165,6 +174,33 @@ const SkillCard = ({ result }: SkillCardProps) => {
             <div className="result-card-description-content">
               {processColoredText(description.join('\n'))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {needSkills.length > 0 && (
+        <div className="result-card-section">
+          <div className="result-card-script-header">Requisitos</div>
+          <div className="skill-mob-list">
+            {needSkills.map((need, index) => {
+              const label = [
+                need.displayName || need.skill || 'skill',
+                need.level != null ? `Lv ${need.level}` : null
+              ].filter(Boolean).join(' · ');
+              return need.skillId != null ? (
+                <Link
+                  key={`${need.skill}-${index}`}
+                  to={`/database?tab=skills&q=${need.skillId}&run=1`}
+                  className="skill-mob-chip"
+                >
+                  {label}
+                </Link>
+              ) : (
+                <span key={`${need.skill}-${index}`} className="skill-mob-chip">
+                  {label}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}

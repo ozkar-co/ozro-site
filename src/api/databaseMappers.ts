@@ -150,6 +150,16 @@ export interface SearchOptions {
   includeInstanceSpawns: boolean;
   hideItemsWithoutNaturalDrop: boolean;
   hideWithoutSprite: boolean;
+  /** Skill tab filters */
+  selectedSkillPrefixes: string[];
+  selectedSkillTypes: string[];
+  selectedSkillTargetTypes: string[];
+  skillPlatinumOnly: boolean;
+  skillQuestOnly: boolean;
+  skillHasMobUse: boolean;
+  skillHasItemCost: boolean;
+  skillHasTeacher: boolean;
+  skillHasPrereq: boolean;
 }
 
 export const defaultSearchOptions = (): SearchOptions => ({
@@ -178,8 +188,43 @@ export const defaultSearchOptions = (): SearchOptions => ({
   hideMobsWithoutSpawn: true,
   includeInstanceSpawns: false,
   hideItemsWithoutNaturalDrop: true,
-  hideWithoutSprite: true
+  hideWithoutSprite: true,
+  selectedSkillPrefixes: [],
+  selectedSkillTypes: [],
+  selectedSkillTargetTypes: [],
+  skillPlatinumOnly: false,
+  skillQuestOnly: false,
+  skillHasMobUse: false,
+  skillHasItemCost: false,
+  skillHasTeacher: false,
+  skillHasPrereq: false
 });
+
+export function buildSkillSearchParams(
+  searchTerm: string,
+  options: SearchOptions,
+  page: number,
+  limit: number
+): Record<string, string | number> {
+  const params: Record<string, string | number> = { page: page + 1, limit };
+  if (searchTerm.trim()) params.q = searchTerm.trim();
+  if (options.selectedSkillPrefixes.length > 0) {
+    params.prefix = options.selectedSkillPrefixes.join(',');
+  }
+  if (options.selectedSkillTypes.length > 0) {
+    params.skillType = options.selectedSkillTypes.join(',');
+  }
+  if (options.selectedSkillTargetTypes.length > 0) {
+    params.targetType = options.selectedSkillTargetTypes.join(',');
+  }
+  if (options.skillPlatinumOnly) params.platinum = 1;
+  if (options.skillQuestOnly) params.quest = 1;
+  if (options.skillHasMobUse) params.hasMobUse = 1;
+  if (options.skillHasItemCost) params.hasItemCost = 1;
+  if (options.skillHasTeacher) params.hasTeacher = 1;
+  if (options.skillHasPrereq) params.hasPrereq = 1;
+  return params;
+}
 
 export function buildMobSearchParams(
   searchTerm: string,

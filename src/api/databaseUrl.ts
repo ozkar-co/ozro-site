@@ -35,7 +35,19 @@ function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): bo
     if (options.hideWithoutSprite !== defaults.hideWithoutSprite) return true;
     return false;
   }
-  if (tab === 'skills' || tab === 'npcs') {
+  if (tab === 'npcs') {
+    return false;
+  }
+  if (tab === 'skills') {
+    if (options.selectedSkillPrefixes.length > 0) return true;
+    if (options.selectedSkillTypes.length > 0) return true;
+    if (options.selectedSkillTargetTypes.length > 0) return true;
+    if (options.skillPlatinumOnly) return true;
+    if (options.skillQuestOnly) return true;
+    if (options.skillHasMobUse) return true;
+    if (options.skillHasItemCost) return true;
+    if (options.skillHasTeacher) return true;
+    if (options.skillHasPrereq) return true;
     return false;
   }
   if (options.selectedElements.length > 0) return true;
@@ -133,6 +145,22 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
   options.hpMin = params.get('hpMin') ?? '';
   options.hpMax = params.get('hpMax') ?? '';
 
+  options.selectedSkillPrefixes = parseCsvList(params.get('prefix')).map((p) => p.toUpperCase());
+  options.selectedSkillTypes = parseCsvList(params.get('skillType'));
+  options.selectedSkillTargetTypes = parseCsvList(params.get('targetType'));
+  const skillPlatinum = parseBoolParam(params.get('platinum'));
+  if (skillPlatinum !== undefined) options.skillPlatinumOnly = skillPlatinum;
+  const skillQuest = parseBoolParam(params.get('quest'));
+  if (skillQuest !== undefined) options.skillQuestOnly = skillQuest;
+  const skillHasMob = parseBoolParam(params.get('hasMobUse'));
+  if (skillHasMob !== undefined) options.skillHasMobUse = skillHasMob;
+  const skillHasCost = parseBoolParam(params.get('hasItemCost'));
+  if (skillHasCost !== undefined) options.skillHasItemCost = skillHasCost;
+  const skillHasTeacher = parseBoolParam(params.get('hasTeacher'));
+  if (skillHasTeacher !== undefined) options.skillHasTeacher = skillHasTeacher;
+  const skillHasPrereq = parseBoolParam(params.get('hasPrereq'));
+  if (skillHasPrereq !== undefined) options.skillHasPrereq = skillHasPrereq;
+
   const kinds = params.get('kinds');
   if (kinds) {
     const set = new Set(kinds.split(',').map((k) => k.trim().toLowerCase()));
@@ -223,6 +251,24 @@ export function buildDatabaseSearchParams(
     } else if (run) {
       params.set('hideNoSprite', options.hideWithoutSprite ? '1' : '0');
     }
+  }
+
+  if (tab === 'skills') {
+    if (options.selectedSkillPrefixes.length > 0) {
+      params.set('prefix', options.selectedSkillPrefixes.join(','));
+    }
+    if (options.selectedSkillTypes.length > 0) {
+      params.set('skillType', options.selectedSkillTypes.join(','));
+    }
+    if (options.selectedSkillTargetTypes.length > 0) {
+      params.set('targetType', options.selectedSkillTargetTypes.join(','));
+    }
+    if (options.skillPlatinumOnly) params.set('platinum', '1');
+    if (options.skillQuestOnly) params.set('quest', '1');
+    if (options.skillHasMobUse) params.set('hasMobUse', '1');
+    if (options.skillHasItemCost) params.set('hasItemCost', '1');
+    if (options.skillHasTeacher) params.set('hasTeacher', '1');
+    if (options.skillHasPrereq) params.set('hasPrereq', '1');
   }
 
   if (tab === 'mobs') {

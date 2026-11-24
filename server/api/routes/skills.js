@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getSkillById, searchSkills } from '../services/skillQuery.js';
+import { getSkillById, getSkillMeta, searchSkills } from '../services/skillQuery.js';
 import { isMobDataAvailable, mobUnavailableError } from '../services/gameDb.js';
 import { responseCache } from '../services/responseCache.js';
 
@@ -13,6 +13,15 @@ router.use((req, res, next) => {
 });
 
 router.use(responseCache('skills', 30 * 60 * 1000));
+
+router.get('/meta', async (req, res) => {
+    try {
+        res.json(await getSkillMeta());
+    } catch (error) {
+        console.error('Error al obtener meta de skills:', error);
+        res.status(500).json({ error: 'Error al obtener meta de skills' });
+    }
+});
 
 router.get('/:id', async (req, res) => {
     try {

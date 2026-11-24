@@ -463,8 +463,19 @@ export interface SkillSummary {
   attackRange?: number[] | null;
   separateLv?: boolean | null;
   apAmount?: number[] | null;
-  needSkills?: { skill: string; level: number }[] | null;
+  needSkills?: {
+    skill: string | null;
+    level: number | null;
+    skillId?: number | null;
+    displayName?: string | null;
+  }[] | null;
   skillScale?: { level: number; x: number; y: number }[] | null;
+}
+
+export interface SkillMetaResponse {
+  prefixes: string[];
+  skillTypes: string[];
+  targetTypes: string[];
 }
 
 export interface SkillDetail extends SkillSummary {
@@ -632,6 +643,8 @@ export const apiClient = {
 
   searchSkills: (params: SkillSearchParams) =>
     apiFetch<PaginatedResponse<SkillSummary>>(`/skills${buildQuery(params)}`),
+
+  getSkillMeta: () => apiFetch<SkillMetaResponse>('/skills/meta'),
 
   getSkill: (id: number | string) => apiFetch<SkillDetail>(`/skills/${id}`),
 

@@ -17,9 +17,11 @@ import {
   PLACEHOLDER_MOB_SPRITE,
   PLACEHOLDER_SKILL_ICON
 } from '../api/placeholders';
+import { skillPrefixLabel } from '../api/skillPrefixes';
 import {
   buildItemSearchParams,
   buildMobSearchParams,
+  buildSkillSearchParams,
   formatFilterLabel,
   ITEM_TYPE_AMMO,
   ITEM_TYPE_ARMOR,
@@ -92,6 +94,11 @@ const Database = () => {
   const [mobRoles, setMobRoles] = useState<string[]>([]);
   const [mobMetaError, setMobMetaError] = useState<string | null>(null);
   const [mobMetaLoading, setMobMetaLoading] = useState(false);
+  const [skillPrefixes, setSkillPrefixes] = useState<string[]>([]);
+  const [skillTypes, setSkillTypes] = useState<string[]>([]);
+  const [skillTargetTypes, setSkillTargetTypes] = useState<string[]>([]);
+  const [skillMetaError, setSkillMetaError] = useState<string | null>(null);
+  const [skillMetaLoading, setSkillMetaLoading] = useState(false);
   const searchOptionsRef = useRef(searchOptions);
   const searchOptionsPanelRef = useRef<HTMLDivElement>(null);
 
@@ -168,6 +175,35 @@ const Database = () => {
       })
       .finally(() => {
         if (!cancelled) setItemMetaLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== 'skills') return;
+    let cancelled = false;
+    setSkillMetaLoading(true);
+    setSkillMetaError(null);
+    apiClient.getSkillMeta()
+      .then((meta) => {
+        if (cancelled) return;
+        setSkillPrefixes(Array.isArray(meta.prefixes) ? meta.prefixes : []);
+        setSkillTypes(Array.isArray(meta.skillTypes) ? meta.skillTypes : []);
+        setSkillTargetTypes(Array.isArray(meta.targetTypes) ? meta.targetTypes : []);
+        setSkillMetaError(null);
+      })
+      .catch((error: Error) => {
+        if (cancelled) return;
+        console.error('Fallo cargando skills/meta', error);
+        setSkillPrefixes([]);
+        setSkillTypes([]);
+        setSkillTargetTypes([]);
+        setSkillMetaError(error?.message || String(error));
+      })
+      .finally(() => {
+        if (!cancelled) setSkillMetaLoading(false);
       });
     return () => {
       cancelled = true;
@@ -288,11 +324,9 @@ const Database = () => {
         const results = await enrichSkillResults([skill]);
         return { total: 1, currentPage: 0, results, totalPages: 1 };
       }
-      const data = await apiClient.searchSkills({
-        q: trimmed || undefined,
-        page: page + 1,
-        limit: RESULTS_PER_PAGE
-      });
+      const data = await apiClient.searchSkills(
+        buildSkillSearchParams(trimmed, options, page, RESULTS_PER_PAGE)
+      );
       const results = await enrichSkillResults(data.results);
       return {
         total: data.total,
@@ -552,14 +586,172 @@ const Database = () => {
                 </div>
               </form>
               <div className="search-options-container" ref={searchOptionsPanelRef}>
-                {(activeTab === 'items' || activeTab === 'mobs') && (
+                {(activeTab === 'items' || activeTab === 'mobs' || activeTab === 'skills') && (
                 <button className="search-options-toggle" onClick={handleOptionsToggle}>
                   <i className={`arrow-icon ${isOptionsVisible ? 'up' : 'down'}`}></i>
                 </button>
                 )}
-                {isOptionsVisible && (activeTab === 'items' || activeTab === 'mobs') && (
+                {isOptionsVisible && (activeTab === 'items' || activeTab === 'mobs' || activeTab === 'skills') && (
                   <div className={`search-options-panel ${isClosing ? 'closing' : ''}`}>
-                    {activeTab === 'items' ? (
+                    {activeTab === 'skills' ? (
+                      <>
+                        {skillMetaError && (
+                          <div className="search-filter-hint">{skillMetaError}</div>
+                        )}
+                        {skillMetaLoading && (
+                          <div className="search-filter-hint">Cargando filtros…</div>
+                        )}
+                        {skillPrefixes.length > 0 && (
+                          <div className="search-types search-types--column">
+                            <div className="search-types-title">Prefijo / job:</div>
+                            <select
+                              className="search-filter-select"
+                              multiple
+                              size={Math.min(10, skillPrefixes.length)}
+                              value={searchOptions.selectedSkillPrefixes}
+                              onChange={(e) => {
+                                const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
+                                setSearchOptions((prev) => ({
+                                  ...prev,
+                                  selectedSkillPrefixes: selected
+                                }));
+                              }}
+                            >
+                              {skillPrefixes.map((prefix) => {
+                                const label = skillPrefixLabel(prefix);
+                                return (
+                                  <option key={prefix} value={prefix}>
+                                    {label && label !== prefix ? `${prefix} — ${label}` : prefix}
+                                  </option>
+                                );
+                              })}
+                            </select>
+                            <div className="search-filter-hint">Ctrl+clic para varios</div>
+                          </div>
+                        )}
+                        {skillTypes.length > 0 && (
+                          <div className="search-types">
+                            <div className="search-types-title">Tipo de skill:</div>
+                            <div className="search-types-grid">
+                              {skillTypes.map((typeName) => (
+                                <label key={typeName} className="type-checkbox">
+                                  <input
+                                    type="checkbox"
+                                    checked={searchOptions.selectedSkillTypes.includes(typeName)}
+                                    onChange={() => setSearchOptions((prev) => {
+                                      const on = prev.selectedSkillTypes.includes(typeName);
+                                      return {
+                                        ...prev,
+                                        selectedSkillTypes: on
+                                          ? prev.selectedSkillTypes.filter((t) => t !== typeName)
+                                          : [...prev.selectedSkillTypes, typeName]
+                                      };
+                                    })}
+                                  />
+                                  {typeName}
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {skillTargetTypes.length > 0 && (
+                          <div className="search-types">
+                            <div className="search-types-title">Objetivo:</div>
+                            <div className="search-types-grid">
+                              {skillTargetTypes.map((typeName) => (
+                                <label key={typeName} className="type-checkbox">
+                                  <input
+                                    type="checkbox"
+                                    checked={searchOptions.selectedSkillTargetTypes.includes(typeName)}
+                                    onChange={() => setSearchOptions((prev) => {
+                                      const on = prev.selectedSkillTargetTypes.includes(typeName);
+                                      return {
+                                        ...prev,
+                                        selectedSkillTargetTypes: on
+                                          ? prev.selectedSkillTargetTypes.filter((t) => t !== typeName)
+                                          : [...prev.selectedSkillTargetTypes, typeName]
+                                      };
+                                    })}
+                                  />
+                                  {typeName}
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        <div className="search-types">
+                          <div className="search-types-title">Flags / origen:</div>
+                          <div className="search-types-grid">
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.skillPlatinumOnly}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  skillPlatinumOnly: !prev.skillPlatinumOnly
+                                }))}
+                              />
+                              Solo platinum
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.skillQuestOnly}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  skillQuestOnly: !prev.skillQuestOnly
+                                }))}
+                              />
+                              Solo quest
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.skillHasPrereq}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  skillHasPrereq: !prev.skillHasPrereq
+                                }))}
+                              />
+                              Con requisitos
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.skillHasItemCost}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  skillHasItemCost: !prev.skillHasItemCost
+                                }))}
+                              />
+                              Consume ítem
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.skillHasTeacher}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  skillHasTeacher: !prev.skillHasTeacher
+                                }))}
+                              />
+                              Tiene maestro NPC
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.skillHasMobUse}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  skillHasMobUse: !prev.skillHasMobUse
+                                }))}
+                              />
+                              Usada por mobs
+                            </label>
+                          </div>
+                        </div>
+                      </>
+                    ) : activeTab === 'items' ? (
                       <>
                         <div className="search-types">
                           <div className="search-types-title">Filtrar por tipo:</div>
