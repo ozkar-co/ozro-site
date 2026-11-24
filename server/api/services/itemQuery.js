@@ -71,9 +71,35 @@ function mapItemJobs(row) {
     return { all: false, jobs };
 }
 
-function mapItemClasses() {
-    // Class bitmask columns are not in ozro_items yet — keep API shape.
-    return { all: false, classes: [] };
+function mapItemClasses(row) {
+    const classesRaw = parseJsonColumn(row.classes, null);
+    if (!classesRaw || typeof classesRaw !== 'object') {
+        return { all: false, classes: [] };
+    }
+    // YAML: All / Normal / Upper / Baby / Third / Third_Upper / Third_Baby / Fourth / All_Third / …
+    const yamlToApi = {
+        all: 'all',
+        normal: 'normal',
+        upper: 'upper',
+        baby: 'baby',
+        third: 'third',
+        third_upper: 'third_upper',
+        third_baby: 'third_baby',
+        fourth: 'fourth',
+        all_third: 'third' // UI "third" matches All_Third family
+    };
+    if (classesRaw.All || classesRaw.all) {
+        return { all: true, classes: ITEM_CLASSES };
+    }
+    const classes = [];
+    for (const [key, value] of Object.entries(classesRaw)) {
+        if (!value) continue;
+        const norm = key.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+        const api = yamlToApi[norm] || norm;
+        if (ITEM_CLASSES.includes(api) && !classes.includes(api)) classes.push(api);
+        if (norm === 'all_third' && !classes.includes('third')) classes.push('third');
+    }
+    return { all: false, classes };
 }
 
 function num(value) {
@@ -116,7 +142,12 @@ function mapItemDetail(row, scripts = {}) {
         unequipScript: scripts.UnEquipScript || null,
         jobs: mapItemJobs(row),
         classes: mapItemClasses(row),
-        locations: mapItemLocations(row)
+        locations: mapItemLocations(row),
+        gender: row.gender || null,
+        gradable: row.gradable == null ? null : Boolean(row.gradable),
+        delay: parseJsonColumn(row.delay, null),
+        noUse: parseJsonColumn(row.no_use, null),
+        stack: parseJsonColumn(row.stack, null)
     };
 }
 
@@ -210,10 +241,32 @@ function buildItemFilters(params) {
         values.push(...uniqueTypes);
     }
 
-    // Class columns not present in ozro_items — ignore filter (documented in DATA.md gap).
     const classes = parseCsv(params.class);
     if (classes.length > 0) {
-        console.warn('Filtro class ignorado: ozro_items no expone class_* aún');
+        // Map UI class tokens → YAML Classes JSON keys
+        const classJsonKeys = {
+            normal: ['Normal'],
+            upper: ['Upper'],
+            baby: ['Baby'],
+            third: ['Third', 'All_Third'],
+            third_upper: ['Third_Upper'],
+            third_baby: ['Third_Baby'],
+            fourth: ['Fourth']
+        };
+        const parts = [];
+        for (const cls of classes) {
+            const keys = classJsonKeys[cls] || [];
+            for (const jsonKey of keys) {
+                parts.push(jsonTruthy('i', 'classes', jsonKey));
+            }
+        }
+        if (parts.length > 0) {
+            conditions.push(`(
+                JSON_EXTRACT(i.classes, '$.All') = TRUE
+                OR JSON_EXTRACT(i.classes, '$.all') = TRUE
+                OR (${parts.join(' OR ')})
+            )`);
+        }
     }
 
     const jobs = parseCsv(params.jobs);
