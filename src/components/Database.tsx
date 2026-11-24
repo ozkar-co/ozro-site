@@ -6,6 +6,8 @@ import Maps from './Maps';
 import Mvps from './Mvps';
 import ItemCard, { SearchResult } from './ItemCard';
 import MobCard, { MobResult } from './MobCard';
+import SkillCard, { type SkillResult } from './SkillCard';
+import NpcCard, { type NpcResult } from './NpcCard';
 import '../styles/Database.css';
 import { apiClient } from '../api/client';
 import { hasManifestSprite, loadManifest, resolveSprite, type SpriteRect } from '../api/assets';
@@ -45,7 +47,7 @@ type MobResultRow = MobResult & { hasSprite?: boolean };
 interface SearchState {
   total: number;
   currentPage: number;
-  results: (ItemResult | MobResultRow)[];
+  results: (ItemResult | MobResultRow | SkillResult | NpcResult)[];
   totalPages: number;
 }
 
@@ -263,6 +265,48 @@ const Database = () => {
     const trimmed = term.trim();
     const isIdLookup = /^\d+$/.test(trimmed);
 
+    if (tab === 'skills') {
+      if (isIdLookup) {
+        const skill = await apiClient.getSkill(parseInt(trimmed, 10)).catch(() => null);
+        if (!skill) {
+          return { total: 0, currentPage: 0, results: [], totalPages: 0 };
+        }
+        return { total: 1, currentPage: 0, results: [skill], totalPages: 1 };
+      }
+      const data = await apiClient.searchSkills({
+        q: trimmed || undefined,
+        page: page + 1,
+        limit: RESULTS_PER_PAGE
+      });
+      return {
+        total: data.total,
+        currentPage: page,
+        results: data.results,
+        totalPages: Math.max(1, Math.ceil(data.total / RESULTS_PER_PAGE))
+      };
+    }
+
+    if (tab === 'npcs') {
+      if (/^npc_[0-9a-f]+$/i.test(trimmed)) {
+        const npc = await apiClient.getNpc(trimmed).catch(() => null);
+        if (!npc) {
+          return { total: 0, currentPage: 0, results: [], totalPages: 0 };
+        }
+        return { total: 1, currentPage: 0, results: [npc], totalPages: 1 };
+      }
+      const data = await apiClient.searchNpcs({
+        q: trimmed || undefined,
+        page: page + 1,
+        limit: RESULTS_PER_PAGE
+      });
+      return {
+        total: data.total,
+        currentPage: page,
+        results: data.results,
+        totalPages: Math.max(1, Math.ceil(data.total / RESULTS_PER_PAGE))
+      };
+    }
+
     if (tab === 'mobs') {
       if (isIdLookup) {
         const mob = await apiClient.getMob(parseInt(trimmed, 10)).catch(() => null);
@@ -414,6 +458,8 @@ const Database = () => {
   const handleTabChange = (tab: TabType) => {
     setSearchOptions(defaultSearchOptions());
     setSearchError(null);
+    setIsOptionsVisible(false);
+    setIsClosing(false);
     setActiveTab(tab);
     navigate({ pathname: '/database', search: `tab=${tab}` });
   };
@@ -434,6 +480,18 @@ const Database = () => {
             onClick={() => handleTabChange('mobs')}
           >
             Monstruos
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'skills' ? 'active' : ''}`}
+            onClick={() => handleTabChange('skills')}
+          >
+            Skills
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'npcs' ? 'active' : ''}`}
+            onClick={() => handleTabChange('npcs')}
+          >
+            NPCs
           </button>
           <button
             className={`tab-button ${activeTab === 'maps' ? 'active' : ''}`}
@@ -461,7 +519,15 @@ const Database = () => {
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder={`Buscar por nombre o ID ${activeTab === 'items' ? 'del objeto' : 'del monstruo'}...`}
+                    placeholder={
+                      activeTab === 'items'
+                        ? 'Buscar por nombre o ID del objeto...'
+                        : activeTab === 'mobs'
+                          ? 'Buscar por nombre o ID del monstruo...'
+                          : activeTab === 'skills'
+                            ? 'Buscar skill por nombre o ID...'
+                            : 'Buscar NPC por nombre, mapa o ID...'
+                    }
                     className="search-input"
                   />
                   <button type="submit" className="search-button" disabled={isSearching}>
@@ -470,10 +536,12 @@ const Database = () => {
                 </div>
               </form>
               <div className="search-options-container" ref={searchOptionsPanelRef}>
+                {(activeTab === 'items' || activeTab === 'mobs') && (
                 <button className="search-options-toggle" onClick={handleOptionsToggle}>
                   <i className={`arrow-icon ${isOptionsVisible ? 'up' : 'down'}`}></i>
                 </button>
-                {isOptionsVisible && (
+                )}
+                {isOptionsVisible && (activeTab === 'items' || activeTab === 'mobs') && (
                   <div className={`search-options-panel ${isClosing ? 'closing' : ''}`}>
                     {activeTab === 'items' ? (
                       <>
@@ -954,7 +1022,16 @@ const Database = () => {
               <>
                 <div className="results-grid">
                   {searchState.results.map((result) => {
-                    const compactView = searchOptions.hideWithoutSprite && result.hasSprite !== true;
+                    if (activeTab === 'skills') {
+                      const skill = result as SkillResult;
+                      return <SkillCard key={skill.id} result={skill} />;
+                    }
+                    if (activeTab === 'npcs') {
+                      const npc = result as NpcResult;
+                      return <NpcCard key={npc.id} result={npc} />;
+                    }
+                    const compactView = searchOptions.hideWithoutSprite
+                      && (result as ItemResult | MobResultRow).hasSprite !== true;
                     return activeTab === 'items' ? (
                       <ItemCard
                         key={result.id}

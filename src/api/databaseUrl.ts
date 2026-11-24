@@ -5,9 +5,9 @@ import {
   ITEM_TYPE_WEAPON
 } from './databaseMappers';
 
-export type DatabaseTab = 'items' | 'mobs' | 'maps' | 'mvps';
+export type DatabaseTab = 'items' | 'mobs' | 'skills' | 'npcs' | 'maps' | 'mvps';
 
-const DATABASE_TABS: DatabaseTab[] = ['items', 'mobs', 'maps', 'mvps'];
+const DATABASE_TABS: DatabaseTab[] = ['items', 'mobs', 'skills', 'npcs', 'maps', 'mvps'];
 
 export interface DatabaseUrlState {
   tab: DatabaseTab;
@@ -33,6 +33,9 @@ function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): bo
     if (options.selectedAcquisitionSources.length > 0) return true;
     if (options.hideItemsWithoutNaturalDrop !== defaults.hideItemsWithoutNaturalDrop) return true;
     if (options.hideWithoutSprite !== defaults.hideWithoutSprite) return true;
+    return false;
+  }
+  if (tab === 'skills' || tab === 'npcs') {
     return false;
   }
   if (options.selectedElements.length > 0) return true;

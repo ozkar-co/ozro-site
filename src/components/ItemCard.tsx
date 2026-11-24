@@ -731,7 +731,16 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
                     <ul className="acquisition-list">
                       {acquisition.shops.map((shop, index) => (
                         <li key={`${shop.shopId || shop.shopName}-${index}`}>
-                          <span className="acquisition-primary">{shop.shopName}</span>
+                          {shop.npcId ? (
+                            <Link
+                              to={`/database?tab=npcs&q=${encodeURIComponent(shop.npcId)}&run=1`}
+                              className="acquisition-primary"
+                            >
+                              {shop.shopName}
+                            </Link>
+                          ) : (
+                            <span className="acquisition-primary">{shop.shopName}</span>
+                          )}
                           {shop.mapId && (
                             <>
                               {' · '}
@@ -881,8 +890,17 @@ const ItemCard: React.FC<ItemCardProps> = ({ result, compact = false }) => {
                   >
                     <ul className="acquisition-list">
                       {acquisition.npcRewards.map((reward, index) => (
-                        <li key={`${reward.npcName}-${index}`}>
-                          <span className="acquisition-primary">{reward.npcName}</span>
+                        <li key={`${reward.npcId || reward.npcName}-${index}`}>
+                          {reward.npcId ? (
+                            <Link
+                              to={`/database?tab=npcs&q=${encodeURIComponent(reward.npcId)}&run=1`}
+                              className="acquisition-primary"
+                            >
+                              {reward.npcName}
+                            </Link>
+                          ) : (
+                            <span className="acquisition-primary">{reward.npcName}</span>
+                          )}
                           {reward.mapId && (
                             <>
                               {' · '}

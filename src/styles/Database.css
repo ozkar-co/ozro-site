@@ -2041,6 +2041,83 @@ a {
   }
 }
 
+.skill-card-meta,
+.npc-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.85rem;
+  margin-top: 0.35rem;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.skill-mob-list,
+.npc-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.skill-mob-chip,
+.npc-tag {
+  display: inline-flex;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: #f4f1ec;
+  border: 1px solid #e2d9cf;
+  color: #5a5048;
+  font-size: 0.75rem;
+  text-decoration: none;
+}
+
+.skill-mob-chip:hover {
+  border-color: #ff8d7f;
+  color: #c45b4a;
+}
+
+.skill-mob-more {
+  font-size: 0.75rem;
+  color: #888;
+  align-self: center;
+}
+
+.skill-variant-list,
+.npc-shop-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: #445;
+  font-size: 0.85rem;
+}
+
+.npc-type-badge {
+  display: inline-flex;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #eef3fa;
+  border: 1px solid #c2d0e6;
+  color: #3a5680;
+  font-size: 0.72rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.npc-script-path {
+  font-size: 0.75rem;
+  color: #888;
+  word-break: break-all;
+}
+
+.acquisition-primary {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a.acquisition-primary:hover {
+  color: #c45b4a;
+  text-decoration: underline;
+}
+
 .stats-modes-stack {
   display: flex;
   flex-direction: column;

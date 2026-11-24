@@ -8,6 +8,8 @@ import os from 'os';
 import mobsRouter from './routes/mobs.js';
 import itemsRouter from './routes/items.js';
 import mvpsRouter from './routes/mvps.js';
+import skillsRouter from './routes/skills.js';
+import npcsRouter from './routes/npcs.js';
 import farmingRouter from './routes/farming.js';
 import marketRouter from './routes/market.js';
 import { BANK_VAULT_KEY, bankVaultValueSql, T, excludeInternalAccountsSql, isMobDataAvailable, statsPlayerAccountSql, statsPlayerAccountWhereClause } from './services/gameDb.js';
@@ -43,6 +45,8 @@ app.use('/assets', express.static(assetsPath, {
 api.use('/mobs', mobsRouter);
 api.use('/items', itemsRouter);
 api.use('/mvps', mvpsRouter);
+api.use('/skills', skillsRouter);
+api.use('/npcs', npcsRouter);
 api.use('/farming', farmingRouter);
 api.use('/market', marketRouter);
 

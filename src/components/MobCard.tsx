@@ -802,7 +802,17 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
                     key={`${skill.skillId ?? 's'}-${skill.state ?? ''}-${index}`}
                     className="box-group-item"
                   >
-                    <span className="box-group-item-name">{label}</span>
+                    {skill.skillId != null ? (
+                      <Link
+                        to={`/database?tab=skills&q=${skill.skillId}&run=1`}
+                        className="box-group-item-name"
+                        onClick={closeSkillsModal}
+                      >
+                        {label}
+                      </Link>
+                    ) : (
+                      <span className="box-group-item-name">{label}</span>
+                    )}
                     <span className="box-group-item-meta">{metaParts.join(' · ')}</span>
                     <span className="box-group-item-chance">{rateText || ''}</span>
                   </li>

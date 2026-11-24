@@ -227,6 +227,7 @@ function buildPayload(rows, ctx) {
             shops.push({
                 shopId: meta.shopId || null,
                 shopName: cleanNpcName(meta.shopName) || cleanNpcName(npc.name) || 'Tienda',
+                npcId: row.npc_id || meta.npcId || null,
                 mapId: meta.mapId || npc.mapId || row.map_id || null,
                 x: meta.x ?? npc.x ?? null,
                 y: meta.y ?? npc.y ?? null,
@@ -302,6 +303,7 @@ function buildPayload(rows, ctx) {
             if (npcRewards.length >= NPC_REWARD_CAP) continue;
             const npc = ctx.npcMap.get(row.npc_id) || {};
             npcRewards.push({
+                npcId: row.npc_id || null,
                 npcName: cleanNpcName(npc.displayName || npc.name) || 'NPC',
                 mapId: row.map_id || npc.mapId || null,
                 quantityMin: n(row.quantity_min),

@@ -293,6 +293,7 @@ export interface ItemAcquisition {
   shops: {
     shopId?: string | null;
     shopName: string;
+    npcId?: string | null;
     mapId?: string | null;
     x?: number | null;
     y?: number | null;
@@ -335,6 +336,7 @@ export interface ItemAcquisition {
   }[];
   barterTotal?: number;
   npcRewards: {
+    npcId?: string | null;
     npcName: string;
     mapId?: string | null;
     quantityMin?: number | null;
@@ -435,6 +437,64 @@ export interface MvpRadarResponse {
 
 export type MobSearchParams = Record<string, string | number | undefined>;
 export type ItemSearchParams = Record<string, string | number | undefined>;
+export type SkillSearchParams = Record<string, string | number | undefined>;
+export type NpcSearchParams = Record<string, string | number | undefined>;
+
+export interface SkillSummary {
+  id: number;
+  name: string | null;
+  mobCount: number;
+  useCount: number;
+}
+
+export interface SkillDetail extends SkillSummary {
+  variants?: {
+    skillLv: number | null;
+    state: string | null;
+    conditionType: string | null;
+    conditionValue: string | null;
+    rate: number | null;
+    entries: number;
+  }[];
+  mobs?: {
+    id: number | null;
+    name: string | null;
+    nameAegis: string | null;
+    uses: number;
+  }[];
+}
+
+export interface NpcSummary {
+  id: string;
+  name: string;
+  nameRaw?: string | null;
+  type: string | null;
+  mapId: string | null;
+  x: number | null;
+  y: number | null;
+  spriteStem?: string | null;
+  shopCount: number;
+  functionCount: number;
+  scriptPath?: string | null;
+}
+
+export interface NpcDetail extends NpcSummary {
+  facing?: number | null;
+  scriptLine?: number | null;
+  duplicateOf?: string | null;
+  shops?: {
+    shopId: string;
+    shopName: string;
+    shopType: string | null;
+    mapId: string | null;
+    x: number | null;
+    y: number | null;
+    itemCount: number | null;
+    currency: string | null;
+    sprite?: string | null;
+  }[];
+  functions?: string[];
+}
 
 export interface ItemMetaResponse {
   types: string[];
@@ -522,5 +582,17 @@ export const apiClient = {
     apiFetch<ItemDescriptionResponse>(`/items/${id}/description`),
 
   getBoxGroup: (groupName: string) =>
-    apiFetch<BoxGroupResponse>(`/items/box-groups/${encodeURIComponent(groupName)}`)
+    apiFetch<BoxGroupResponse>(`/items/box-groups/${encodeURIComponent(groupName)}`),
+
+  searchSkills: (params: SkillSearchParams) =>
+    apiFetch<PaginatedResponse<SkillSummary>>(`/skills${buildQuery(params)}`),
+
+  getSkill: (id: number | string) => apiFetch<SkillDetail>(`/skills/${id}`),
+
+  searchNpcs: (params: NpcSearchParams) =>
+    apiFetch<PaginatedResponse<NpcSummary>>(`/npcs${buildQuery(params)}`),
+
+  getNpc: (id: string) => apiFetch<NpcDetail>(`/npcs/${encodeURIComponent(id)}`),
+
+  getNpcMeta: () => apiFetch<{ types: string[] }>('/npcs/meta')
 };
