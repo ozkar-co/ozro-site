@@ -93,6 +93,14 @@ interface GroupedSummon {
 
 const MOB_SPRITE_FIT = { maxWidth: 148, maxHeight: 148 };
 
+const MODE_SINGLE_ROW_MAX = 7;
+
+const splitModeRows = (modes: string[]): string[][] => {
+  if (modes.length <= MODE_SINGLE_ROW_MAX) return [modes];
+  const mid = Math.ceil(modes.length / 2);
+  return [modes.slice(0, mid), modes.slice(mid)];
+};
+
 const groupSummons = (summons: MobSummon[]): GroupedSummon[] => {
   const map = new Map<string, GroupedSummon>();
   for (const summon of summons) {
@@ -396,9 +404,13 @@ const MobCard: React.FC<MobCardProps> = ({ result, compact = false }) => {
             </div>
             {result.activeModes && result.activeModes.length > 0 && (
               <div className="result-card-modes">
-                <div className="modes-active-list">
-                  {result.activeModes.map((mode) => (
-                    <span key={mode} className="mode-tag mode-tag-active">{mode}</span>
+                <div className={`modes-active-list${result.activeModes.length > MODE_SINGLE_ROW_MAX ? ' is-balanced' : ''}`}>
+                  {splitModeRows(result.activeModes).map((row, rowIndex) => (
+                    <div key={rowIndex} className="modes-active-row">
+                      {row.map((mode) => (
+                        <span key={mode} className="mode-tag mode-tag-active">{mode}</span>
+                      ))}
+                    </div>
                   ))}
                 </div>
               </div>

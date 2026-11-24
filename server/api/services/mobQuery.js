@@ -25,13 +25,16 @@ function parseStats(row) {
 }
 
 function parseModes(row) {
-    const raw = parseJsonColumn(row.modes, null);
-    if (!raw || typeof raw !== 'object') return null;
+    // Prefer modes_effective (Ai ∨ YAML Modes ∨ Class). Sparse YAML `modes` is original-only.
+    const raw = parseJsonColumn(row.modes_effective, null)
+        ?? parseJsonColumn(row.modes, null);
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
     const modes = {};
     let any = false;
     for (const [key, value] of Object.entries(raw)) {
         if (!value) continue;
-        const normalized = String(key).replace(/^mode_/i, '').toLowerCase();
+        const normalized = String(key).replace(/^mode_/i, '');
+        if (!normalized || normalized.startsWith('_')) continue;
         modes[normalized] = true;
         any = true;
     }

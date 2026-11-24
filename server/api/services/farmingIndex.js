@@ -190,8 +190,12 @@ function buildMob(row, dropsForMob, itemById, spawnsByMob) {
     if (mzw < MIN_MZW) return null;
 
     const hp = Number(row.hp_effective) || 0;
-    const modes = parseJsonColumn(row.modes, {}) || {};
-    const fixedDrop = Boolean(modes.FixedItemDrop || modes.fixeditemdrop || modes.Mvp);
+    const modes = parseJsonColumn(row.modes_effective, null)
+        || parseJsonColumn(row.modes, {})
+        || {};
+    const fixedDrop = Boolean(
+        modes.FixedItemDrop || modes.fixeditemdrop || modes.Mvp || modes.mvp
+    );
 
     const spawnMaps = (spawnsByMob.get(Number(row.mob_id)) || [])
         .filter((spawn) => !isEventOrInstanceMap(spawn.map))

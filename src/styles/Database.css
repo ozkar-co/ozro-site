@@ -1203,13 +1203,27 @@ a {
 
 .modes-active-list {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.modes-active-row {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  gap: 0.55rem 0.75rem;
+  width: 100%;
+}
+
+.modes-active-row .mode-tag {
+  flex: 1 1 0;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .mode-tag {
   display: inline-block;
-  padding: 0.15rem 0.5rem;
+  padding: 0.2rem 0.6rem;
   border-radius: 4px;
   font-size: 0.75rem;
   background: #e9ecef;
