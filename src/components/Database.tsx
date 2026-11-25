@@ -54,11 +54,12 @@ type TabType = DatabaseTab;
 
 type ItemResult = SearchResult & { hasSprite?: boolean };
 type MobResultRow = MobResult & { hasSprite?: boolean };
+type SearchRow = ItemResult | MobResultRow | SkillResult | NpcResult | QuestResult | MapResult;
 
 interface SearchState {
   total: number;
   currentPage: number;
-  results: (ItemResult | MobResultRow | SkillResult | NpcResult | MapResult)[];
+  results: SearchRow[];
   totalPages: number;
 }
 
