@@ -16,6 +16,7 @@ function getStore(name, ttlMs, maxEntries) {
 export function primeResponseCache(name, url, body, ttlMs) {
     const store = caches.get(name);
     if (!store) return;
+    if (!isCacheableBody(url, body)) return;
     const key = normalizeKey(url);
     if (store.entries.size >= store.maxEntries) {
         const oldest = store.entries.keys().next().value;
@@ -25,6 +26,24 @@ export function primeResponseCache(name, url, body, ttlMs) {
         expires: Date.now() + (ttlMs ?? store.ttlMs),
         body
     });
+}
+
+/** Empty meta/catalog payloads (e.g. after schema --reset) must not be cached. */
+function isCacheableBody(url, body) {
+    if (body == null || typeof body !== 'object') return true;
+    const path = url.split('?')[0];
+    if (!path.endsWith('/meta')) return true;
+    if (Array.isArray(body.types) && body.types.length === 0) return false;
+    if (Array.isArray(body.categories) && body.categories.length === 0) return false;
+    return true;
+}
+
+export function clearResponseCache(name) {
+    if (name) {
+        caches.get(name)?.entries.clear();
+        return;
+    }
+    for (const store of caches.values()) store.entries.clear();
 }
 
 export function responseCache(name, ttlMs = 10 * 60 * 1000, maxEntries = 200) {
@@ -42,7 +61,11 @@ export function responseCache(name, ttlMs = 10 * 60 * 1000, maxEntries = 200) {
 
         const originalJson = res.json.bind(res);
         res.json = (body) => {
-            if (res.statusCode >= 200 && res.statusCode < 300) {
+            if (
+                res.statusCode >= 200
+                && res.statusCode < 300
+                && isCacheableBody(req.originalUrl, body)
+            ) {
                 if (store.entries.size >= store.maxEntries) {
                     const oldest = store.entries.keys().next().value;
                     if (oldest !== undefined) store.entries.delete(oldest);

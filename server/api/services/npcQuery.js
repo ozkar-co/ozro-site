@@ -2,11 +2,17 @@
  * NPC queries against ozro_npcs (+ shops / functions / quests / rewards / teachers).
  */
 import { query } from '../../services/mariadb.js';
-import { OZRO_PREFIX, parsePagination, parseJsonColumn } from './gameDb.js';
+import {
+    OZRO_PREFIX,
+    mapAccessibleSql,
+    parsePagination,
+    parseJsonColumn
+} from './gameDb.js';
 import { buildTokenMatchClause } from './textSearch.js';
 import { getItemDisplayName } from './itemInfo.js';
 
 const NPCS = `${OZRO_PREFIX}npcs`;
+const MAPS = `${OZRO_PREFIX}maps`;
 const NPC_FUNCTIONS = `${OZRO_PREFIX}npc_functions`;
 const NPC_SHOPS = `${OZRO_PREFIX}npc_shops`;
 const NPC_SHOP_ITEMS = `${OZRO_PREFIX}npc_shop_items`;
@@ -83,6 +89,9 @@ export async function searchNpcs(params) {
     const types = parseCsvParam(params.type);
     const hasShop = parseBoolFlag(params.hasShop);
     const hasSprite = parseBoolFlag(params.hasSprite);
+    const hasReward = parseBoolFlag(params.hasReward);
+    const hasQuest = parseBoolFlag(params.hasQuest);
+    const accessible = parseBoolFlag(params.accessible);
     const conditions = [];
     const values = [];
 
@@ -104,10 +113,42 @@ export async function searchNpcs(params) {
         );
     }
 
+    if (hasReward === true) {
+        conditions.push(
+            `EXISTS (SELECT 1 FROM \`${NPC_SCRIPT_REWARDS}\` r WHERE r.npc_id = n.npc_id)`
+        );
+    } else if (hasReward === false) {
+        conditions.push(
+            `NOT EXISTS (SELECT 1 FROM \`${NPC_SCRIPT_REWARDS}\` r WHERE r.npc_id = n.npc_id)`
+        );
+    }
+
     if (hasSprite === true) {
         conditions.push('COALESCE(n.has_sprite, 0) = 1');
     } else if (hasSprite === false) {
         conditions.push('COALESCE(n.has_sprite, 0) = 0');
+    }
+
+    // NPC accessible ⇔ its map is traditionally reachable (Dijkstra / hubs).
+    if (accessible === true) {
+        conditions.push(
+            `EXISTS (
+                SELECT 1 FROM \`${MAPS}\` m
+                WHERE m.map_id = n.map_id
+                  AND ${mapAccessibleSql('m')}
+            )`
+        );
+    } else if (accessible === false) {
+        conditions.push(
+            `(
+                n.map_id IS NULL
+                OR NOT EXISTS (
+                    SELECT 1 FROM \`${MAPS}\` m
+                    WHERE m.map_id = n.map_id
+                      AND ${mapAccessibleSql('m')}
+                )
+            )`
+        );
     }
 
     if (q) {

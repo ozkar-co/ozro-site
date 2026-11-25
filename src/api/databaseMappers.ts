@@ -164,10 +164,15 @@ export interface SearchOptions {
   selectedMapCategories: string[];
   mapHasSpawns: boolean;
   mapHasNpcs: boolean;
+  /** Traditionally reachable via Dijkstra (town/city hubs, no quest gates). */
+  mapAccessible: boolean;
   /** NPCs tab filters (DB npc_type + presence flags only) */
   selectedNpcTypes: string[];
   npcHasShop: boolean;
   npcHasSprite: boolean;
+  npcHasReward: boolean;
+  /** NPC on a traditionally accessible map. */
+  npcAccessible: boolean;
 }
 
 export const defaultSearchOptions = (): SearchOptions => ({
@@ -209,9 +214,12 @@ export const defaultSearchOptions = (): SearchOptions => ({
   selectedMapCategories: [],
   mapHasSpawns: false,
   mapHasNpcs: false,
+  mapAccessible: false,
   selectedNpcTypes: [],
   npcHasShop: false,
-  npcHasSprite: false
+  npcHasSprite: false,
+  npcHasReward: false,
+  npcAccessible: false
 });
 
 export function buildNpcSearchParams(
@@ -227,6 +235,8 @@ export function buildNpcSearchParams(
   }
   if (options.npcHasShop) params.hasShop = 1;
   if (options.npcHasSprite) params.hasSprite = 1;
+  if (options.npcHasReward) params.hasReward = 1;
+  if (options.npcAccessible) params.accessible = 1;
   return params;
 }
 
@@ -243,6 +253,7 @@ export function buildMapSearchParams(
   }
   if (options.mapHasSpawns) params.hasSpawns = 1;
   if (options.mapHasNpcs) params.hasNpcs = 1;
+  if (options.mapAccessible) params.accessible = 1;
   return params;
 }
 

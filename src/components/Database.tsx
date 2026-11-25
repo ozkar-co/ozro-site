@@ -759,6 +759,17 @@ const Database = () => {
                             <label className="type-checkbox">
                               <input
                                 type="checkbox"
+                                checked={searchOptions.npcHasReward}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  npcHasReward: !prev.npcHasReward
+                                }))}
+                              />
+                              Con reward
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
                                 checked={searchOptions.npcHasSprite}
                                 onChange={() => setSearchOptions((prev) => ({
                                   ...prev,
@@ -766,6 +777,17 @@ const Database = () => {
                                 }))}
                               />
                               Con sprite
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.npcAccessible}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  npcAccessible: !prev.npcAccessible
+                                }))}
+                              />
+                              Accesible
                             </label>
                           </div>
                         </div>
@@ -824,6 +846,17 @@ const Database = () => {
                                 }))}
                               />
                               Con NPCs
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={searchOptions.mapAccessible}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  mapAccessible: !prev.mapAccessible
+                                }))}
+                              />
+                              Accesible
                             </label>
                           </div>
                         </div>

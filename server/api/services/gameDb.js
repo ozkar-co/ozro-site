@@ -21,6 +21,7 @@ export const T = {
     SPAWNS: `${OZRO_PREFIX}spawns`,
     MAPS: `${OZRO_PREFIX}maps`,
     MAP_CONNECTIONS: `${OZRO_PREFIX}map_connections`,
+    MAP_DISTANCES: `${OZRO_PREFIX}map_distances`,
     ITEMS: `${OZRO_PREFIX}items`,
     ITEM_SCRIPTS: `${OZRO_PREFIX}item_scripts`,
     SKILL_SUMMONS: `${OZRO_PREFIX}skill_summons`,
@@ -211,6 +212,34 @@ export function parseJsonColumn(value, fallback = null) {
 }
 
 /** World spawn = not instance/event/slave (permanent + scripted on open maps). */
+/**
+ * Traditionally reachable overworld map: town/city hub itself, or reachable
+ * FROM a town/city via ozro_map_distances (Dijkstra without quest_gated edges).
+ * Instances are never accessible.
+ */
+export function mapAccessibleSql(alias = 'm') {
+    const hub = `${alias}_hub`;
+    return `(
+        COALESCE(${alias}.is_instance, 0) = 0
+        AND (
+            COALESCE(${alias}.is_town, 0) = 1
+            OR ${alias}.category = 'City'
+            OR EXISTS (
+                SELECT 1
+                FROM \`${T.MAP_DISTANCES}\` d
+                INNER JOIN \`${T.MAPS}\` ${hub}
+                    ON ${hub}.map_id = d.from_map_id
+                   AND COALESCE(${hub}.is_instance, 0) = 0
+                   AND (
+                        COALESCE(${hub}.is_town, 0) = 1
+                        OR ${hub}.category = 'City'
+                   )
+                WHERE d.to_map_id = ${alias}.map_id
+            )
+        )
+    )`;
+}
+
 export function isWorldSpawnSql(alias = 's') {
     return `(
         ${alias}.spawn_type IN ('permanent', 'scripted')

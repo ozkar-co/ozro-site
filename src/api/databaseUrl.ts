@@ -59,6 +59,8 @@ function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): bo
     if (options.selectedNpcTypes.length > 0) return true;
     if (options.npcHasShop) return true;
     if (options.npcHasSprite) return true;
+    if (options.npcHasReward) return true;
+    if (options.npcAccessible) return true;
     return false;
   }
   if (tab === 'skills') {
@@ -77,6 +79,7 @@ function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): bo
     if (options.selectedMapCategories.length > 0) return true;
     if (options.mapHasSpawns) return true;
     if (options.mapHasNpcs) return true;
+    if (options.mapAccessible) return true;
     return false;
   }
   if (options.selectedElements.length > 0) return true;
@@ -198,12 +201,18 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
   if (mapHasSpawns !== undefined) options.mapHasSpawns = mapHasSpawns;
   const mapHasNpcs = parseBoolParam(params.get('mapHasNpcs'));
   if (mapHasNpcs !== undefined) options.mapHasNpcs = mapHasNpcs;
+  const mapAccessible = parseBoolParam(params.get('mapAccessible'));
+  if (mapAccessible !== undefined) options.mapAccessible = mapAccessible;
 
   options.selectedNpcTypes = parseCsvList(params.get('npcType'));
   const npcHasShop = parseBoolParam(params.get('npcHasShop'));
   if (npcHasShop !== undefined) options.npcHasShop = npcHasShop;
   const npcHasSprite = parseBoolParam(params.get('npcHasSprite'));
   if (npcHasSprite !== undefined) options.npcHasSprite = npcHasSprite;
+  const npcHasReward = parseBoolParam(params.get('npcHasReward'));
+  if (npcHasReward !== undefined) options.npcHasReward = npcHasReward;
+  const npcAccessible = parseBoolParam(params.get('npcAccessible'));
+  if (npcAccessible !== undefined) options.npcAccessible = npcAccessible;
 
   const kinds = params.get('kinds');
   if (kinds) {
@@ -321,6 +330,7 @@ export function buildDatabaseSearchParams(
     }
     if (options.mapHasSpawns) params.set('mapHasSpawns', '1');
     if (options.mapHasNpcs) params.set('mapHasNpcs', '1');
+    if (options.mapAccessible) params.set('mapAccessible', '1');
   }
 
   if (tab === 'npcs') {
@@ -329,6 +339,8 @@ export function buildDatabaseSearchParams(
     }
     if (options.npcHasShop) params.set('npcHasShop', '1');
     if (options.npcHasSprite) params.set('npcHasSprite', '1');
+    if (options.npcHasReward) params.set('npcHasReward', '1');
+    if (options.npcAccessible) params.set('npcAccessible', '1');
   }
 
   if (tab === 'mobs') {

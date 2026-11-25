@@ -4,6 +4,7 @@
 import { query } from '../../services/mariadb.js';
 import {
     T,
+    mapAccessibleSql,
     parseBool,
     parseCsv,
     parsePagination
@@ -146,7 +147,8 @@ export async function searchMaps(params) {
     if (instance === true) conditions.push('m.is_instance = 1');
     if (instance === false) conditions.push('COALESCE(m.is_instance, 0) = 0');
     if (quest === true) conditions.push('m.is_quest_map = 1');
-    if (accessible === true) conditions.push('m.is_accessible = 1');
+    if (accessible === true) conditions.push(mapAccessibleSql('m'));
+    else if (accessible === false) conditions.push(`NOT ${mapAccessibleSql('m')}`);
     if (hasSpawns === true) conditions.push('COALESCE(sp.spawn_points, 0) > 0');
     if (hasNpcs === true) conditions.push('COALESCE(np.npc_count, 0) > 0');
 
@@ -173,7 +175,8 @@ export async function searchMaps(params) {
     const selectCols = `
         m.map_id, m.display_name, m.category, m.categories,
         m.is_town, m.is_dungeon, m.is_instance, m.is_quest_map,
-        m.is_guild_map, m.is_interior, m.is_accessible,
+        m.is_guild_map, m.is_interior,
+        CASE WHEN ${mapAccessibleSql('m')} THEN 1 ELSE 0 END AS is_accessible,
         m.width, m.height, m.client_resource_present,
         COALESCE(sp.spawn_points, 0) AS spawn_points,
         COALESCE(sp.spawn_species, 0) AS spawn_species,
@@ -209,7 +212,8 @@ export async function getMapById(mapId) {
     const rows = await query(
         `SELECT m.map_id, m.display_name, m.category, m.categories,
                 m.is_town, m.is_dungeon, m.is_instance, m.is_quest_map,
-                m.is_guild_map, m.is_interior, m.is_accessible,
+                m.is_guild_map, m.is_interior,
+                CASE WHEN ${mapAccessibleSql('m')} THEN 1 ELSE 0 END AS is_accessible,
                 m.width, m.height, m.client_resource_present, m.client,
                 COALESCE(sp.spawn_points, 0) AS spawn_points,
                 COALESCE(sp.spawn_species, 0) AS spawn_species,
