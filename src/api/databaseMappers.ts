@@ -174,6 +174,11 @@ export interface SearchOptions {
   npcHasQuest: boolean;
   /** NPC on a traditionally accessible map. */
   npcAccessible: boolean;
+  /** Quests tab filters (presence flags from ozro_quests / links). */
+  questHasTargets: boolean;
+  questHasDrops: boolean;
+  questHasNpc: boolean;
+  questHasTimeLimit: boolean;
 }
 
 export const defaultSearchOptions = (): SearchOptions => ({
@@ -221,7 +226,11 @@ export const defaultSearchOptions = (): SearchOptions => ({
   npcHasSprite: false,
   npcHasReward: false,
   npcHasQuest: false,
-  npcAccessible: false
+  npcAccessible: false,
+  questHasTargets: false,
+  questHasDrops: false,
+  questHasNpc: false,
+  questHasTimeLimit: false
 });
 
 export function buildNpcSearchParams(
@@ -257,6 +266,21 @@ export function buildMapSearchParams(
   if (options.mapHasSpawns) params.hasSpawns = 1;
   if (options.mapHasNpcs) params.hasNpcs = 1;
   if (options.mapAccessible) params.accessible = 1;
+  return params;
+}
+
+export function buildQuestSearchParams(
+  searchTerm: string,
+  options: SearchOptions,
+  page: number,
+  limit: number
+): Record<string, string | number> {
+  const params: Record<string, string | number> = { page: page + 1, limit };
+  if (searchTerm.trim()) params.q = searchTerm.trim();
+  if (options.questHasTargets) params.hasTargets = 1;
+  if (options.questHasDrops) params.hasDrops = 1;
+  if (options.questHasNpc) params.hasNpc = 1;
+  if (options.questHasTimeLimit) params.hasTimeLimit = 1;
   return params;
 }
 

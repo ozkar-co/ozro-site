@@ -5,9 +5,9 @@ import {
   ITEM_TYPE_WEAPON
 } from './databaseMappers';
 
-export type DatabaseTab = 'items' | 'mobs' | 'skills' | 'npcs' | 'maps' | 'mvps';
+export type DatabaseTab = 'items' | 'mobs' | 'skills' | 'npcs' | 'quests' | 'maps' | 'mvps';
 
-const DATABASE_TABS: DatabaseTab[] = ['items', 'mobs', 'skills', 'npcs', 'maps', 'mvps'];
+const DATABASE_TABS: DatabaseTab[] = ['items', 'mobs', 'skills', 'npcs', 'quests', 'maps', 'mvps'];
 
 /**
  * URL params that only affect in-view focus/highlight (pins, arrival marker).
@@ -62,6 +62,13 @@ function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): bo
     if (options.npcHasReward) return true;
     if (options.npcHasQuest) return true;
     if (options.npcAccessible) return true;
+    return false;
+  }
+  if (tab === 'quests') {
+    if (options.questHasTargets) return true;
+    if (options.questHasDrops) return true;
+    if (options.questHasNpc) return true;
+    if (options.questHasTimeLimit) return true;
     return false;
   }
   if (tab === 'skills') {
@@ -217,6 +224,15 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
   const npcAccessible = parseBoolParam(params.get('npcAccessible'));
   if (npcAccessible !== undefined) options.npcAccessible = npcAccessible;
 
+  const questHasTargets = parseBoolParam(params.get('questHasTargets'));
+  if (questHasTargets !== undefined) options.questHasTargets = questHasTargets;
+  const questHasDrops = parseBoolParam(params.get('questHasDrops'));
+  if (questHasDrops !== undefined) options.questHasDrops = questHasDrops;
+  const questHasNpc = parseBoolParam(params.get('questHasNpc'));
+  if (questHasNpc !== undefined) options.questHasNpc = questHasNpc;
+  const questHasTimeLimit = parseBoolParam(params.get('questHasTimeLimit'));
+  if (questHasTimeLimit !== undefined) options.questHasTimeLimit = questHasTimeLimit;
+
   const kinds = params.get('kinds');
   if (kinds) {
     const set = new Set(kinds.split(',').map((k) => k.trim().toLowerCase()));
@@ -345,6 +361,13 @@ export function buildDatabaseSearchParams(
     if (options.npcHasReward) params.set('npcHasReward', '1');
     if (options.npcHasQuest) params.set('npcHasQuest', '1');
     if (options.npcAccessible) params.set('npcAccessible', '1');
+  }
+
+  if (tab === 'quests') {
+    if (options.questHasTargets) params.set('questHasTargets', '1');
+    if (options.questHasDrops) params.set('questHasDrops', '1');
+    if (options.questHasNpc) params.set('questHasNpc', '1');
+    if (options.questHasTimeLimit) params.set('questHasTimeLimit', '1');
   }
 
   if (tab === 'mobs') {

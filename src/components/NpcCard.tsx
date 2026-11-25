@@ -211,8 +211,13 @@ const NpcCard = ({ result }: NpcCardProps) => {
             {quests.map((quest) => (
               <li key={quest.linkId}>
                 <strong>
-                  {quest.questId != null ? `#${quest.questId} ` : ''}
-                  {quest.title || 'Quest'}
+                  {quest.questId != null ? (
+                    <Link to={`/database?tab=quests&q=${quest.questId}&run=1`}>
+                      #{quest.questId} {quest.title || 'Quest'}
+                    </Link>
+                  ) : (
+                    quest.title || 'Quest'
+                  )}
                 </strong>
                 {quest.role && (
                   <span className="acquisition-meta"> · {formatFilterLabel(quest.role)}</span>

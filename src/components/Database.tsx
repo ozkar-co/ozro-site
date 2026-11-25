@@ -7,6 +7,7 @@ import ItemCard, { SearchResult } from './ItemCard';
 import MobCard, { MobResult } from './MobCard';
 import SkillCard, { type SkillResult } from './SkillCard';
 import NpcCard, { type NpcResult } from './NpcCard';
+import QuestCard, { type QuestResult } from './QuestCard';
 import MapCard, { type MapResult } from './MapCard';
 import '../styles/Database.css';
 import '../styles/Maps.css';
@@ -26,6 +27,7 @@ import {
   buildMapSearchParams,
   buildMobSearchParams,
   buildNpcSearchParams,
+  buildQuestSearchParams,
   buildSkillSearchParams,
   formatFilterLabel,
   ITEM_TYPE_AMMO,
@@ -454,6 +456,28 @@ const Database = () => {
       };
     }
 
+    if (tab === 'quests') {
+      if (isIdLookup) {
+        const quest = await apiClient.getQuest(parseInt(trimmed, 10)).catch(() => null);
+        if (!quest) {
+          return { total: 0, currentPage: 0, results: [], totalPages: 0 };
+        }
+        return { total: 1, currentPage: 0, results: [quest], totalPages: 1 };
+      }
+      const data = await apiClient.searchQuests(
+        buildQuestSearchParams(trimmed, options, page, RESULTS_PER_PAGE)
+      );
+      const results = data.total === 1 && data.results[0]
+        ? [await apiClient.getQuest(data.results[0].id).catch(() => data.results[0])]
+        : data.results;
+      return {
+        total: data.total,
+        currentPage: page,
+        results,
+        totalPages: Math.max(1, Math.ceil(data.total / RESULTS_PER_PAGE))
+      };
+    }
+
     if (tab === 'mobs') {
       if (isIdLookup) {
         const mob = await apiClient.getMob(parseInt(trimmed, 10)).catch(() => null);
@@ -658,6 +682,12 @@ const Database = () => {
             NPCs
           </button>
           <button
+            className={`tab-button ${activeTab === 'quests' ? 'active' : ''}`}
+            onClick={() => handleTabChange('quests')}
+          >
+            Quests
+          </button>
+          <button
             className={`tab-button ${activeTab === 'maps' ? 'active' : ''}`}
             onClick={() => handleTabChange('maps')}
           >
@@ -690,9 +720,11 @@ const Database = () => {
                           ? 'Buscar por nombre o ID del monstruo...'
                           : activeTab === 'skills'
                             ? 'Buscar skill por nombre o ID...'
-                            : activeTab === 'maps'
-                              ? 'Buscar mapa por nombre o ID...'
-                              : 'Buscar NPC por nombre, mapa o ID...'
+                            : activeTab === 'quests'
+                              ? 'Buscar quest por título o ID...'
+                              : activeTab === 'maps'
+                                ? 'Buscar mapa por nombre o ID...'
+                                : 'Buscar NPC por nombre, mapa o ID...'
                     }
                     className="search-input"
                   />
@@ -702,14 +734,64 @@ const Database = () => {
                 </div>
               </form>
               <div className="search-options-container" ref={searchOptionsPanelRef}>
-                {(activeTab === 'items' || activeTab === 'mobs' || activeTab === 'skills' || activeTab === 'npcs' || activeTab === 'maps') && (
+                {(activeTab === 'items' || activeTab === 'mobs' || activeTab === 'skills' || activeTab === 'npcs' || activeTab === 'quests' || activeTab === 'maps') && (
                 <button className="search-options-toggle" onClick={handleOptionsToggle}>
                   <i className={`arrow-icon ${isOptionsVisible ? 'up' : 'down'}`}></i>
                 </button>
                 )}
-                {isOptionsVisible && (activeTab === 'items' || activeTab === 'mobs' || activeTab === 'skills' || activeTab === 'npcs' || activeTab === 'maps') && (
+                {isOptionsVisible && (activeTab === 'items' || activeTab === 'mobs' || activeTab === 'skills' || activeTab === 'npcs' || activeTab === 'quests' || activeTab === 'maps') && (
                   <div className={`search-options-panel ${isClosing ? 'closing' : ''}`}>
-                    {activeTab === 'npcs' ? (
+                    {activeTab === 'quests' ? (
+                      <div className="search-types">
+                        <div className="search-types-title">Contenido:</div>
+                        <div className="search-types-grid">
+                          <label className="type-checkbox">
+                            <input
+                              type="checkbox"
+                              checked={searchOptions.questHasTargets}
+                              onChange={() => setSearchOptions((prev) => ({
+                                ...prev,
+                                questHasTargets: !prev.questHasTargets
+                              }))}
+                            />
+                            Con objetivos
+                          </label>
+                          <label className="type-checkbox">
+                            <input
+                              type="checkbox"
+                              checked={searchOptions.questHasDrops}
+                              onChange={() => setSearchOptions((prev) => ({
+                                ...prev,
+                                questHasDrops: !prev.questHasDrops
+                              }))}
+                            />
+                            Con drops
+                          </label>
+                          <label className="type-checkbox">
+                            <input
+                              type="checkbox"
+                              checked={searchOptions.questHasNpc}
+                              onChange={() => setSearchOptions((prev) => ({
+                                ...prev,
+                                questHasNpc: !prev.questHasNpc
+                              }))}
+                            />
+                            Con NPC
+                          </label>
+                          <label className="type-checkbox">
+                            <input
+                              type="checkbox"
+                              checked={searchOptions.questHasTimeLimit}
+                              onChange={() => setSearchOptions((prev) => ({
+                                ...prev,
+                                questHasTimeLimit: !prev.questHasTimeLimit
+                              }))}
+                            />
+                            Con límite de tiempo
+                          </label>
+                        </div>
+                      </div>
+                    ) : activeTab === 'npcs' ? (
                       <>
                         {npcMetaError && (
                           <div className="search-filter-hint">{npcMetaError}</div>
@@ -1599,6 +1681,10 @@ const Database = () => {
                     if (activeTab === 'npcs') {
                       const npc = result as NpcResult;
                       return <NpcCard key={npc.id} result={npc} />;
+                    }
+                    if (activeTab === 'quests') {
+                      const quest = result as QuestResult;
+                      return <QuestCard key={quest.id} result={quest} />;
                     }
                     if (activeTab === 'maps') {
                       const map = result as MapResult;

@@ -565,6 +565,74 @@ export interface NpcSummary {
   scriptPath?: string | null;
 }
 
+export interface QuestTimeLimit {
+  seconds: number | null;
+  raw: string | null;
+}
+
+export interface QuestSummary {
+  id: number;
+  title: string;
+  targetCount: number;
+  dropCount: number;
+  npcCount: number;
+  hasTimeLimit: boolean;
+  timeLimit?: QuestTimeLimit | null;
+  sourceFile?: string | null;
+}
+
+export interface QuestDetail extends QuestSummary {
+  targets?: {
+    targetIndex: number | null;
+    mobSubindex: number | null;
+    objectiveId: number | null;
+    mobId: number | null;
+    mobName: string | null;
+    mobAegisName: string | null;
+    count: number | null;
+    location: string | null;
+    race: string | null;
+    minLevel: number | null;
+  }[];
+  drops?: {
+    dropIndex: number | null;
+    mobId: number | null;
+    mobName: string | null;
+    mobAegisName: string | null;
+    itemId: number | null;
+    itemName: string | null;
+    itemAegisName: string | null;
+    rate: number | null;
+    rateUnit: string | null;
+  }[];
+  npcs?: {
+    linkId: string;
+    npcId: string | null;
+    name: string | null;
+    type: string | null;
+    mapId: string | null;
+    x: number | null;
+    y: number | null;
+    role: string | null;
+    scriptPath?: string | null;
+    scriptLine?: number | null;
+    inQuestDb?: boolean | null;
+  }[];
+  targetTotal?: number;
+  dropTotal?: number;
+  npcTotal?: number;
+}
+
+export type QuestSearchParams = {
+  q?: string;
+  page?: number;
+  limit?: number;
+  hasTargets?: number | string;
+  hasDrops?: number | string;
+  hasNpc?: number | string;
+  hasTimeLimit?: number | string;
+};
+
 export interface NpcDetail extends NpcSummary {
   facing?: number | null;
   scriptLine?: number | null;
@@ -818,6 +886,13 @@ export const apiClient = {
   getNpc: (id: string) => apiFetch<NpcDetail>(`/npcs/${encodeURIComponent(id)}`),
 
   getNpcMeta: () => apiFetch<{ types: string[] }>('/npcs/meta'),
+
+  searchQuests: (params: QuestSearchParams) =>
+    apiFetch<PaginatedResponse<QuestSummary>>(`/quests${buildQuery(params)}`),
+
+  getQuest: (id: number | string) => apiFetch<QuestDetail>(`/quests/${id}`),
+
+  getQuestMeta: () => apiFetch<{ filters: string[] }>('/quests/meta'),
 
   searchMaps: (params: MapSearchParams) =>
     apiFetch<PaginatedResponse<MapSummary>>(`/maps${buildQuery(params as Record<string, string | number | undefined>)}`),
