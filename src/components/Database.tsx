@@ -700,7 +700,7 @@ const Database = () => {
             MVPs
           </button>
         </div>
-        <div className={`database-container${activeTab === 'mvps' ? ' database-embed' : ''}`}>
+        <div className="database-container">
           {activeTab === 'mvps' ? (
             <Mvps />
           ) : (

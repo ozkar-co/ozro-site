@@ -4,10 +4,12 @@ import AtlasSprite from './AtlasSprite';
 import { apiClient, type MvpEntry, type MvpRadarResponse, type MvpState } from '../api/client';
 import { resolveSprite, type SpriteRect } from '../api/assets';
 import { PLACEHOLDER_MOB_SPRITE } from '../api/placeholders';
+import { mapDetailHref } from '../api/databaseMappers';
 import '../styles/Mvps.css';
 
 type LevelFilter = 'all' | 'low' | 'mid' | 'high' | 'elite' | 'end';
-type SortMode = 'next' | 'level' | 'name' | 'respawn';
+type SortMode = 'next' | 'level' | 'name' | 'respawn' | 'souls';
+type SortDir = 'asc' | 'desc';
 
 interface LiveMvp extends MvpEntry {
   live: {
@@ -27,11 +29,11 @@ const STATE_META: Record<MvpState, { label: string; className: string }> = {
 };
 
 const LEVEL_FILTERS: Record<LevelFilter, { label: string; min: number; max: number }> = {
-  all: { label: 'Todos los niveles', min: 0, max: Infinity },
-  low: { label: '1 – 50', min: 1, max: 50 },
-  mid: { label: '51 – 90', min: 51, max: 90 },
-  high: { label: '91 – 120', min: 91, max: 120 },
-  elite: { label: '121 – 160', min: 121, max: 160 },
+  all: { label: 'Todos', min: 0, max: Infinity },
+  low: { label: '1–50', min: 1, max: 50 },
+  mid: { label: '51–90', min: 51, max: 90 },
+  high: { label: '91–120', min: 91, max: 120 },
+  elite: { label: '121–160', min: 121, max: 160 },
   end: { label: '161+', min: 161, max: Infinity }
 };
 
@@ -39,7 +41,8 @@ const SORT_OPTIONS: Record<SortMode, string> = {
   next: 'Próximo respawn',
   level: 'Nivel',
   name: 'Nombre',
-  respawn: 'Respawn más corto'
+  respawn: 'Respawn',
+  souls: 'Cristales'
 };
 
 function formatDuration(seconds: number): string {
@@ -127,8 +130,11 @@ const Mvps = () => {
   const [query, setQuery] = useState('');
   const [stateFilter, setStateFilter] = useState<'all' | MvpState>('all');
   const [levelFilter, setLevelFilter] = useState<LevelFilter>('all');
+  const [soulFilter, setSoulFilter] = useState<number[]>([]);
   const [sort, setSort] = useState<SortMode>('next');
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(true);
   const spritesLoaded = useRef(false);
 
   const fetchData = useCallback(async () => {
@@ -201,32 +207,47 @@ const Mvps = () => {
     }));
   }, [data, serverNow, yellowWindowSeconds]);
 
+  const soulOptions = useMemo(() => {
+    const values = new Set<number>();
+    for (const mvp of mvps) {
+      if (Number.isFinite(mvp.souls)) values.add(mvp.souls);
+    }
+    return [...values].sort((a, b) => a - b);
+  }, [mvps]);
+
   const filteredMvps = useMemo(() => {
     const term = query.trim().toLowerCase();
     const level = LEVEL_FILTERS[levelFilter];
+    const soulSet = soulFilter.length > 0 ? new Set(soulFilter) : null;
 
     const filtered = mvps.filter((mvp) => {
       if (stateFilter !== 'all' && mvp.live.state !== stateFilter) return false;
       if (mvp.level < level.min || mvp.level > level.max) return false;
+      if (soulSet && !soulSet.has(mvp.souls)) return false;
       if (!term) return true;
       return `${mvp.name} ${mvp.nameAegis} ${mvp.map}`.toLowerCase().includes(term);
     });
 
+    const dir = sortDir === 'asc' ? 1 : -1;
     return filtered.sort((a, b) => {
+      let cmp = 0;
       if (sort === 'next') {
         const aNext = a.live.windowStart ?? Number.POSITIVE_INFINITY;
         const bNext = b.live.windowStart ?? Number.POSITIVE_INFINITY;
-        return aNext - bNext || b.level - a.level || a.name.localeCompare(b.name, 'es');
+        cmp = aNext - bNext;
+      } else if (sort === 'level') {
+        cmp = a.level - b.level;
+      } else if (sort === 'name') {
+        cmp = a.name.localeCompare(b.name, 'es');
+      } else if (sort === 'souls') {
+        cmp = a.souls - b.souls;
+      } else {
+        cmp = a.respawnMinSeconds - b.respawnMinSeconds;
       }
-      if (sort === 'level') {
-        return b.level - a.level || a.name.localeCompare(b.name, 'es');
-      }
-      if (sort === 'name') {
-        return a.name.localeCompare(b.name, 'es');
-      }
-      return a.respawnMinSeconds - b.respawnMinSeconds || b.level - a.level || a.name.localeCompare(b.name, 'es');
+      if (cmp !== 0) return cmp * dir;
+      return a.name.localeCompare(b.name, 'es');
     });
-  }, [mvps, query, stateFilter, levelFilter, sort]);
+  }, [mvps, query, stateFilter, levelFilter, soulFilter, sort, sortDir]);
 
   const mobNames = useMemo(() => new Map(mvps.map((mvp) => [mvp.mobId, mvp.name])), [mvps]);
   const selected = selectedId ? mvps.find((mvp) => mvp.id === selectedId) ?? null : null;
@@ -247,122 +268,207 @@ const Mvps = () => {
     return 'Sin muertes registradas';
   };
 
-  const mapImage = (map: string) => `/assets/maps/images/${map}.webp`;
+  const handleSearch = (event: React.FormEvent) => {
+    event.preventDefault();
+  };
 
   return (
     <>
-      {error && <div className="mvps-error">{error}</div>}
+      {error && <div className="mvps-banner mvps-banner--error">{error}</div>}
 
-          {data && data.recentKills.length > 0 && (
-            <section className="mvps-recent" aria-label="Últimas cazas">
-              <h2>Últimas cazas</h2>
-              <div className="mvps-recent-list">
-                {data.recentKills.map((kill) => (
-                  <div key={`${kill.mobId}-${kill.map}-${kill.at}`} className="mvps-recent-item">
-                    <strong>{mobNames.get(kill.mobId) ?? `MVP ${kill.mobId}`}</strong>
-                    <span>{kill.map}</span>
-                    <span>{kill.killer ?? 'Cazador desconocido'}</span>
-                    <em>hace {formatDuration(kill.secondsAgo)}</em>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          <section className="mvps-toolbar" aria-label="Filtros de MVPs">
-            <label className="mvps-search">
-              <span>Buscar</span>
+      <div className="search-section">
+        <div className="search-container">
+          <form onSubmit={handleSearch} className="search-form">
+            <div className="form-group">
               <input
                 type="search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="MVP o mapa..."
+                placeholder="Buscar MVP por nombre o mapa..."
+                className="search-input"
               />
-            </label>
-            <label>
-              <span>Estado</span>
-              <select value={stateFilter} onChange={(event) => setStateFilter(event.target.value as 'all' | MvpState)}>
-                <option value="all">Todos</option>
-                <option value="alive">Vivos</option>
-                <option value="dead">Derrotados</option>
-                <option value="probable">Probables</option>
-                <option value="unknown">Sin registro</option>
-              </select>
-            </label>
-            <label>
-              <span>Nivel</span>
-              <select value={levelFilter} onChange={(event) => setLevelFilter(event.target.value as LevelFilter)}>
-                {(Object.keys(LEVEL_FILTERS) as LevelFilter[]).map((key) => (
-                  <option key={key} value={key}>{LEVEL_FILTERS[key].label}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>Ordenar</span>
-              <select value={sort} onChange={(event) => setSort(event.target.value as SortMode)}>
-                {(Object.keys(SORT_OPTIONS) as SortMode[]).map((key) => (
-                  <option key={key} value={key}>{SORT_OPTIONS[key]}</option>
-                ))}
-              </select>
-            </label>
-            <button type="button" className="mvps-refresh" onClick={fetchData} disabled={loading}>
-              Actualizar
+              <button
+                type="button"
+                className="search-button"
+                onClick={fetchData}
+                disabled={loading}
+              >
+                {loading && !data ? 'Cargando...' : 'Actualizar'}
+              </button>
+            </div>
+          </form>
+
+          <div className="search-options-container">
+            <button
+              type="button"
+              className="search-options-toggle"
+              onClick={() => setFiltersOpen((open) => !open)}
+            >
+              <i className={`arrow-icon ${filtersOpen ? 'up' : 'down'}`} />
             </button>
-            <span className="mvps-updated">
-              {updatedSeconds === null ? '—' : `hace ${formatDuration(updatedSeconds)}`}
-            </span>
-          </section>
-
-          {loading && !data && <div className="mvps-loading">Cargando radar...</div>}
-
-          {data && filteredMvps.length === 0 && (
-            <div className="mvps-empty">No hay MVPs con esos filtros.</div>
-          )}
-
-          {data && filteredMvps.length > 0 && (
-            <div className="mvps-grid">
-              {filteredMvps.map((mvp) => {
-                const meta = STATE_META[mvp.live.state];
-                return (
-                  <article
-                    key={mvp.id}
-                    className={`mvp-card state-${mvp.live.state}`}
-                    onClick={() => setSelectedId(mvp.id)}
-                  >
-                    <div className="mvp-card-map" aria-hidden="true">
-                      <img
-                        src={mapImage(mvp.map)}
-                        alt=""
-                        loading="lazy"
-                        onError={(event) => {
-                          event.currentTarget.style.display = 'none';
-                        }}
-                      />
+            {filtersOpen && (
+              <div className="search-options-panel">
+                <div className="search-types">
+                  <div className="search-types-title">Estado:</div>
+                  <div className="search-types-grid">
+                    {([
+                      ['all', 'Todos'],
+                      ['alive', 'Vivos'],
+                      ['dead', 'Derrotados'],
+                      ['probable', 'Probables'],
+                      ['unknown', 'Sin registro']
+                    ] as const).map(([value, label]) => (
+                      <label key={value} className="type-checkbox">
+                        <input
+                          type="radio"
+                          name="mvp-state"
+                          checked={stateFilter === value}
+                          onChange={() => setStateFilter(value)}
+                        />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="search-types">
+                  <div className="search-types-title">Nivel:</div>
+                  <div className="search-types-grid">
+                    {(Object.keys(LEVEL_FILTERS) as LevelFilter[]).map((key) => (
+                      <label key={key} className="type-checkbox">
+                        <input
+                          type="radio"
+                          name="mvp-level"
+                          checked={levelFilter === key}
+                          onChange={() => setLevelFilter(key)}
+                        />
+                        {LEVEL_FILTERS[key].label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                {soulOptions.length > 0 && (
+                  <div className="search-types">
+                    <div className="search-types-title">Cristales:</div>
+                    <div className="search-types-grid">
+                      {soulOptions.map((value) => (
+                        <label key={value} className="type-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={soulFilter.includes(value)}
+                            onChange={() => setSoulFilter((prev) => (
+                              prev.includes(value)
+                                ? prev.filter((v) => v !== value)
+                                : [...prev, value].sort((a, b) => a - b)
+                            ))}
+                          />
+                          {value}
+                        </label>
+                      ))}
                     </div>
-                    <div className="mvp-card-content">
-                      <div className="mvp-card-head">
-                        <div className="mvp-card-sprite">
-                          <AtlasSprite sprite={sprites[mvp.mobId]} alt={mvp.name} className="mvp-sprite-img" />
-                        </div>
-                        <div className="mvp-card-title">
-                          <h2>{mvp.name}</h2>
-                          <div className="mvp-card-meta">
-                            <span className="mvp-level">Nv. {mvp.level}</span>
-                            <span className="mvp-souls" title={`${mvp.souls} Almas por kill`}>
-                              <img src="/icons/mvp-soul.png" alt="" />
-                              {mvp.souls}
-                            </span>
-                            <Link
-                              to={`/database?tab=maps&map=${encodeURIComponent(mvp.map)}`}
-                              onClick={(event) => event.stopPropagation()}
-                            >
-                              {mvp.map}
-                            </Link>
-                          </div>
-                        </div>
+                  </div>
+                )}
+                <div className="search-types">
+                  <div className="search-types-title">Orden:</div>
+                  <div className="search-types-grid">
+                    {(Object.keys(SORT_OPTIONS) as SortMode[]).map((key) => (
+                      <label key={key} className="type-checkbox">
+                        <input
+                          type="radio"
+                          name="mvp-sort"
+                          checked={sort === key}
+                          onChange={() => setSort(key)}
+                        />
+                        {SORT_OPTIONS[key]}
+                      </label>
+                    ))}
+                    <button
+                      type="button"
+                      className="mvps-sort-dir"
+                      onClick={() => setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+                      title={sortDir === 'asc' ? 'Ascendente' : 'Descendente'}
+                    >
+                      {sortDir === 'asc' ? 'Asc ↑' : 'Desc ↓'}
+                    </button>
+                  </div>
+                </div>
+                <div className="mvps-filter-foot">
+                  <span className="mvps-updated">
+                    {updatedSeconds === null ? '—' : `Actualizado hace ${formatDuration(updatedSeconds)}`}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {data && data.recentKills.length > 0 && (
+        <section className="mvps-recent" aria-label="Últimas cazas">
+          <div className="result-card-script-header">Últimas cazas</div>
+          <div className="mvps-recent-list">
+            {data.recentKills.map((kill) => (
+              <div key={`${kill.mobId}-${kill.map}-${kill.at}`} className="mvps-recent-item">
+                <strong>{mobNames.get(kill.mobId) ?? `MVP ${kill.mobId}`}</strong>
+                <span>{kill.map}</span>
+                <span>{kill.killer ?? 'Cazador desconocido'}</span>
+                <em>hace {formatDuration(kill.secondsAgo)}</em>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <div className="results-section">
+        {loading && !data && <div className="loading-results">Cargando MVPs…</div>}
+
+        {data && filteredMvps.length === 0 && (
+          <div className="no-results">No hay MVPs con esos filtros.</div>
+        )}
+
+        {data && filteredMvps.length > 0 && (
+          <div className="results-grid">
+            {filteredMvps.map((mvp) => {
+              const meta = STATE_META[mvp.live.state];
+              return (
+                <article
+                  key={mvp.id}
+                  className={`result-card result-card--mvp state-${mvp.live.state}`}
+                  onClick={() => setSelectedId(mvp.id)}
+                >
+                  <div className="result-card-content">
+                    <div className="result-card-image result-card-image--mvp">
+                      <AtlasSprite
+                        sprite={sprites[mvp.mobId]}
+                        alt={mvp.name}
+                        fallback={PLACEHOLDER_MOB_SPRITE}
+                        fit={{ maxWidth: 96, maxHeight: 96 }}
+                      />
+                      <div className="mvp-icon" aria-hidden="true">
+                        <img src="/icons/mvp.gif" alt="" />
+                      </div>
+                    </div>
+                    <div className="result-card-info">
+                      <div className="result-card-header">
+                        <h3>
+                          <span className="name-title">{mvp.name}</span>
+                          {' '}
+                          <span className="result-card-id">#{mvp.mobId}</span>
+                        </h3>
                         <span className={`mvp-state-badge state-${mvp.live.state}`}>{meta.label}</span>
                       </div>
-
+                      <div className="result-card-meta">
+                        <span>Nv. {mvp.level}</span>
+                        <span className="mvp-souls" title={`${mvp.souls} Almas por kill`}>
+                          <img src="/icons/mvp-soul.png" alt="" />
+                          {mvp.souls}
+                        </span>
+                        <Link
+                          to={mapDetailHref(mvp.map)}
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          {mvp.map}
+                        </Link>
+                      </div>
                       <div className="mvp-card-status">
                         <strong>{stateText(mvp)}</strong>
                         {mvp.live.state === 'probable' && (
@@ -373,30 +479,31 @@ const Mvps = () => {
                         <span className="mvp-card-window">
                           {mvp.live.state === 'dead' || mvp.live.state === 'probable'
                             ? `Ventana: ${formatClock(mvp.live.windowStart)} – ${formatClock(mvp.live.windowEnd)}`
-                            : `Respawn base: ${formatRange(mvp.respawnMinSeconds, mvp.respawnMaxSeconds)}`}
+                            : `Respawn: ${formatRange(mvp.respawnMinSeconds, mvp.respawnMaxSeconds)}`}
                         </span>
                       </div>
-
                       <div className="mvp-card-footer">
                         <Link
-                          to={`/database?tab=mobs&q=${mvp.mobId}`}
+                          to={`/database?tab=mobs&q=${mvp.mobId}&run=1`}
                           onClick={(event) => event.stopPropagation()}
                         >
                           Ficha
                         </Link>
                         <Link
-                          to={`/database?tab=maps&map=${encodeURIComponent(mvp.map)}`}
+                          to={mapDetailHref(mvp.map)}
                           onClick={(event) => event.stopPropagation()}
                         >
-                          Ver mapa
+                          Mapa
                         </Link>
                       </div>
                     </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {selected && (
         <div className="mvp-modal-backdrop" onClick={() => setSelectedId(null)}>
@@ -408,31 +515,30 @@ const Mvps = () => {
             onClick={(event) => event.stopPropagation()}
           >
             <button type="button" className="mvp-modal-close" onClick={() => setSelectedId(null)} aria-label="Cerrar">
-              ×
+              <span aria-hidden="true">×</span>
             </button>
-            <div className="mvp-modal-hero">
-              <div className="mvp-modal-map" aria-hidden="true">
-                <img
-                  src={mapImage(selected.map)}
-                  alt=""
-                  onError={(event) => {
-                    event.currentTarget.style.display = 'none';
-                  }}
-                />
-              </div>
-              <div className="mvp-modal-sprite">
-                <AtlasSprite sprite={sprites[selected.mobId]} alt={selected.name} className="mvp-modal-sprite-img" />
-              </div>
-            </div>
             <div className="mvp-modal-body">
-              <div className="mvp-modal-title">
-                <div>
-                  <h2>{selected.name}</h2>
-                  <span>Nv. {selected.level} · {selected.map}</span>
+              <div className="mvp-modal-top">
+                <div className="result-card-image result-card-image--mvp">
+                  <AtlasSprite
+                    sprite={sprites[selected.mobId]}
+                    alt={selected.name}
+                    fallback={PLACEHOLDER_MOB_SPRITE}
+                    fit={{ maxWidth: 96, maxHeight: 96 }}
+                  />
+                  <div className="mvp-icon" aria-hidden="true">
+                    <img src="/icons/mvp.gif" alt="" />
+                  </div>
                 </div>
-                <span className={`mvp-state-badge state-${selected.live.state}`}>
-                  {STATE_META[selected.live.state].label}
-                </span>
+                <div className="mvp-modal-title">
+                  <h2>{selected.name}</h2>
+                  <div className="mvp-modal-title-meta">
+                    <span>Nv. {selected.level} · {selected.map}</span>
+                    <span className={`mvp-state-badge state-${selected.live.state}`}>
+                      {STATE_META[selected.live.state].label}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <div className="mvp-modal-status">
@@ -445,7 +551,7 @@ const Mvps = () => {
                 <span>
                   {selected.live.state === 'dead' || selected.live.state === 'probable'
                     ? `Ventana: ${formatClock(selected.live.windowStart)} – ${formatClock(selected.live.windowEnd)}`
-                    : `Respawn base: ${formatRange(selected.respawnMinSeconds, selected.respawnMaxSeconds)}`}
+                    : `Respawn: ${formatRange(selected.respawnMinSeconds, selected.respawnMaxSeconds)}`}
                 </span>
               </div>
 
@@ -457,7 +563,7 @@ const Mvps = () => {
                 <div><span>EXP base</span><strong>{selected.baseExp.toLocaleString('es')}</strong></div>
                 <div><span>EXP job</span><strong>{selected.jobExp.toLocaleString('es')}</strong></div>
                 <div>
-                  <span>Almas por kill</span>
+                  <span>Almas</span>
                   <strong className="mvp-souls">
                     <img src="/icons/mvp-soul.png" alt="" />
                     {selected.souls}
@@ -472,7 +578,7 @@ const Mvps = () => {
                     {selected.summons.map((summon, index) => (
                       <li key={`${summon.mobId ?? 'x'}-${index}`}>
                         {summon.mobId != null ? (
-                          <Link to={`/database?tab=mobs&q=${summon.mobId}`}>
+                          <Link to={`/database?tab=mobs&q=${summon.mobId}&run=1`}>
                             {summon.mobName || summon.mobAegis || `#${summon.mobId}`}
                           </Link>
                         ) : (
@@ -493,8 +599,8 @@ const Mvps = () => {
               )}
 
               <div className="mvp-modal-links">
-                <Link to={`/database?tab=mobs&q=${selected.mobId}`}>Ver ficha del MVP</Link>
-                <Link to={`/database?tab=maps&map=${encodeURIComponent(selected.map)}`}>Ver mapa</Link>
+                <Link to={`/database?tab=mobs&q=${selected.mobId}&run=1`}>Ver ficha</Link>
+                <Link to={mapDetailHref(selected.map)}>Ver mapa</Link>
               </div>
             </div>
           </div>
