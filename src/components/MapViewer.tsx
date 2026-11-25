@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import type { MapConnection, MapDetail, MapNpcPoint, MapSpawnPoint } from '../api/client';
 import {
@@ -31,6 +31,14 @@ interface MobGroup {
   sprite: SpriteRect | string | null;
 }
 
+interface HoverCoord {
+  x: number;
+  y: number;
+  leftPct: number;
+  topPct: number;
+}
+
+const RULER_STEP = 10;
 const numberFormat = new Intl.NumberFormat('es');
 
 function formatRespawn(min: number | null, max: number | null, unit: string | null): string | null {
@@ -57,6 +65,33 @@ function pinStyle(x: number, y: number, mapWidth: number, mapHeight: number) {
   };
 }
 
+/** Pointer → RO map coords (origin bottom-left). */
+function hoverFromPointer(
+  e: ReactMouseEvent<HTMLElement>,
+  mapWidth: number,
+  mapHeight: number
+): HoverCoord | null {
+  const rect = e.currentTarget.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return null;
+  const nx = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+  const ny = Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height));
+  return {
+    x: Math.round(nx * mapWidth),
+    y: Math.round((1 - ny) * mapHeight),
+    leftPct: nx * 100,
+    topPct: ny * 100
+  };
+}
+
+/** Label ticks every `step` units (checker stays at RULER_STEP via CSS). */
+function rulerLabels(size: number, step = 50): number[] {
+  if (size <= 0) return [0];
+  const ticks: number[] = [];
+  for (let v = 0; v <= size; v += step) ticks.push(v);
+  if (ticks[ticks.length - 1] !== size) ticks.push(size);
+  return ticks;
+}
+
 const MapViewer = ({ map }: MapViewerProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const arrival = parseArrival(searchParams.get('arrive'));
@@ -68,6 +103,8 @@ const MapViewer = ({ map }: MapViewerProps) => {
   const [selectedMobId, setSelectedMobId] = useState<number | null>(null);
   const [selectedNpcId, setSelectedNpcId] = useState<string | null>(null);
   const [minimapOpen, setMinimapOpen] = useState(false);
+  const [rulerOn, setRulerOn] = useState(false);
+  const [hoverCoord, setHoverCoord] = useState<HoverCoord | null>(null);
   const [mobsOpen, setMobsOpen] = useState(true);
   const [npcsOpen, setNpcsOpen] = useState(true);
   const [mobSprites, setMobSprites] = useState<Record<number, SpriteRect | string>>({});
@@ -261,6 +298,23 @@ const MapViewer = ({ map }: MapViewerProps) => {
   const showMobsSection = mobGroups.length > 0 && (selectedNpcId == null);
   const showNpcsSection = visibleNpcs.length > 0 && (selectedMobId == null);
 
+  const mapW = imageInfo?.mapWidth ?? map.width ?? 1;
+  const mapH = imageInfo?.mapHeight ?? map.height ?? 1;
+  const filtered = selectedMobId != null || selectedNpcId != null;
+  const xTickPct = (RULER_STEP / Math.max(mapW, 1)) * 100;
+  const yTickPct = (RULER_STEP / Math.max(mapH, 1)) * 100;
+  const xLabels = rulerLabels(mapW);
+  const yLabels = rulerLabels(mapH);
+
+  const onCanvasPointerMove = (e: ReactMouseEvent<HTMLDivElement>) => {
+    if (!rulerOn || !activeVariant) return;
+    setHoverCoord(hoverFromPointer(e, mapW, mapH));
+  };
+
+  const onCanvasPointerLeave = () => {
+    setHoverCoord(null);
+  };
+
   if (loadError) {
     return (
       <div className="map-viewer-embed">
@@ -268,10 +322,6 @@ const MapViewer = ({ map }: MapViewerProps) => {
       </div>
     );
   }
-
-  const mapW = imageInfo?.mapWidth ?? map.width ?? 1;
-  const mapH = imageInfo?.mapHeight ?? map.height ?? 1;
-  const filtered = selectedMobId != null || selectedNpcId != null;
 
   return (
     <div className="map-viewer-embed">
@@ -282,22 +332,50 @@ const MapViewer = ({ map }: MapViewerProps) => {
           {numberFormat.format(map.npcCount)} NPCs ·{' '}
           {numberFormat.format(warps.length)} warps
         </div>
-        {minimapVariant && (
+        <div className="maps-toolbar-actions">
           <button
             type="button"
-            className="maps-minimap-button"
-            onClick={() => setMinimapOpen(true)}
+            className={`maps-ruler-toggle${rulerOn ? ' is-active' : ''}`}
+            aria-pressed={rulerOn}
+            title={rulerOn ? 'Ocultar regla y coordenadas' : 'Mostrar regla y coordenadas'}
+            onClick={() => {
+              setRulerOn((on) => {
+                if (on) setHoverCoord(null);
+                return !on;
+              });
+            }}
           >
-            Ver minimap
+            <svg className="maps-ruler-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M4 20V4h3v2h2v2H7v2h2v2H7v2h2v2H7v2h2v2H4zm6 0v-3h2v-2h2v2h2v-2h2v2h2v-2h2v5H10z"
+              />
+            </svg>
+            <span>Regla</span>
           </button>
-        )}
+          {minimapVariant && (
+            <button
+              type="button"
+              className="maps-minimap-button"
+              onClick={() => setMinimapOpen(true)}
+            >
+              Ver minimap
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="maps-layout">
         <div className="maps-viewer">
           <div
-            className={`maps-canvas${filtered ? ' is-filtered' : ''}`}
-            style={activeVariant ? { aspectRatio: `${activeVariant.variant.width} / ${activeVariant.variant.height}` } : undefined}
+            className={`maps-canvas${filtered ? ' is-filtered' : ''}${rulerOn ? ' is-ruler-on' : ''}`}
+            style={activeVariant ? {
+              aspectRatio: `${activeVariant.variant.width} / ${activeVariant.variant.height}`,
+              ['--ruler-x-tick' as string]: `${xTickPct}%`,
+              ['--ruler-y-tick' as string]: `${yTickPct}%`
+            } : undefined}
+            onMouseMove={onCanvasPointerMove}
+            onMouseLeave={onCanvasPointerLeave}
           >
             {loading && <div className="maps-canvas-missing">Cargando mapa…</div>}
             {!loading && activeVariant && (
@@ -307,6 +385,43 @@ const MapViewer = ({ map }: MapViewerProps) => {
                 alt={`Mapa ${map.id} (${activeVariant.source})`}
                 loading="lazy"
               />
+            )}
+
+            {rulerOn && activeVariant && (
+              <>
+                <div className="maps-ruler maps-ruler--x" aria-hidden="true">
+                  {xLabels.map((v) => (
+                    <span
+                      key={`x-${v}`}
+                      className="maps-ruler-label"
+                      style={{ left: `${(v / mapW) * 100}%` }}
+                    >
+                      {v}
+                    </span>
+                  ))}
+                </div>
+                <div className="maps-ruler maps-ruler--y" aria-hidden="true">
+                  {yLabels.map((v) => (
+                    <span
+                      key={`y-${v}`}
+                      className="maps-ruler-label"
+                      style={{ bottom: `${(v / mapH) * 100}%` }}
+                    >
+                      {v}
+                    </span>
+                  ))}
+                </div>
+                <div className="maps-ruler maps-ruler--origin" aria-hidden="true" title="0, 0" />
+              </>
+            )}
+
+            {rulerOn && hoverCoord && (
+              <div
+                className="maps-coord-tooltip"
+                style={{ left: `${hoverCoord.leftPct}%`, top: `${hoverCoord.topPct}%` }}
+              >
+                {hoverCoord.x}, {hoverCoord.y}
+              </div>
             )}
 
             {activeVariant &&
