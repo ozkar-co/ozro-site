@@ -1,1 +1,0 @@
-[{"id":"a9afce8e4245","name":"Pion#rudus4","x":380,"y":42,"dir":3,"sprite":"4_M_REBELLION3","function":"quest","visible":true,"isInstance":false,"quests":{"given":[16522],"completed":[16521]}},{"id":"de942d7a9a99","name":"rudus3_to_rudus2","x":371,"y":207,"dir":0,"sprite":null,"function":"warp","visible":false,"isInstance":false}]

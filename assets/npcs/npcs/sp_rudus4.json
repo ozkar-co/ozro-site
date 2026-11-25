@@ -1,1 +1,0 @@
-[{"id":"e3ea99a3423c","name":"#b_hw1","x":380,"y":156,"dir":0,"sprite":null,"function":"warp","visible":false,"isInstance":false},{"id":"7f82c58063f3","name":"Secret Wing Researcher#rudu","x":192,"y":204,"dir":3,"sprite":"4_SOIL","function":"quest","visible":true,"isInstance":false,"quests":{"given":[16540],"completed":[16528]}}]

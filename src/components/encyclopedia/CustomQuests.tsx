@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import { mapDetailHref } from '../../api/databaseMappers';
 import { repeatableQuests } from '../../data/repeatables';
 import '../../styles/Information.css';
 import '../../styles/Encyclopedia.css';
@@ -20,10 +22,10 @@ const CustomQuests = () => (
             <tr>
               <th>NPC</th>
               <th>Monstruo</th>
-              <th>Mapa</th>
               <th>Nivel</th>
               <th>Base EXP</th>
               <th>Job EXP</th>
+              <th />
             </tr>
           </thead>
           <tbody>
@@ -31,12 +33,19 @@ const CustomQuests = () => (
               <tr key={`${quest.npc}-${quest.monster}`}>
                 <td>{quest.npc}</td>
                 <td>{quest.monster}</td>
-                <td>{quest.map}</td>
                 <td>
                   {quest.minLevel}–{quest.maxLevel}
                 </td>
                 <td>{formatExp(quest.baseExp)}</td>
                 <td>{formatExp(quest.jobExp)}</td>
+                <td className="custom-repeatable-map-cell">
+                  <Link
+                    className="custom-repeatable-map-link"
+                    to={mapDetailHref(quest.map)}
+                  >
+                    Ver en el mapa
+                  </Link>
+                </td>
               </tr>
             ))}
           </tbody>

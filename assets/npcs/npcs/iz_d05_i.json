@@ -1,1 +1,0 @@
-[{"id":"a708bc755246","name":"Guardian#guard2","x":141,"y":188,"dir":5,"sprite":"4_M_KY_SOLD","function":"warp","visible":true,"isInstance":false},{"id":"b59facc184b3","name":"Kena#Kena","x":138,"y":186,"dir":5,"sprite":"4_M_02","function":"quest","visible":true,"isInstance":false,"quests":{"given":[3417,3418,3419,3420],"checked":[3417,3418,3419,3420]}}]

@@ -8,7 +8,10 @@ import '../styles/Information.css';
 export type InfoSection = {
   id: string;
   title: string;
+  /** Static icon path under /public (fallback when iconItemId is unset). */
   icon: string;
+  /** Optional item id → atlas icon in the sidebar. */
+  iconItemId?: number;
   category: string;
 };
 

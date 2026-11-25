@@ -1,1 +1,0 @@
-[{"id":"070028c1746f","name":"Broken Elevator#rrevt10","x":97,"y":120,"dir":5,"sprite":"4_ENERGY_WHITE","function":"dialogo","visible":true,"isInstance":false},{"id":"dffd63f3e10c","name":"Shawn McCurdy#rockmi2","x":10,"y":86,"dir":5,"sprite":"4_M_SEANMCCURDY","function":"quest","visible":true,"isInstance":false,"quests":{"given":[7801,7802,7806,7807]}}]

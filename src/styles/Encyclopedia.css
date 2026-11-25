@@ -670,7 +670,48 @@
 }
 
 .custom-repeatable-table {
-  min-width: 760px;
+  min-width: 720px;
+}
+
+.custom-repeatable-map-cell {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.custom-repeatable-map-link {
+  display: inline-block;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid #ffd0c9;
+  background: #fff4f2;
+  color: #b55245;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.custom-repeatable-map-link:hover {
+  background: #ffe4df;
+  color: #9a4035;
+}
+
+.encyclopedia-placeholder .encyclopedia-tbd-badge {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: #f1f2f3;
+  border: 1px solid #d8dbde;
+  color: #666;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.encyclopedia-tbd-refs {
+  margin-top: 1rem;
+  color: #888;
+  font-size: 0.78rem;
 }
 
 .custom-note-card {

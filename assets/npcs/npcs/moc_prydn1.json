@@ -1,1 +1,0 @@
-[{"id":"a6c5ca178ead","name":"PyramidsN1-2","x":223,"y":9,"dir":0,"sprite":null,"function":"warp","visible":false,"isInstance":false},{"id":"dc55d117d565","name":"Suspicious Cat#night2","x":94,"y":98,"dir":3,"sprite":"547","function":"quest","visible":true,"isInstance":false,"quests":{"given":[2289,2292],"checked":[2289,2290,2291,2292]}}]

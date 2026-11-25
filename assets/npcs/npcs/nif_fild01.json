@@ -1,1 +1,0 @@
-[{"id":"1844d638e140","name":"Deadman","x":332,"y":327,"dir":4,"sprite":"795","function":"quest","visible":true,"isInstance":false,"isCustom":true,"quests":{"given":[60173,60176],"checked":[60173,60176]}},{"id":"657783cbc847","name":"nwarp7","x":345,"y":323,"dir":0,"sprite":null,"function":"warp","visible":false,"isInstance":false}]
