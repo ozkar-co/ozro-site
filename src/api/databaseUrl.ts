@@ -9,6 +9,24 @@ export type DatabaseTab = 'items' | 'mobs' | 'skills' | 'npcs' | 'maps' | 'mvps'
 
 const DATABASE_TABS: DatabaseTab[] = ['items', 'mobs', 'skills', 'npcs', 'maps', 'mvps'];
 
+/**
+ * URL params that only affect in-view focus/highlight (pins, arrival marker).
+ * Changing them must NOT refetch/remount Database results — that caused
+ * flicker and "click twice to select" across map/NPC deep links.
+ */
+export const DATABASE_VIEW_FOCUS_PARAMS = ['arrive', 'npc', 'mob'] as const;
+
+/** Stable query string for data-loading effects (view-focus params stripped). */
+export function databaseDataSearchKey(search: string): string {
+  const raw = search.startsWith('?') ? search.slice(1) : search;
+  const params = new URLSearchParams(raw);
+  for (const key of DATABASE_VIEW_FOCUS_PARAMS) {
+    params.delete(key);
+  }
+  const entries = [...params.entries()].sort(([a], [b]) => a.localeCompare(b));
+  return new URLSearchParams(entries).toString();
+}
+
 export interface DatabaseUrlState {
   tab: DatabaseTab;
   q: string;

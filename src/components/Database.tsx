@@ -41,6 +41,7 @@ import {
 } from '../api/databaseMappers';
 import {
   buildDatabaseSearchParams,
+  databaseDataSearchKey,
   getLegacyDeepLinkId,
   hasSearchCriteria,
   parseDatabaseUrl,
@@ -506,6 +507,10 @@ const Database = () => {
     };
   }, [enrichItemResults, enrichMobResults, enrichNpcResults, enrichSkillResults, imagesReady]);
 
+  // Only refetch when data-relevant URL parts change — ignore view-focus
+  // params (npc/arrive/mob) so pin selection does not remount the page.
+  const dataSearchKey = databaseDataSearchKey(location.search);
+
   useEffect(() => {
     if (getLegacyDeepLinkId(location.search)) return;
 
@@ -570,7 +575,9 @@ const Database = () => {
     return () => {
       cancelled = true;
     };
-  }, [location.search, fetchSearchResults, imagesReady]);
+    // location.search is read inside; dataSearchKey ignores focus-only params.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional
+  }, [dataSearchKey, fetchSearchResults, imagesReady]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

@@ -521,6 +521,31 @@ export interface SkillDetail extends SkillSummary {
   }[];
 }
 
+export interface NpcShopItem {
+  itemId: number | null;
+  name: string;
+  aegisName?: string | null;
+  price: number | null;
+  stock: number | null;
+  listIndex?: number | null;
+}
+
+export interface NpcShopLink {
+  linkId: string;
+  targetName: string | null;
+  itemCount: number | null;
+  resolveStatus: string | null;
+  isRuntime?: boolean | null;
+  scriptPath?: string | null;
+  scriptLine?: number | null;
+  shops: {
+    shopId: string;
+    shopName: string;
+    shopType: string | null;
+    shopNpcId: string | null;
+  }[];
+}
+
 export interface NpcSummary {
   id: string;
   name: string;
@@ -533,6 +558,10 @@ export interface NpcSummary {
   hasSprite?: boolean | null;
   shopCount: number;
   functionCount: number;
+  questCount?: number;
+  rewardCount?: number;
+  teacherCount?: number;
+  shopLinkCount?: number;
   scriptPath?: string | null;
 }
 
@@ -550,8 +579,43 @@ export interface NpcDetail extends NpcSummary {
     itemCount: number | null;
     currency: string | null;
     sprite?: string | null;
+    items?: NpcShopItem[];
   }[];
   functions?: string[];
+  quests?: {
+    linkId: string;
+    questId: number | null;
+    title: string | null;
+    role: string | null;
+    scriptPath?: string | null;
+    scriptLine?: number | null;
+  }[];
+  rewards?: {
+    rewardId: string;
+    itemId: number | null;
+    name: string;
+    aegisName?: string | null;
+    quantity: number | null;
+    refine: number | null;
+    deliveryKind: string | null;
+    acquisitionType?: string | null;
+  }[];
+  teachers?: {
+    teacherId: string;
+    skillId: number | null;
+    skillName: string | null;
+    skillAegis?: string | null;
+    grantKind: string | null;
+    mapId?: string | null;
+    x?: number | null;
+    y?: number | null;
+  }[];
+  shopLinks?: NpcShopLink[];
+  shopItemTotal?: number;
+  questTotal?: number;
+  rewardTotal?: number;
+  teacherTotal?: number;
+  shopLinkTotal?: number;
 }
 
 export interface MapSummary {

@@ -60,15 +60,17 @@ function pinStyle(x: number, y: number, mapWidth: number, mapHeight: number) {
 const MapViewer = ({ map }: MapViewerProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const arrival = parseArrival(searchParams.get('arrive'));
+  // Deep-link focus only — selection while browsing stays in local state (like mobs).
+  const focusNpcId = searchParams.get('npc')?.trim() || null;
   const [imageInfo, setImageInfo] = useState<MapImageInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedMobId, setSelectedMobId] = useState<number | null>(null);
   const [selectedNpcId, setSelectedNpcId] = useState<string | null>(null);
-  const [mobSprites, setMobSprites] = useState<Record<number, SpriteRect | string>>({});
   const [minimapOpen, setMinimapOpen] = useState(false);
   const [mobsOpen, setMobsOpen] = useState(true);
   const [npcsOpen, setNpcsOpen] = useState(true);
+  const [mobSprites, setMobSprites] = useState<Record<number, SpriteRect | string>>({});
 
   const spawns = map.spawns ?? [];
   const npcs = map.npcs ?? [];
@@ -87,6 +89,11 @@ const MapViewer = ({ map }: MapViewerProps) => {
     setSelectedNpcId(null);
     setImageInfo(null);
 
+    const initialNpcId = focusNpcId
+      && (map.npcs ?? []).some((npc) => npc.id === focusNpcId)
+      ? focusNpcId
+      : null;
+
     loadMapImages()
       .then((index) => {
         if (cancelled) return;
@@ -96,8 +103,14 @@ const MapViewer = ({ map }: MapViewerProps) => {
         }
         setImageInfo(info);
         setMinimapOpen(false);
-        setMobsOpen(true);
-        setNpcsOpen(true);
+        if (initialNpcId) {
+          setSelectedNpcId(initialNpcId);
+          setNpcsOpen(true);
+          setMobsOpen(false);
+        } else {
+          setMobsOpen(true);
+          setNpcsOpen(true);
+        }
       })
       .catch((error) => {
         if (!cancelled) {
@@ -111,7 +124,21 @@ const MapViewer = ({ map }: MapViewerProps) => {
     return () => {
       cancelled = true;
     };
+    // focusNpcId read once per map load; same-map npc switches use the effect below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional
   }, [map.id]);
+
+  // Deep link ?npc= while already on this map (data key unchanged → no remount).
+  useEffect(() => {
+    if (!focusNpcId) return;
+    if (!(map.npcs ?? []).some((npc) => npc.id === focusNpcId)) return;
+    setSelectedMobId(null);
+    setSelectedNpcId(focusNpcId);
+    setNpcsOpen(true);
+    setMobsOpen(false);
+    // map.npcs read from current render; identity changes must not re-fire this.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional
+  }, [focusNpcId, map.id]);
 
   const mobGroups = useMemo<MobGroup[]>(() => {
     const grouped = new Map<number, MobGroup>();
@@ -184,6 +211,7 @@ const MapViewer = ({ map }: MapViewerProps) => {
       params.set('map', warp.to!);
       params.delete('q');
       params.delete('run');
+      params.delete('npc');
       if (hasArrival) params.set('arrive', `${warp.toX},${warp.toY}`);
       else params.delete('arrive');
       return params;
@@ -316,7 +344,7 @@ const MapViewer = ({ map }: MapViewerProps) => {
                 />
               ))}
 
-            {activeVariant && arrival && (
+            {activeVariant && arrival && !selectedNpcId && (
               <span
                 className="maps-arrival"
                 style={pinStyle(arrival.x, arrival.y, mapW, mapH)}

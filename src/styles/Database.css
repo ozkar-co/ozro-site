@@ -2228,6 +2228,24 @@ a {
   font-size: 0.85rem;
 }
 
+.npc-shop-item-list {
+  margin: 0.25rem 0 0.45rem;
+  padding-left: 1.1rem;
+  color: #556;
+  font-size: 0.8rem;
+}
+
+.npc-shop-item-list a {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.npc-shop-item-list a:hover {
+  color: #c45b4a;
+  text-decoration: underline;
+}
+
 .npc-type-badge {
   display: inline-flex;
   padding: 0.1rem 0.45rem;
