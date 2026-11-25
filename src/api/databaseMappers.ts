@@ -171,6 +171,7 @@ export interface SearchOptions {
   npcHasShop: boolean;
   npcHasSprite: boolean;
   npcHasReward: boolean;
+  npcHasQuest: boolean;
   /** NPC on a traditionally accessible map. */
   npcAccessible: boolean;
 }
@@ -219,6 +220,7 @@ export const defaultSearchOptions = (): SearchOptions => ({
   npcHasShop: false,
   npcHasSprite: false,
   npcHasReward: false,
+  npcHasQuest: false,
   npcAccessible: false
 });
 
@@ -236,6 +238,7 @@ export function buildNpcSearchParams(
   if (options.npcHasShop) params.hasShop = 1;
   if (options.npcHasSprite) params.hasSprite = 1;
   if (options.npcHasReward) params.hasReward = 1;
+  if (options.npcHasQuest) params.hasQuest = 1;
   if (options.npcAccessible) params.accessible = 1;
   return params;
 }

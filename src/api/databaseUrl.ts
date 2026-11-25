@@ -60,6 +60,7 @@ function optionsDifferFromDefaults(options: SearchOptions, tab: DatabaseTab): bo
     if (options.npcHasShop) return true;
     if (options.npcHasSprite) return true;
     if (options.npcHasReward) return true;
+    if (options.npcHasQuest) return true;
     if (options.npcAccessible) return true;
     return false;
   }
@@ -211,6 +212,8 @@ export function parseDatabaseUrl(search: string): DatabaseUrlState {
   if (npcHasSprite !== undefined) options.npcHasSprite = npcHasSprite;
   const npcHasReward = parseBoolParam(params.get('npcHasReward'));
   if (npcHasReward !== undefined) options.npcHasReward = npcHasReward;
+  const npcHasQuest = parseBoolParam(params.get('npcHasQuest'));
+  if (npcHasQuest !== undefined) options.npcHasQuest = npcHasQuest;
   const npcAccessible = parseBoolParam(params.get('npcAccessible'));
   if (npcAccessible !== undefined) options.npcAccessible = npcAccessible;
 
@@ -340,6 +343,7 @@ export function buildDatabaseSearchParams(
     if (options.npcHasShop) params.set('npcHasShop', '1');
     if (options.npcHasSprite) params.set('npcHasSprite', '1');
     if (options.npcHasReward) params.set('npcHasReward', '1');
+    if (options.npcHasQuest) params.set('npcHasQuest', '1');
     if (options.npcAccessible) params.set('npcAccessible', '1');
   }
 

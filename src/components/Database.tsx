@@ -770,6 +770,17 @@ const Database = () => {
                             <label className="type-checkbox">
                               <input
                                 type="checkbox"
+                                checked={searchOptions.npcHasQuest}
+                                onChange={() => setSearchOptions((prev) => ({
+                                  ...prev,
+                                  npcHasQuest: !prev.npcHasQuest
+                                }))}
+                              />
+                              Con quest
+                            </label>
+                            <label className="type-checkbox">
+                              <input
+                                type="checkbox"
                                 checked={searchOptions.npcHasSprite}
                                 onChange={() => setSearchOptions((prev) => ({
                                   ...prev,

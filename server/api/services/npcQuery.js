@@ -123,6 +123,16 @@ export async function searchNpcs(params) {
         );
     }
 
+    if (hasQuest === true) {
+        conditions.push(
+            `EXISTS (SELECT 1 FROM \`${NPC_QUESTS}\` q WHERE q.npc_id = n.npc_id)`
+        );
+    } else if (hasQuest === false) {
+        conditions.push(
+            `NOT EXISTS (SELECT 1 FROM \`${NPC_QUESTS}\` q WHERE q.npc_id = n.npc_id)`
+        );
+    }
+
     if (hasSprite === true) {
         conditions.push('COALESCE(n.has_sprite, 0) = 1');
     } else if (hasSprite === false) {
