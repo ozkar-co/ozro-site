@@ -41,7 +41,7 @@ const CustomQuests = () => (
                 <td className="custom-repeatable-map-cell">
                   <Link
                     className="custom-repeatable-map-link"
-                    to={mapDetailHref(quest.map)}
+                    to={mapDetailHref(quest.map, null, quest.npcId)}
                   >
                     Ver en el mapa
                   </Link>

@@ -284,13 +284,20 @@ export function buildQuestSearchParams(
   return params;
 }
 
-/** Deep link to open one map detail (warps / cross-links). */
-export function mapDetailHref(mapId: string, arrive?: { x: number; y: number } | null): string {
+/** Deep link to open one map detail (warps / NPC focus / arrival). */
+export function mapDetailHref(
+  mapId: string,
+  arrive?: { x: number; y: number } | null,
+  npcId?: string | null
+): string {
   const params = new URLSearchParams();
   params.set('tab', 'maps');
   params.set('map', mapId);
   if (arrive && Number.isFinite(arrive.x) && Number.isFinite(arrive.y)) {
     params.set('arrive', `${arrive.x},${arrive.y}`);
+  }
+  if (npcId && npcId.trim()) {
+    params.set('npc', npcId.trim());
   }
   return `/database?${params.toString()}`;
 }
