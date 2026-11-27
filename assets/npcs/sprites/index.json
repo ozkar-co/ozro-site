@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-24T04:38:55.118372+00:00",
+  "generatedAt": "2026-11-27T21:12:36.028371+00:00",
   "source": "ozro-cli/tools/atlas (GRF spr+act)",
-  "count": 2433,
+  "count": 2436,
   "keys": [
     "14_3_mercenary_a",
     "14_3_mercenary_b",
@@ -331,6 +331,9 @@
     "4_evt_kkat",
     "4_evt_lammir",
     "4_evt_sulki",
+    "4_exjob_chul_ho",
+    "4_exjob_hyun_rok",
+    "4_exjob_ki_sul",
     "4_f_01",
     "4_f_02",
     "4_f_03",

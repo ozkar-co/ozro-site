@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-11-24T23:35:40.980238+00:00",
+  "generatedAt": "2026-11-27T21:12:36.028371+00:00",
   "items": {
     "icons": {
       "pages": [
@@ -94,9 +94,9 @@
           "page": 0,
           "image": "npcs/sprites/atlas_0.webp",
           "mapping": "npcs/sprites/atlas_0.json",
-          "count": 9209,
+          "count": 9215,
           "width": 4096,
-          "height": 3705
+          "height": 3707
         }
       ]
     }
