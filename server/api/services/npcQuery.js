@@ -19,6 +19,8 @@ const NPC_SHOP_ITEMS = `${OZRO_PREFIX}npc_shop_items`;
 const NPC_SHOP_LINKS = `${OZRO_PREFIX}npc_shop_links`;
 const NPC_SHOP_LINK_SHOPS = `${OZRO_PREFIX}npc_shop_link_shops`;
 const NPC_QUESTS = `${OZRO_PREFIX}npc_quests`;
+const QUEST_GROUP_NPCS = `${OZRO_PREFIX}quest_group_npcs`;
+const QUEST_GROUPS = `${OZRO_PREFIX}quest_groups`;
 const NPC_SCRIPT_REWARDS = `${OZRO_PREFIX}npc_script_rewards`;
 const QUESTS = `${OZRO_PREFIX}quests`;
 const SKILL_TEACHERS = `${OZRO_PREFIX}skill_teachers`;
@@ -78,7 +80,17 @@ function parseBoolFlag(value) {
 const FUNCTION_COUNT_SQL = `(SELECT COUNT(*) FROM \`${NPC_FUNCTIONS}\` f
     WHERE f.npc_id = n.npc_id AND f.function_name <> 'pending')`;
 const SHOP_COUNT_SQL = `(SELECT COUNT(*) FROM \`${NPC_SHOPS}\` s WHERE s.npc_id = n.npc_id)`;
-const QUEST_COUNT_SQL = `(SELECT COUNT(*) FROM \`${NPC_QUESTS}\` q WHERE q.npc_id = n.npc_id)`;
+const QUEST_COUNT_SQL = `(
+    (SELECT COUNT(*) FROM \`${QUEST_GROUP_NPCS}\` qg WHERE qg.npc_id = n.npc_id)
+    + CASE
+        WHEN EXISTS (
+            SELECT 1 FROM \`${QUEST_GROUP_NPCS}\` qg2 WHERE qg2.npc_id = n.npc_id
+        ) THEN 0
+        ELSE (
+            SELECT COUNT(*) FROM \`${NPC_QUESTS}\` q WHERE q.npc_id = n.npc_id
+        )
+      END
+)`;
 const REWARD_COUNT_SQL = `(SELECT COUNT(*) FROM \`${NPC_SCRIPT_REWARDS}\` r WHERE r.npc_id = n.npc_id)`;
 const TEACHER_COUNT_SQL = `(SELECT COUNT(*) FROM \`${SKILL_TEACHERS}\` t WHERE t.npc_id = n.npc_id)`;
 const SHOP_LINK_COUNT_SQL = `(SELECT COUNT(*) FROM \`${NPC_SHOP_LINKS}\` l WHERE l.caller_npc_id = n.npc_id)`;
@@ -279,12 +291,15 @@ export async function getNpcById(npcId) {
             [id]
         ),
         query(
-            `SELECT nq.link_id, nq.quest_id, nq.role, nq.script_path, nq.script_line,
-                    q.title AS quest_title
-             FROM \`${NPC_QUESTS}\` nq
-             LEFT JOIN \`${QUESTS}\` q ON q.quest_id = nq.quest_id
-             WHERE nq.npc_id = ?
-             ORDER BY nq.quest_id ASC
+            `SELECT gn.link_id, gn.group_id, gn.reasons, gn.primary_reason,
+                    gn.script_path, gn.script_line,
+                    g.display_title, g.member_count
+             FROM \`${QUEST_GROUP_NPCS}\` gn
+             LEFT JOIN \`${QUEST_GROUPS}\` g ON g.group_id = gn.group_id
+             WHERE gn.npc_id = ?
+             ORDER BY
+                CASE gn.primary_reason WHEN 'same_id' THEN 0 ELSE 1 END,
+                COALESCE(g.display_title, gn.group_id) ASC
              LIMIT ?`,
             [id, QUEST_LIMIT]
         ),
@@ -361,6 +376,50 @@ export async function getNpcById(npcId) {
         linksById.set(row.link_id, existing);
     }
 
+    let questPayload = quests.map((row) => {
+        const reasons = (() => {
+            const value = parseJsonColumn(row.reasons, null);
+            if (!Array.isArray(value)) return [];
+            return value.map((r) => cleanName(r)).filter(Boolean);
+        })();
+        return {
+            linkId: row.link_id,
+            groupId: cleanName(row.group_id),
+            memberCount: num(row.member_count),
+            title: cleanName(row.display_title) || cleanName(row.group_id),
+            reasons,
+            primaryReason: cleanName(row.primary_reason),
+            scriptPath: row.script_path || null,
+            scriptLine: num(row.script_line)
+        };
+    });
+
+    if (questPayload.length === 0) {
+        const legacy = await query(
+            `SELECT nq.link_id, nq.quest_id, nq.role, nq.script_path, nq.script_line,
+                    q.title AS quest_title
+             FROM \`${NPC_QUESTS}\` nq
+             LEFT JOIN \`${QUESTS}\` q ON q.quest_id = nq.quest_id
+             WHERE nq.npc_id = ?
+             ORDER BY nq.quest_id ASC
+             LIMIT ?`,
+            [id, QUEST_LIMIT]
+        );
+        questPayload = legacy.map((row) => ({
+            linkId: row.link_id,
+            groupId: row.quest_id != null ? `qg_${row.quest_id}` : null,
+            memberCount: 1,
+            questId: num(row.quest_id),
+            title: cleanName(row.quest_title)
+                || (row.quest_id != null ? `Quest #${row.quest_id}` : null),
+            reasons: ['same_id'],
+            primaryReason: 'same_id',
+            role: row.role || null,
+            scriptPath: row.script_path || null,
+            scriptLine: num(row.script_line)
+        }));
+    }
+
     return {
         ...base,
         facing: num(rows[0].facing),
@@ -380,14 +439,7 @@ export async function getNpcById(npcId) {
             items: itemsByShop.get(shop.shop_id) || []
         })),
         functions: functions.map((row) => row.function_name).filter(Boolean),
-        quests: quests.map((row) => ({
-            linkId: row.link_id,
-            questId: num(row.quest_id),
-            title: cleanName(row.quest_title) || (row.quest_id != null ? `Quest #${row.quest_id}` : null),
-            role: row.role || null,
-            scriptPath: row.script_path || null,
-            scriptLine: num(row.script_line)
-        })),
+        quests: questPayload,
         rewards: rewards.map((row) => ({
             rewardId: row.npc_script_reward_id,
             itemId: num(row.item_id),
@@ -413,7 +465,7 @@ export async function getNpcById(npcId) {
         })),
         shopLinks: [...linksById.values()],
         shopItemTotal: Number(shopItemCountRows[0]?.total) || shopItems.length,
-        questTotal: Number(rows[0].quest_count) || quests.length,
+        questTotal: Number(rows[0].quest_count) || questPayload.length,
         rewardTotal: Number(rows[0].reward_count) || rewards.length,
         teacherTotal: Number(rows[0].teacher_count) || teachers.length,
         shopLinkTotal: Number(rows[0].shop_link_count) || linksById.size

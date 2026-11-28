@@ -28,11 +28,28 @@ function formatDuration(seconds: number | null | undefined, raw: string | null |
   return raw || null;
 }
 
+function formatNpcReason(reason: string | null | undefined) {
+  if (!reason) return null;
+  if (reason === 'same_id') return 'script de quest';
+  if (reason === 'same_file') return 'mismo archivo';
+  return formatFilterLabel(reason);
+}
+
+function formatMergeReason(reason: string | null | undefined) {
+  if (!reason) return null;
+  if (reason === 'script_transition') return 'script_transition';
+  if (reason === 'same_title_contig') return 'same_title_contig';
+  return reason;
+}
+
 const QuestCard = ({ result }: QuestCardProps) => {
+  const members = result.members || [];
   const targets = result.targets || [];
   const drops = result.drops || [];
   const npcs = result.npcs || [];
   const timeLabel = formatDuration(result.timeLimit?.seconds, result.timeLimit?.raw);
+  const focusQuestId = result.focusQuestId ?? null;
+  const mergeLabel = formatMergeReason(result.primaryMergeReason);
 
   return (
     <div className="result-card result-card--quest">
@@ -40,30 +57,85 @@ const QuestCard = ({ result }: QuestCardProps) => {
         <div className="result-card-heading">
           <h3>
             <span className="name-title">
-              <Link to={`/database?tab=quests&q=${result.id}&run=1`}>{result.title}</Link>
+              <Link to={`/database?tab=quests&q=${encodeURIComponent(result.id)}&run=1`}>
+                {result.title}
+              </Link>
             </span>
             {' '}
-            <span className="result-card-id">#{result.id}</span>
+            <span className="result-card-id">{result.id}</span>
           </h3>
           <div className="result-card-meta">
-            {result.targetCount > 0 && (
-              <span>{result.targetCount} objetivo{result.targetCount === 1 ? '' : 's'}</span>
+            {(result.memberCount ?? 0) > 0 && (
+              <span>
+                {result.memberCount} paso{result.memberCount === 1 ? '' : 's'}
+              </span>
             )}
-            {result.dropCount > 0 && (
-              <span>{result.dropCount} drop{result.dropCount === 1 ? '' : 's'}</span>
-            )}
-            {result.npcCount > 0 && (
+            {(result.npcCount ?? 0) > 0 && (
               <span>{result.npcCount} NPC{result.npcCount === 1 ? '' : 's'}</span>
             )}
+            {(result.targetCount ?? 0) > 0 && (
+              <span>
+                {result.targetCount} objetivo{result.targetCount === 1 ? '' : 's'}
+              </span>
+            )}
+            {(result.dropCount ?? 0) > 0 && (
+              <span>{result.dropCount} drop{result.dropCount === 1 ? '' : 's'}</span>
+            )}
             {timeLabel && <span>Límite {timeLabel}</span>}
+            {mergeLabel && <span>{mergeLabel}</span>}
           </div>
         </div>
       </div>
 
+      {members.length > 0 && (
+        <div className="result-card-section">
+          <div className="result-card-script-header">
+            Pasos ({members.length})
+          </div>
+          <ul className="npc-shop-list">
+            {members.map((member) => {
+              const qid = member.questId;
+              const isFocus = qid != null && focusQuestId != null && qid === focusQuestId;
+              const label = [
+                qid != null ? `#${qid}` : null,
+                member.title || null
+              ].filter(Boolean).join(' ');
+              return (
+                <li key={`${qid}-${member.sortIndex}`}>
+                  {qid != null ? (
+                    <Link to={`/database?tab=quests&q=${qid}&run=1`}>
+                      {isFocus ? <strong>{label}</strong> : label}
+                    </Link>
+                  ) : (
+                    <span>{label || 'Paso'}</span>
+                  )}
+                  {(member.targetCount || 0) > 0 && (
+                    <span className="acquisition-meta">
+                      {' · '}
+                      {member.targetCount} obj.
+                    </span>
+                  )}
+                  {(member.dropCount || 0) > 0 && (
+                    <span className="acquisition-meta">
+                      {' · '}
+                      {member.dropCount} drop
+                      {member.dropCount === 1 ? '' : 's'}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
       {targets.length > 0 && (
         <div className="result-card-section">
           <div className="result-card-script-header">
-            Objetivos ({result.targetTotal ?? targets.length})
+            Objetivos
+            {focusQuestId != null ? ` (#${focusQuestId})` : ''}
+            {' '}
+            ({result.targetTotal ?? targets.length})
           </div>
           <ul className="npc-shop-list">
             {targets.map((target, index) => {
@@ -76,7 +148,9 @@ const QuestCard = ({ result }: QuestCardProps) => {
               return (
                 <li key={`${target.targetIndex}-${target.mobSubindex}-${index}`}>
                   {target.mobId != null ? (
-                    <Link to={`/database?tab=mobs&q=${target.mobId}&run=1`}>{label || `Mob #${target.mobId}`}</Link>
+                    <Link to={`/database?tab=mobs&q=${target.mobId}&run=1`}>
+                      {label || `Mob #${target.mobId}`}
+                    </Link>
                   ) : (
                     <span>{label || 'Objetivo'}</span>
                   )}
@@ -101,7 +175,10 @@ const QuestCard = ({ result }: QuestCardProps) => {
       {drops.length > 0 && (
         <div className="result-card-section">
           <div className="result-card-script-header">
-            Drops de quest ({result.dropTotal ?? drops.length})
+            Drops de quest
+            {focusQuestId != null ? ` (#${focusQuestId})` : ''}
+            {' '}
+            ({result.dropTotal ?? drops.length})
           </div>
           <ul className="npc-shop-item-list">
             {drops.map((drop, index) => {
@@ -140,29 +217,38 @@ const QuestCard = ({ result }: QuestCardProps) => {
             NPCs ({result.npcTotal ?? npcs.length})
           </div>
           <ul className="npc-shop-list">
-            {npcs.map((npc) => (
-              <li key={npc.linkId}>
-                {npc.npcId ? (
-                  <Link to={`/database?tab=npcs&q=${encodeURIComponent(npc.npcId)}&run=1`}>
-                    {npc.name || npc.npcId}
-                  </Link>
-                ) : (
-                  <span>{npc.name || 'NPC'}</span>
-                )}
-                {npc.role && (
-                  <span className="acquisition-meta"> · {formatFilterLabel(npc.role)}</span>
-                )}
-                {npc.mapId && (
-                  <span className="acquisition-meta">
-                    {' · '}
-                    <Link to={mapDetailHref(npc.mapId, npc.x != null && npc.y != null ? { x: npc.x, y: npc.y } : null)}>
-                      {npc.mapId}
-                      {npc.x != null && npc.y != null ? ` (${npc.x}, ${npc.y})` : ''}
+            {npcs.map((npc) => {
+              const reason = formatNpcReason(npc.primaryReason)
+                || (npc.role ? formatFilterLabel(npc.role) : null);
+              return (
+                <li key={npc.linkId}>
+                  {npc.npcId ? (
+                    <Link to={`/database?tab=npcs&q=${encodeURIComponent(npc.npcId)}&run=1`}>
+                      {npc.name || npc.npcId}
                     </Link>
-                  </span>
-                )}
-              </li>
-            ))}
+                  ) : (
+                    <span>{npc.name || 'NPC'}</span>
+                  )}
+                  {reason && (
+                    <span className="acquisition-meta"> · {reason}</span>
+                  )}
+                  {npc.mapId && (
+                    <span className="acquisition-meta">
+                      {' · '}
+                      <Link
+                        to={mapDetailHref(
+                          npc.mapId,
+                          npc.x != null && npc.y != null ? { x: npc.x, y: npc.y } : null
+                        )}
+                      >
+                        {npc.mapId}
+                        {npc.x != null && npc.y != null ? ` (${npc.x}, ${npc.y})` : ''}
+                      </Link>
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
           {(result.npcTotal ?? 0) > npcs.length && (
             <div className="acquisition-more">

@@ -208,22 +208,41 @@ const NpcCard = ({ result }: NpcCardProps) => {
             Quests ({result.questTotal ?? quests.length})
           </div>
           <ul className="npc-shop-list">
-            {quests.map((quest) => (
-              <li key={quest.linkId}>
-                <strong>
-                  {quest.questId != null ? (
-                    <Link to={`/database?tab=quests&q=${quest.questId}&run=1`}>
-                      #{quest.questId} {quest.title || 'Quest'}
-                    </Link>
-                  ) : (
-                    quest.title || 'Quest'
+            {quests.map((quest) => {
+              const hrefTarget = quest.groupId
+                || (quest.questId != null ? String(quest.questId) : null);
+              const reason = quest.primaryReason === 'same_id'
+                ? 'script de quest'
+                : quest.primaryReason === 'same_file'
+                  ? 'mismo archivo'
+                  : quest.primaryReason
+                    ? formatFilterLabel(quest.primaryReason)
+                    : quest.role
+                      ? formatFilterLabel(quest.role)
+                      : null;
+              const meta = [
+                quest.memberCount != null && quest.memberCount > 1
+                  ? `${quest.memberCount} pasos`
+                  : null,
+                reason
+              ].filter(Boolean).join(' · ');
+              return (
+                <li key={quest.linkId}>
+                  <strong>
+                    {hrefTarget ? (
+                      <Link to={`/database?tab=quests&q=${encodeURIComponent(hrefTarget)}&run=1`}>
+                        {quest.title || hrefTarget}
+                      </Link>
+                    ) : (
+                      quest.title || 'Quest'
+                    )}
+                  </strong>
+                  {meta && (
+                    <span className="acquisition-meta"> · {meta}</span>
                   )}
-                </strong>
-                {quest.role && (
-                  <span className="acquisition-meta"> · {formatFilterLabel(quest.role)}</span>
-                )}
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
           {(result.questTotal ?? 0) > quests.length && (
             <div className="acquisition-more">

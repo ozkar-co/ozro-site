@@ -5,6 +5,11 @@ import { responseCache } from '../services/responseCache.js';
 
 const router = Router();
 
+function isQuestParam(value) {
+    const text = String(value || '').trim();
+    return /^\d+$/.test(text) || /^qg_\d+$/i.test(text);
+}
+
 router.use((req, res, next) => {
     if (!isWorldDataAvailable()) {
         return res.status(503).json(worldUnavailableError());
@@ -25,11 +30,11 @@ router.get('/meta', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
     try {
-        const id = parseInt(req.params.id, 10);
-        if (Number.isNaN(id)) {
+        const raw = String(req.params.id || '').trim();
+        if (!isQuestParam(raw)) {
             return res.status(400).json({ error: 'ID de quest inválido' });
         }
-        const quest = await getQuestById(id);
+        const quest = await getQuestById(raw);
         if (!quest) {
             return res.status(404).json({ error: 'Quest no encontrada' });
         }

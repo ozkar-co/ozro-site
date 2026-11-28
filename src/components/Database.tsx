@@ -458,8 +458,9 @@ const Database = () => {
     }
 
     if (tab === 'quests') {
-      if (isIdLookup) {
-        const quest = await apiClient.getQuest(parseInt(trimmed, 10)).catch(() => null);
+      const isQuestLookup = /^\d+$/.test(trimmed) || /^qg_\d+$/i.test(trimmed);
+      if (isQuestLookup) {
+        const quest = await apiClient.getQuest(trimmed).catch(() => null);
         if (!quest) {
           return { total: 0, currentPage: 0, results: [], totalPages: 0 };
         }
@@ -722,7 +723,7 @@ const Database = () => {
                           : activeTab === 'skills'
                             ? 'Buscar skill por nombre o ID...'
                             : activeTab === 'quests'
-                              ? 'Buscar quest por título o ID...'
+                              ? 'Buscar quest o grupo...'
                               : activeTab === 'maps'
                                 ? 'Buscar mapa por nombre o ID...'
                                 : 'Buscar NPC por nombre, mapa o ID...'

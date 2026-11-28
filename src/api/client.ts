@@ -571,17 +571,38 @@ export interface QuestTimeLimit {
 }
 
 export interface QuestSummary {
-  id: number;
+  /** Group id (`qg_…`), not a raw quest_id. */
+  id: string;
   title: string;
+  memberCount: number;
   targetCount: number;
   dropCount: number;
   npcCount: number;
   hasTimeLimit: boolean;
   timeLimit?: QuestTimeLimit | null;
-  sourceFile?: string | null;
+  mergeReasons?: string[];
+  primaryMergeReason?: string | null;
+  isSynthetic?: boolean;
 }
 
 export interface QuestDetail extends QuestSummary {
+  focusQuestId?: number | null;
+  members?: {
+    questId: number | null;
+    title: string | null;
+    sortIndex: number;
+    inQuestDb?: boolean | null;
+    targetCount?: number;
+    dropCount?: number;
+    hasTimeLimit?: boolean;
+  }[];
+  edges?: {
+    edgeId: string | null;
+    fromQuestId: number | null;
+    toQuestId: number | null;
+    reasons: string[];
+    primaryReason: string | null;
+  }[];
   targets?: {
     targetIndex: number | null;
     mobSubindex: number | null;
@@ -613,7 +634,10 @@ export interface QuestDetail extends QuestSummary {
     mapId: string | null;
     x: number | null;
     y: number | null;
-    role: string | null;
+    reasons?: string[];
+    primaryReason?: string | null;
+    /** @deprecated legacy quest_script role; prefer primaryReason */
+    role?: string | null;
     scriptPath?: string | null;
     scriptLine?: number | null;
     inQuestDb?: boolean | null;
@@ -652,9 +676,14 @@ export interface NpcDetail extends NpcSummary {
   functions?: string[];
   quests?: {
     linkId: string;
-    questId: number | null;
+    /** Quest group id when available (`qg_…`). */
+    groupId?: string | null;
+    memberCount?: number | null;
+    questId?: number | null;
     title: string | null;
-    role: string | null;
+    reasons?: string[];
+    primaryReason?: string | null;
+    role?: string | null;
     scriptPath?: string | null;
     scriptLine?: number | null;
   }[];
@@ -890,7 +919,8 @@ export const apiClient = {
   searchQuests: (params: QuestSearchParams) =>
     apiFetch<PaginatedResponse<QuestSummary>>(`/quests${buildQuery(params)}`),
 
-  getQuest: (id: number | string) => apiFetch<QuestDetail>(`/quests/${id}`),
+  getQuest: (id: number | string) =>
+    apiFetch<QuestDetail>(`/quests/${encodeURIComponent(String(id))}`),
 
   getQuestMeta: () => apiFetch<{ filters: string[] }>('/quests/meta'),
 
